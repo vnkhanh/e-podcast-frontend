@@ -1,0 +1,56 @@
+import axios from "axios";
+
+const API_BASE_URL = "http://localhost:8080/api";
+
+export async function login(email, password) {
+  try {
+    const res = await axios.post(`${API_BASE_URL}/auth/login`, {
+      email,
+      password: password, // phải đúng với backend
+    }, {
+      headers: {
+        "Content-Type": "application/json",
+      },
+    });
+
+    console.log("Login success:", res.data);
+    return res.data; // { token, user }
+  } catch (err) {
+    if (err.response) {
+      // lỗi từ backend (status 400, 401,...)
+      console.error("Login failed:", err.response.data);
+      return err.response.data;
+    } else {
+      // lỗi khác (network, CORS,...)
+      console.error("Error:", err.message);
+    }
+  }
+}
+
+export async function register(email, password, ho_ten) {
+  try {
+    const res = await axios.post(`${API_BASE_URL}/auth/register`, {
+      email,
+      password: password,
+      full_name: ho_ten,
+    }, {
+      headers: { "Content-Type": "application/json" },
+    });
+
+    return res.data; // user object
+  } catch (err) {
+    if (err.response) return err.response.data;
+    throw err;
+  }
+}
+
+
+export const loginWithGoogle = async (idToken) => {
+  const res = await axios.post(`${API_BASE_URL}/auth/logingoogle`, {
+    id_token: idToken,
+  });
+  return res.data;
+};
+
+
+
