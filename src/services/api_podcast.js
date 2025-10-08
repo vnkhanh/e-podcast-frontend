@@ -18,7 +18,7 @@ return res.data;
 
 export async function listSubjects() {
   const token = localStorage.getItem("token");
-  const res = await axios.get(`${API_BASE_URL}/admin/subjectsget`, {
+  const res = await axios.get(`${API_BASE_URL}/admin/subjects/get`, {
     headers: { Authorization: `Bearer ${token}` },
   });
   return res.data; // trả về mảng subjects
@@ -26,14 +26,14 @@ export async function listSubjects() {
 
 export async function listTopics() {
   const token = localStorage.getItem("token");
-  const res = await axios.get(`${API_BASE_URL}/admin/topicsget`, {
+  const res = await axios.get(`${API_BASE_URL}/admin/topics/get`, {
     headers: { Authorization: `Bearer ${token}` },
   });
   return res.data; // trả về mảng topics
 }
 export async function listCategories() {
   const token = localStorage.getItem("token");
-  const res = await axios.get(`${API_BASE_URL}/admin/categoriesget`, {
+  const res = await axios.get(`${API_BASE_URL}/admin/categories/get`, {
     headers: { Authorization: `Bearer ${token}` },
   });
   return res.data; // trả về mảng categories
@@ -58,6 +58,30 @@ export async function listPodcasts({ page = 1, limit = 10, search = "" } = {}) {
 export async function getPodcastDetail(id) {
   const token = localStorage.getItem("token");
   const res = await axios.get(`${API_BASE_URL}/admin/podcasts/${id}`, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  return res.data;
+}
+
+export async function listChapters(subjectId) {
+  const token = localStorage.getItem("token");
+  const res = await axios.get(`${API_BASE_URL}/admin/chapters`, {
+    headers: { Authorization: `Bearer ${token}` },
+    params: { subject_id: subjectId },
+  });
+  return res.data;
+}
+
+export async function listChaptersBySubject(subjectId) {
+  const token = localStorage.getItem("token");
+  const res = await axios.get(`${API_BASE_URL}/admin/subjects/${subjectId}/chapters`, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  return res.data;
+}
+export async function createChapter(data) {
+  const token = localStorage.getItem("token");
+  const res = await axios.post(`${API_BASE_URL}/admin/subjects/${data.subject_id}/chapters`, data, {
     headers: { Authorization: `Bearer ${token}` },
   });
   return res.data;

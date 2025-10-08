@@ -4,19 +4,30 @@ import AuthLayout from "../layouts/AuthLayout/AuthLayout";
 import Login from "../pages/auth/Login";
 import Register from "../pages/auth/Register";
 import ForgotPassword from "../pages/auth/ForgotPassword";
-import UserDashboard from "../pages/user/UserDashboard";
-import ProtectedRoute from "./ProtectedRoute";
+
 import Home from "../pages/Home";
-import AdminLayout from "../layouts/AdminLayout";
-import AdminDashboard from "../pages/admin/AdminDashboard";
+
+// Sinh viên
 import UserLayout from "../layouts/UserLayout/UserLayout";
+import UserDashboard from "../pages/user/UserDashboard";
+
+// Giảng viên
+import TeacherLayout from "../layouts/TeacherLayout/TeacherLayout";
 import SubjectPage from "../pages/admin/Subject/SubjectPage";
 import TopicPage from "../pages/admin/Topic/TopicPage";
 import CategoryPage from "../pages/admin/Category/CategoryPage";
 import DocumentPage from "../pages/admin/Document/DocumentPage";
-import CreatePodcastUpload from "../pages/admin/Podcast/AddPodcast";
 import PodcastPage from "../pages/admin/Podcast/PodcastPage";
+import CreatePodcastUpload from "../pages/admin/Podcast/AddPodcast";
 import PodcastDetailPage from "../pages/admin/Podcast/PodcastDetail";
+
+// Admin hệ thống
+import AdminLayout from "../layouts/AdminLayout";
+import AdminDashboard from "../pages/admin/AdminDashboard";
+// Sau này có thể thêm quản lý giảng viên, user
+// import ManageLecturerPage from "../pages/admin/ManageLecturerPage";
+
+import ProtectedRoute from "./ProtectedRoute";
 
 const AppRoute = () => {
   const token = localStorage.getItem("token");
@@ -31,6 +42,8 @@ const AppRoute = () => {
           token && user ? (
             user.role === "admin" ? (
               <Navigate to="/admin" replace />
+            ) : user.role === "teacher" ? (
+              <Navigate to="/lecturer" replace />
             ) : (
               <Navigate to="/dashboard" replace />
             )
@@ -47,11 +60,11 @@ const AppRoute = () => {
         <Route path="/auth/forgot-password" element={<ForgotPassword />} />
       </Route>
 
-      {/* User */}
+      {/* Sinh viên */}
       <Route
         path="/dashboard"
         element={
-          <ProtectedRoute>
+          <ProtectedRoute allowedRoles={['student']}>
             <UserLayout>
               <UserDashboard />
             </UserLayout>
@@ -59,11 +72,30 @@ const AppRoute = () => {
         }
       />
 
-      {/* Admin layout + routes con */}
+      {/* Giảng viên */}
+      <Route
+        path="/teacher"
+        element={
+          <ProtectedRoute allowedRoles={['teacher']}>
+            <TeacherLayout />
+          </ProtectedRoute>
+        }
+      >
+        <Route index element={<SubjectPage />} />
+        <Route path="subject" element={<SubjectPage />} />
+        <Route path="topic" element={<TopicPage />} />
+        <Route path="category" element={<CategoryPage />} />
+        <Route path="document" element={<DocumentPage />} />
+        <Route path="podcast" element={<PodcastPage />} />
+        <Route path="podcast/create" element={<CreatePodcastUpload />} />
+        <Route path="podcast/:id" element={<PodcastDetailPage />} />
+      </Route>
+
+      {/* Admin hệ thống */}
       <Route
         path="/admin"
         element={
-          <ProtectedRoute role="admin">
+          <ProtectedRoute allowedRoles={['admin']}>
             <AdminLayout />
           </ProtectedRoute>
         }
@@ -71,20 +103,15 @@ const AppRoute = () => {
         <Route index element={<AdminDashboard />} />
         <Route path="dashboard" element={<AdminDashboard />} />
         <Route path="subject" element={<SubjectPage />} />
-
         <Route path="topic" element={<TopicPage />} />
         <Route path="category" element={<CategoryPage />} />
         <Route path="document" element={<DocumentPage />} />
         <Route path="podcast" element={<PodcastPage />} />
         <Route path="podcast/create" element={<CreatePodcastUpload />} />
         <Route path="podcast/:id" element={<PodcastDetailPage />} />
-
-
-        {/* sau này thêm route khác */}
-        {/* <Route path="podcasts" element={<Podcasts />} /> */}
-        {/* <Route path="users" element={<Users />} /> */}
+        {/* Thêm route quản lý giảng viên, user sau này */}
+        {/* <Route path="lecturer" element={<ManageLecturerPage />} /> */}
       </Route>
-
     </Routes>
   );
 };

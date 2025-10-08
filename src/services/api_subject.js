@@ -56,10 +56,11 @@ export async function toggleSubjectStatus(id) {
 };
 
 export const getSubjects = async () => {
-  const res = await api.get(`/admin/subjects`);
+  const res = await api.get(`/admin/subjects/get`);
   return res.data;
 };
 export const getChaptersBySubject = async (subjectId) => {
   const res = await api.get(`/admin/chapters?subject_id=${subjectId}`);
   return res.data;
 };
+

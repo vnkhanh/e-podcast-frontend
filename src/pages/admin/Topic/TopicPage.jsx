@@ -25,27 +25,25 @@ const TopicPage = () => {
   const [limit, setLimit] = useState(8);
   const [total, setTotal] = useState(0);
 
+  const [editForm] = Form.useForm();
   const fetchTopics = React.useCallback(async () => {
     setLoading(true);
     try {
-      const res = await listTopics({
-        search,           // key phải đúng với BE
-        status,
-        page,
-        limit,
-      });
+      const res = await listTopics({ search, status, page, limit });
       setTopics(res.data);
       setTotal(res.total);
     } catch (err) {
-      console.error(err);
       message.error("Không thể tải danh sách chủ đề");
+      console.error(err);
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   }, [search, status, page, limit]);
 
   useEffect(() => {
     fetchTopics();
-  }, [search, status, page, limit, fetchTopics]);
+  }, [fetchTopics]);
+
 
 
   const handleOk = async () => {
@@ -61,13 +59,21 @@ const TopicPage = () => {
       form.resetFields();
       fetchTopics(); // gọi lại fetchTopics
     } catch (err) {
-      if (err.response?.data?.error) {
-        message.error(err.response.data.error);
-      } else if (err.errorFields) {
-        // lỗi validate form
-      } else {
-        message.error("Không thể tạo chủ đề");
-      }
+        if (err.response?.data?.error) {
+          const msg = err.response.data.error;
+          if (msg.includes("tồn tại")) {
+            form.setFields([
+              {
+                name: "name",
+                errors: [msg],
+              },
+            ]);
+          } else {
+            message.error(msg);
+          }
+        } else {
+          message.error("Không thể tạo chủ đề");
+        }
     } finally {
       setLoading(false);
     }
@@ -85,14 +91,26 @@ const TopicPage = () => {
       setEditingTopic(null);
       fetchTopics();
     } catch (err) {
-      message.error(err.response?.data?.error || "Lỗi khi cập nhật chủ đề");
-      console.error(err);
+      const msg = err.response?.data?.error;
+      if (msg) {
+        // Đảm bảo modal đã mở
+        if (editForm) {
+          editForm.setFields([
+            { name: "name", errors: [msg] }
+          ]);
+        } else {
+          message.error(msg);
+        }
+      } else {
+        message.error("Lỗi khi cập nhật chủ đề");
+      }
     } finally {
       setUpdating(false);
     }
   };
 
-const handleDelete = async (id) => {
+
+  const handleDelete = async (id) => {
     try {
       await deleteTopic(id);
       message.success("Đã xoá chủ đề");
@@ -247,6 +265,7 @@ const handleDelete = async (id) => {
     >
       {editingTopic && (
         <TopicFormEdit
+          form={editForm}
           initialValues={editingTopic}
           onFinish={handleUpdate}
           loading={updating}

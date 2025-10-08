@@ -9,7 +9,7 @@ import {
   Switch,
   Input,
   Descriptions,
-  Select,
+  Select, Form
 } from "antd";
 import {
   PlusOutlined,
@@ -31,6 +31,8 @@ import SubjectFormEdit from "./SubjectFormEdit";
 const { Option } = Select;
 
 const SubjectPage = () => {
+  const [form] = Form.useForm();
+
   const [subjects, setSubjects] = useState([]);
   const [loading, setLoading] = useState(false);
 
@@ -79,20 +81,32 @@ const SubjectPage = () => {
     loadSubjects();
   }, [loadSubjects]);
 
-  // create
-  const handleCreate = async (values) => {
-    try {
-      setCreating(true);
-      await createSubject(values.name);
-      message.success("Thêm môn học thành công");
-      setModalVisible(false);
-      loadSubjects();
-    } catch (err) {
-      message.error(err.response?.data?.error || "Lỗi khi thêm môn học");
-    } finally {
-      setCreating(false);
+const handleCreate = async (values) => {
+  try {
+    setCreating(true);
+    await createSubject(values.name);
+    message.success("Thêm môn học thành công");
+    setModalVisible(false);
+    loadSubjects();
+    form.resetFields(); // nếu dùng form AntD
+  } catch (err) {
+    const errorMsg = err.response?.data?.error || "Lỗi khi thêm môn học";
+    if (errorMsg.includes("đã tồn tại")) {
+      // hiển thị lỗi trực tiếp dưới input
+      form.setFields([
+        {
+          name: "name",
+          errors: [errorMsg],
+        },
+      ]);
+    } else {
+      message.error(errorMsg);
     }
-  };
+  } finally {
+    setCreating(false);
+  }
+};
+
 
   // delete
   const handleDelete = async (id) => {
@@ -116,12 +130,13 @@ const SubjectPage = () => {
     } catch (err) {
       message.error("Không thể lấy chi tiết môn học");
       console.error(err);
+
     } finally {
       setDetailLoading(false);
     }
   };
 
-  // edit
+  // update
   const handleUpdate = async (values) => {
     try {
       setUpdating(true);
@@ -129,13 +144,26 @@ const SubjectPage = () => {
       message.success("Cập nhật môn học thành công");
       setEditingSubject(null);
       loadSubjects();
+      form.resetFields();
     } catch (err) {
-      message.error(err.response?.data?.error || "Lỗi khi cập nhật môn học");
+      const msg = err.response?.data?.error;
+      if (msg?.includes("tồn tại")) {
+        // Hiển thị lỗi trực tiếp dưới input
+        form.setFields([
+          {
+            name: "name",
+            errors: [msg],
+          },
+        ]);
+      } else {
+        message.error(msg || "Lỗi khi cập nhật môn học");
+      }
       console.error(err);
     } finally {
       setUpdating(false);
     }
   };
+
 
   // toggle
   const handleToggle = async (id) => {
@@ -272,7 +300,7 @@ const SubjectPage = () => {
         footer={null}
         destroyOnClose
       >
-        <SubjectForm onFinish={handleCreate} loading={creating} />
+        <SubjectForm form={form} onFinish={handleCreate} loading={creating} />
       </Modal>
 
       {/* Modal sửa */}
@@ -285,6 +313,7 @@ const SubjectPage = () => {
       >
         {editingSubject && (
           <SubjectFormEdit
+            form={form}
             initialValues={editingSubject}
             onFinish={handleUpdate}
             loading={updating}

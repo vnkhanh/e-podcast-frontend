@@ -13,7 +13,7 @@ import { Link, Outlet, useNavigate } from "react-router-dom";
 
 const { Header, Sider, Content } = Layout;
 
-const AdminLayout = () => {
+const TeacherLayout = () => {
   const navigate = useNavigate();
 
   // Lấy user từ localStorage
@@ -61,22 +61,22 @@ const AdminLayout = () => {
         </div>
         <Menu theme="dark" mode="inline">
           <Menu.Item key="dashboard" icon={<DashboardOutlined />}>
-            <Link to="/admin/dashboard">Dashboard</Link>
+            <Link to="/teacher/dashboard">Dashboard</Link>
           </Menu.Item>
           <Menu.Item key="subject" icon={<BookOutlined />}>
-            <Link to="/admin/subject">Môn học</Link>
+            <Link to="/teacher/subject">Môn học</Link>
           </Menu.Item>
           <Menu.Item key="topic" icon={<GroupOutlined />}>
-            <Link to="/admin/topic">Chủ đề</Link>
+            <Link to="/teacher/topic">Chủ đề</Link>
           </Menu.Item>
           <Menu.Item key="category" icon={<BlockOutlined />}>
-            <Link to="/admin/category">Danh mục</Link>
+            <Link to="/teacher/category">Danh mục</Link>
           </Menu.Item>
           <Menu.Item key="document" icon={<DockerOutlined />}>
-            <Link to="/admin/document">Tài liệu</Link>
+            <Link to="/teacher/document">Tài liệu</Link>
           </Menu.Item>
           <Menu.Item key="podcast" icon={<BookOutlined />}>
-            <Link to="/admin/podcast">Podcast</Link>
+            <Link to="/teacher/podcast">Podcast</Link>
           </Menu.Item>
           {/* Có thể thêm mục khác */}
         </Menu>
@@ -93,7 +93,7 @@ const AdminLayout = () => {
             alignItems: "center",
           }}
         >
-          <h3 style={{ margin: 0 }}>Hệ thống quản trị</h3>
+          <h3 style={{ margin: 0 }}>Giảng viên</h3>
           <Dropdown overlay={userMenu} placement="bottomRight">
             <div
               style={{
@@ -102,7 +102,7 @@ const AdminLayout = () => {
                 cursor: "pointer",
               }}
             >
-              <span>Xin chào, {user?.full_name || "Admin"}!</span> &nbsp;&nbsp;&nbsp;
+              <span>Xin chào, giảng viên {user?.full_name || "Giảng viên"}!</span> &nbsp;&nbsp;&nbsp;
               <Avatar
                 style={{ backgroundColor: "#87d068", marginRight: 8 }}
                 icon={<UserOutlined />}
@@ -126,4 +126,4 @@ const AdminLayout = () => {
   );
 };
 
-export default AdminLayout;
+export default TeacherLayout;

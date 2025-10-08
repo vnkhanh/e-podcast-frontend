@@ -1,18 +1,18 @@
 import React, { useEffect } from "react";
 import { Form, Input, Button } from "antd";
 
-const TopicFormEdit = ({ initialValues, onFinish, loading }) => {
-  const [form] = Form.useForm();
-
+const TopicFormEdit = ({ form, initialValues, onFinish, loading }) => {
   useEffect(() => {
-    form.setFieldsValue({ name: initialValues.name });
+    if (initialValues) {
+      form.setFieldsValue({ name: initialValues.name });
+    }
   }, [initialValues, form]);
 
   return (
     <Form
-      form={form}
+      form={form}        // dùng form từ prop
       layout="vertical"
-      onFinish={(values) => onFinish(values)}
+      onFinish={onFinish}
       autoComplete="off"
     >
       <Form.Item
@@ -31,5 +31,6 @@ const TopicFormEdit = ({ initialValues, onFinish, loading }) => {
     </Form>
   );
 };
+
 
 export default TopicFormEdit;

@@ -1,9 +1,7 @@
 import React, { useEffect } from "react";
 import { Form, Input, Button } from "antd";
 
-const SubjectFormEdit = ({ initialValues, onFinish, loading }) => {
-  const [form] = Form.useForm();
-
+const SubjectFormEdit = ({ form, initialValues, onFinish, loading }) => {
   useEffect(() => {
     form.setFieldsValue({ name: initialValues.name });
   }, [initialValues, form]);
@@ -12,7 +10,7 @@ const SubjectFormEdit = ({ initialValues, onFinish, loading }) => {
     <Form
       form={form}
       layout="vertical"
-      onFinish={(values) => onFinish(values)}
+      onFinish={onFinish}
       autoComplete="off"
     >
       <Form.Item

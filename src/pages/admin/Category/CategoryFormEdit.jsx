@@ -1,9 +1,7 @@
 import React, { useEffect } from "react";
 import { Form, Input, Button } from "antd";
 
-const CategoryFormEdit = ({ initialValues, onFinish, loading }) => {
-  const [form] = Form.useForm();
-
+const CategoryFormEdit = ({ form, initialValues, onFinish, loading }) => {
   useEffect(() => {
     form.setFieldsValue({ name: initialValues.name });
   }, [initialValues, form]);

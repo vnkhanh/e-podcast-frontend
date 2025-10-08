@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Row, Col, Card, Button, Input, Space, message } from "antd";
+import { Row, Col, Card, Button, Input, Space, message, Spin } from "antd";
 import { PlusOutlined } from "@ant-design/icons";
 import { useNavigate } from "react-router-dom";
 import { listPodcasts } from "../../../services/api_podcast";
@@ -67,12 +67,12 @@ const PodcastPage = () => {
         <Button
           type="primary"
           icon={<PlusOutlined />}
-          onClick={() => navigate("/admin/podcast/create")}
+          onClick={() => navigate("/teacher/podcast/create")}
         >
           Tạo Podcast
         </Button>
       </Space>
-
+    <Spin spinning={loading}>
       <Row gutter={[16, 16]}>
         {podcasts.map((podcast) => (
           <Col
@@ -102,7 +102,7 @@ const PodcastPage = () => {
               actions={[
                 <Button
                   type="link"
-                  onClick={() => navigate(`/admin/podcast/${podcast.id}`)}
+                  onClick={() => navigate(`/teacher/podcast/${podcast.id}`)}
                 >
                   Xem chi tiết
                 </Button>,
@@ -125,7 +125,7 @@ const PodcastPage = () => {
           </Col>
         ))}
       </Row>
-
+    </Spin>
       {/* Pagination */}
       <div style={{ marginTop: 20, textAlign: "center" }}>
         <Button

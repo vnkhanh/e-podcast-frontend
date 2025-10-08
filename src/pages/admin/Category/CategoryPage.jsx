@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { Space, Input, Select, Button, Table, message, Form, Modal, Switch, Popconfirm, Descriptions} from "antd";
-import { listCategories, createTopic, deleteCategory, toggleCategoryStatus, updateCategory, getCategoryDetail } from "../../../services/api_category"; 
+import { listCategories, createCategory, deleteCategory, toggleCategoryStatus, updateCategory, getCategoryDetail } from "../../../services/api_category"; 
 import { DeleteOutlined, EditOutlined, EyeOutlined } from "@ant-design/icons";
 import CategoryFormEdit from "./CategoryFormEdit";
 const { Option } = Select;
@@ -51,19 +51,30 @@ const CategoryPage = () => {
     try {
       const values = await form.validateFields();
       setLoading(true);
-      await createTopic({
+      await createCategory({
         name: values.name,
         status: values.status, // true/false
       });
-      message.success("Tạo chủ đề thành công");
+      message.success("Tạo danh mục thành công");
       setVisible(false);
       form.resetFields();
-      fetchCategories(); // gọi lại fetchCategories
+      fetchCategories(); // gọi lại danh sách
     } catch (err) {
       if (err.response?.data?.error) {
-        message.error(err.response.data.error);
+        const msg = err.response.data.error;
+        // Nếu lỗi trùng tên/slugs, hiển thị dưới input
+        if (msg.includes("tồn tại")) {
+          form.setFields([
+            {
+              name: "name",
+              errors: [msg],
+            },
+          ]);
+        } else {
+          message.error(msg);
+        }
       } else if (err.errorFields) {
-        // lỗi validate form
+        // lỗi validate form, AntD sẽ tự hiển thị
       } else {
         message.error("Không thể tạo danh mục");
       }
@@ -72,10 +83,10 @@ const CategoryPage = () => {
     }
   };
 
+
   const handleEdit = (record) => {
     setEditingCategory(record); // mở modal
   };
-  // Hàm submit update
   const handleUpdate = async (values) => {
     try {
       setUpdating(true);
@@ -84,12 +95,24 @@ const CategoryPage = () => {
       setEditingCategory(null);
       fetchCategories();
     } catch (err) {
-      message.error(err.response?.data?.error || "Lỗi khi cập nhật danh mục");
+      const msg = err.response?.data?.error;
+      if (msg?.includes("tồn tại")) {
+        // Hiển thị lỗi dưới input
+        form.setFields([
+          {
+            name: "name",
+            errors: [msg],
+          },
+        ]);
+      } else {
+        message.error(msg || "Lỗi khi cập nhật danh mục");
+      }
       console.error(err);
     } finally {
       setUpdating(false);
     }
   };
+
 
 const fetchCategoryDetail = async (id) => {
   setDetailLoading(true);
@@ -247,6 +270,7 @@ const handleDelete = async (id) => {
     >
       {editingCategory && (
         <CategoryFormEdit
+          form={form}
           initialValues={editingCategory}
           onFinish={handleUpdate}
           loading={updating}
@@ -254,14 +278,17 @@ const handleDelete = async (id) => {
       )}
     </Modal>
 
-    <Modal
+   <Modal
       title="Thêm danh mục mới"
       open={visible}
-      onOk={handleOk}
       onCancel={() => setVisible(false)}
-      confirmLoading={loading}
+      footer={null} // tắt footer để dùng nút submit trong Form
     >
-      <Form form={form} layout="vertical">
+      <Form
+        form={form}
+        layout="vertical"
+        onFinish={handleOk} // submit sẽ gọi handleOk
+      >
         <Form.Item
           name="name"
           label="Tên danh mục"
@@ -277,6 +304,12 @@ const handleDelete = async (id) => {
           initialValue={true}
         >
           <Switch />
+        </Form.Item>
+
+        <Form.Item>
+          <Button type="primary" htmlType="submit" block loading={loading}>
+            Thêm danh mục
+          </Button>
         </Form.Item>
       </Form>
     </Modal>

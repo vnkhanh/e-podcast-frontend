@@ -1,8 +1,8 @@
 import React from "react";
 import { Form, Input, Button } from "antd";
 
-const SubjectForm = ({ onFinish, loading }) => (
-  <Form layout="vertical" onFinish={onFinish}>
+const SubjectForm = ({ form, onFinish, loading }) => (
+  <Form form={form} layout="vertical" onFinish={onFinish}>
     <Form.Item
       label="Tên môn học"
       name="name"
@@ -17,5 +17,6 @@ const SubjectForm = ({ onFinish, loading }) => (
     </Form.Item>
   </Form>
 );
+
 
 export default SubjectForm;
