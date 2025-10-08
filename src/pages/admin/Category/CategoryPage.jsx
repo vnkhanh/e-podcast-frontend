@@ -114,19 +114,19 @@ const CategoryPage = () => {
   };
 
 
-const fetchCategoryDetail = async (id) => {
-  setDetailLoading(true);
-  try {
-    const data = await getCategoryDetail(id); 
-    setDetailData(data);
-    setDetailVisible(true);
-  } catch (err) {
-    message.error("Không thể lấy chi tiết danh mục");
-    console.error(err);
-  } finally {
-    setDetailLoading(false);
-  }
-};
+  const fetchCategoryDetail = async (id) => {
+    setDetailLoading(true);
+    try {
+      const data = await getCategoryDetail(id); 
+      setDetailData(data);
+      setDetailVisible(true);
+    } catch (err) {
+      message.error("Không thể lấy chi tiết danh mục");
+      console.error(err);
+    } finally {
+      setDetailLoading(false);
+    }
+  };
 
 
 const handleDelete = async (id) => {

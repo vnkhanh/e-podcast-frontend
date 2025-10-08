@@ -309,7 +309,7 @@ const handleCreate = async (values) => {
         title="Cập nhật môn học"
         onCancel={() => setEditingSubject(null)}
         footer={null}
-        destroyOnClose
+        destroyOnHidden
       >
         {editingSubject && (
           <SubjectFormEdit

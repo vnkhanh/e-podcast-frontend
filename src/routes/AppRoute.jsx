@@ -20,6 +20,7 @@ import DocumentPage from "../pages/admin/Document/DocumentPage";
 import PodcastPage from "../pages/admin/Podcast/PodcastPage";
 import CreatePodcastUpload from "../pages/admin/Podcast/AddPodcast";
 import PodcastDetailPage from "../pages/admin/Podcast/PodcastDetail";
+import EditPodcast from "../pages/admin/Podcast/EditPodcast";
 
 // Admin hệ thống
 import AdminLayout from "../layouts/AdminLayout";
@@ -43,7 +44,7 @@ const AppRoute = () => {
             user.role === "admin" ? (
               <Navigate to="/admin" replace />
             ) : user.role === "teacher" ? (
-              <Navigate to="/lecturer" replace />
+              <Navigate to="/teacher" replace />
             ) : (
               <Navigate to="/dashboard" replace />
             )
@@ -89,6 +90,7 @@ const AppRoute = () => {
         <Route path="podcast" element={<PodcastPage />} />
         <Route path="podcast/create" element={<CreatePodcastUpload />} />
         <Route path="podcast/:id" element={<PodcastDetailPage />} />
+        <Route path="podcast/:id/edit" element={<EditPodcast />} />
       </Route>
 
       {/* Admin hệ thống */}

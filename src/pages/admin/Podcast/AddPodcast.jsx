@@ -8,7 +8,7 @@ import {
   listTopics,
   listTags,
   createChapter,
-  listChaptersBySubject
+  listChaptersBySubject,
 } from "../../../services/api_podcast";
 import { useNavigate } from "react-router-dom";
 
@@ -28,6 +28,7 @@ const CreatePodcastUpload = () => {
   const [showCreateChapterModal, setShowCreateChapterModal] = useState(false);
   const [form] = Form.useForm();
 
+  // ======= LOAD DỮ LIỆU BAN ĐẦU =======
   useEffect(() => {
     (async () => {
       try {
@@ -48,6 +49,7 @@ const CreatePodcastUpload = () => {
     })();
   }, []);
 
+  // ======= LẤY DANH SÁCH CHƯƠNG =======
   const fetchChapters = async (subjectId) => {
     if (!subjectId) return;
     try {
@@ -59,6 +61,7 @@ const CreatePodcastUpload = () => {
     }
   };
 
+  // ======= TẠO CHƯƠNG MỚI =======
   const handleCreateChapter = async (values) => {
     try {
       const res = await createChapter({
@@ -67,7 +70,7 @@ const CreatePodcastUpload = () => {
       });
       message.success("Tạo chương thành công");
       setShowCreateChapterModal(false);
-      fetchChapters(selectedSubject); // load lại danh sách chương
+      fetchChapters(selectedSubject);
       form.setFieldsValue({ chapter_id: res.chapter.id });
     } catch (err) {
       console.error(err);
@@ -75,7 +78,10 @@ const CreatePodcastUpload = () => {
     }
   };
 
+  // ======= GỬI FORM =======
   const onFinish = async (values) => {
+    console.log("Dữ liệu form nhận từ AntD:", values);
+
     if (!file) return message.warning("Vui lòng chọn file tài liệu");
 
     const formData = new FormData();
@@ -83,35 +89,86 @@ const CreatePodcastUpload = () => {
     formData.append("title", values.title);
     formData.append("description", values.description || "");
     formData.append("subject_id", values.subject_id);
-    formData.append("chapter_id", values.chapter_id);
 
-    if (coverImage) formData.append("cover_image", coverImage);
-    if (values.voice) formData.append("voice", values.voice);
+    // Xử lý chương học
+    if (values.chapter_id) {
+      console.log("Chọn chương có sẵn:", values.chapter_id);
+      formData.append("chapter_id", values.chapter_id);
+    } else if (values.subject_id && values.chapter_title) {
+      console.log("Tạo chương mới:", values.chapter_title);
+      formData.append("subject_id", values.subject_id);
+      formData.append("chapter_title", values.chapter_title);
+    } else {
+      message.warning("Vui lòng chọn hoặc nhập chương học hợp lệ");
+      return;
+    }
+
+    // Ảnh bìa (nếu có)
+    if (coverImage) {
+      console.log("🖼️ Ảnh bìa:", coverImage.name);
+      formData.append("cover_image", coverImage);
+    }
+
+    // Giọng đọc và tốc độ
+    if (values.voice) console.log("🎙️ Giọng đọc:", values.voice);
+    formData.append("voice", values.voice || "");
     formData.append("speaking_rate", values.speaking_rate || 1.0);
 
+    // Danh mục
     (values.category_ids || []).forEach((id) => formData.append("category_ids[]", id));
-    (values.topic_ids || []).forEach((id) => formData.append("topic_ids[]", id));
-    (values.tag_ids || []).forEach((id) => formData.append("tag_ids[]", id));
-    (values.tag_names || []).forEach((name) => formData.append("tag_names[]", name));
 
+    // Chủ đề
+    (values.topic_ids || []).forEach((id) => formData.append("topic_ids[]", id));
+
+    // Tag (id cũ và tag mới)
+    if (values.tags_combined?.length) {
+      const existingTagIds = [];
+      const newTagNames = [];
+
+      values.tags_combined.forEach((t) => {
+        const isExisting = tags.find((tag) => tag.id === t);
+        if (isExisting) existingTagIds.push(t);
+        else newTagNames.push(t);
+      });
+
+      existingTagIds.forEach((id) => formData.append("tag_ids[]", id));
+      newTagNames.forEach((name) => formData.append("tag_names[]", name));
+    }
+
+    // DEBUG: In toàn bộ FormData gửi lên
+    console.log("Dữ liệu FormData chuẩn bị gửi lên backend:");
+    for (let [key, value] of formData.entries()) {
+      console.log(`${key}:`, value);
+    }
+
+    // ====== GỬI LÊN BACKEND ======
     try {
       setLoading(true);
-      await uploadPodcast(formData);
+      const res = await uploadPodcast(formData);
+      console.log("Server response:", res);
       message.success("Tải lên thành công");
       navigate("/admin/document");
     } catch (err) {
-      console.error(err);
-      message.error("Lỗi khi tải lên");
+      console.error("Lỗi upload:", err);
+      console.error("Phản hồi từ server:", err.response?.data);
+      message.error(err.response?.data?.error || "Lỗi khi tải lên");
     } finally {
       setLoading(false);
     }
   };
 
+
+
+  // ======= GIAO DIỆN =======
   return (
     <Card title="Tạo Podcast từ tài liệu" style={{ maxWidth: 700, margin: "40px auto" }}>
       <Form form={form} layout="vertical" onFinish={onFinish}>
-        {/* Chọn môn học */}
-        <Form.Item name="subject_id" label="Môn học" rules={[{ required: true, message: "Chọn môn học" }]}>
+        {/* Môn học */}
+        <Form.Item
+          name="subject_id"
+          label="Môn học"
+          rules={[{ required: true, message: "Chọn môn học" }]}
+        >
           <Select
             placeholder="Chọn môn học"
             onChange={(value) => {
@@ -128,14 +185,20 @@ const CreatePodcastUpload = () => {
           </Select>
         </Form.Item>
 
-        {/* Chọn chương */}
-        <Form.Item name="chapter_id" label="Chương">
-          <Space>
-            <Select
-              placeholder="Chọn chương (nếu có)"
-              style={{ width: 300 }}
-              options={chapters.map((c) => ({ label: c.title, value: c.id }))}
-            />
+        {/* Chương */}
+        <Form.Item label="Chương">
+          <Space align="start">
+            <Form.Item name="chapter_id" noStyle>
+              <Select
+                style={{ width: 300 }}
+                placeholder="Chọn chương (nếu có)"
+                options={chapters.map((c) => ({
+                  label: c.title,
+                  value: c.id,
+                }))}
+              />
+            </Form.Item>
+
             <Button
               type="dashed"
               icon={<PlusOutlined />}
@@ -146,7 +209,7 @@ const CreatePodcastUpload = () => {
           </Space>
         </Form.Item>
 
-        {/* Modal tạo chương mới */}
+        {/* Modal tạo chương */}
         <Modal
           title="Tạo chương mới"
           open={showCreateChapterModal}
@@ -170,7 +233,11 @@ const CreatePodcastUpload = () => {
         </Modal>
 
         {/* Tên podcast */}
-        <Form.Item name="title" label="Tên podcast" rules={[{ required: true, message: "Nhập tên podcast" }]}>
+        <Form.Item
+          name="title"
+          label="Tên podcast"
+          rules={[{ required: true, message: "Nhập tên podcast" }]}
+        >
           <Input placeholder="Tên podcast" />
         </Form.Item>
 
@@ -180,7 +247,10 @@ const CreatePodcastUpload = () => {
         </Form.Item>
 
         {/* File tài liệu */}
-        <Form.Item label="Tài liệu (PDF)" rules={[{ required: true, message: "Chọn file tài liệu" }]}>
+        <Form.Item
+          label="Tài liệu (PDF)"
+          rules={[{ required: true, message: "Chọn file tài liệu" }]}
+        >
           <Upload beforeUpload={(f) => { setFile(f); return false; }} maxCount={1}>
             <Button icon={<UploadOutlined />}>Chọn file</Button>
           </Upload>
@@ -194,8 +264,8 @@ const CreatePodcastUpload = () => {
         </Form.Item>
 
         {/* Giọng đọc */}
-        <Form.Item name="voice" label="Giọng đọc">
-          <Select defaultValue="vi-VN-Chirp3-HD-Puck">
+        <Form.Item name="voice" label="Giọng đọc" initialValue="vi-VN-Chirp3-HD-Puck">
+          <Select>
             <Option value="vi-VN-Chirp3-HD-Puck">Puck (Nam)</Option>
             <Option value="vi-VN-Chirp3-HD-Luna">Luna (Nữ)</Option>
             <Option value="vi-VN-Chirp3-HD-Lam">Lam (Nam, trẻ)</Option>
@@ -203,12 +273,16 @@ const CreatePodcastUpload = () => {
         </Form.Item>
 
         {/* Tốc độ đọc */}
-        <Form.Item name="speaking_rate" label="Tốc độ đọc">
-          <Slider min={0.5} max={2.0} step={0.1} defaultValue={1.0} />
+        <Form.Item name="speaking_rate" label="Tốc độ đọc" initialValue={1.0}>
+          <Slider min={0.5} max={2.0} step={0.1} />
         </Form.Item>
 
         {/* Danh mục */}
-        <Form.Item name="category_ids" label="Danh mục" rules={[{ required: true, message: "Chọn ít nhất 1 danh mục" }]}>
+        <Form.Item
+          name="category_ids"
+          label="Danh mục"
+          rules={[{ required: true, message: "Chọn ít nhất 1 danh mục" }]}
+        >
           <Select mode="multiple" placeholder="Chọn danh mục">
             {categories.map((c) => (
               <Option key={c.id} value={c.id}>
@@ -219,7 +293,11 @@ const CreatePodcastUpload = () => {
         </Form.Item>
 
         {/* Chủ đề */}
-        <Form.Item name="topic_ids" label="Chủ đề" rules={[{ required: true, message: "Chọn ít nhất 1 chủ đề" }]}>
+        <Form.Item
+          name="topic_ids"
+          label="Chủ đề"
+          rules={[{ required: true, message: "Chọn ít nhất 1 chủ đề" }]}
+        >
           <Select mode="multiple" placeholder="Chọn chủ đề">
             {topics.map((t) => (
               <Option key={t.id} value={t.id}>
@@ -229,11 +307,8 @@ const CreatePodcastUpload = () => {
           </Select>
         </Form.Item>
 
-       <Form.Item
-          name="tags_combined"
-          label="Thẻ tag (chọn hoặc tạo mới)"
-          rules={[{ required: false }]} // có thể bắt buộc nếu muốn
-        >
+        {/* Tags */}
+        <Form.Item name="tags_combined" label="Thẻ tag (chọn hoặc tạo mới)">
           <Select
             mode="tags"
             placeholder="Tag cách nhau bởi dấu phẩy"
@@ -242,7 +317,6 @@ const CreatePodcastUpload = () => {
             options={tags.map((t) => ({ label: t.name, value: t.id }))}
           />
         </Form.Item>
-
 
         <Form.Item>
           <Button type="primary" htmlType="submit" loading={loading} block>

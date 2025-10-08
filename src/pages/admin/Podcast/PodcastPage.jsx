@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { Row, Col, Card, Button, Input, Space, message, Spin } from "antd";
 import { PlusOutlined } from "@ant-design/icons";
 import { useNavigate } from "react-router-dom";
-import { listPodcasts } from "../../../services/api_podcast";
+import { listPodcasts, deletePodcast } from "../../../services/api_podcast";
 import AudioPlayer from "../../../components/AudioPlayer";
 
 const { Search } = Input;
@@ -45,6 +45,17 @@ const PodcastPage = () => {
   const handleSearch = (value) => {
     setSearch(value);
     fetchData(1, pagination.pageSize, value);
+  };
+
+  const handleDelete = async (id) => {
+    try {
+      await deletePodcast(id);
+      message.success("Xóa podcast thành công");
+      fetchData(pagination.current, pagination.pageSize, search);
+    } catch (error) {
+      console.error(error);
+      message.error("Xóa podcast thất bại");
+    }
   };
 
   return (
@@ -106,6 +117,19 @@ const PodcastPage = () => {
                 >
                   Xem chi tiết
                 </Button>,
+                <Button
+                  type="link"
+                  danger
+                  onClick={() => handleDelete(podcast.id)}
+                >
+                  Xóa
+                </Button>,
+                <Button
+                  type="link"
+                  onClick={() => navigate(`/teacher/podcast/${podcast.id}/edit`)}
+                >
+                  Chỉnh sửa
+                </Button>
               ]}
             >
               <Card.Meta

@@ -86,3 +86,28 @@ export async function createChapter(data) {
   });
   return res.data;
 }
+
+export async function deletePodcast(id) {
+  const token = localStorage.getItem("token");
+  const res = await axios.delete(`${API_BASE_URL}/admin/podcasts/${id}`, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  return res.data;
+}
+
+// Cập nhật metadata podcast
+export async function updatePodcast(id, data) {
+  const formData = new FormData();
+    const token = localStorage.getItem("token");
+
+  Object.entries(data).forEach(([key, value]) => {
+    if (value !== undefined && value !== null) {
+      formData.append(key, value);
+    }
+  });
+  const res = await axios.put(`${API_BASE_URL}/admin/podcasts/${id}`, formData, {
+    headers: { Authorization: `Bearer ${token}` },
+
+  });
+  return res.data;
+}
