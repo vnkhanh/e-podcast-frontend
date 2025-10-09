@@ -59,7 +59,8 @@ const PodcastPage = () => {
   };
 
   return (
-    <div style={{ padding: 20 }}>
+    <div style={{ padding: 24 }}>
+      <h1 style={{ marginBottom: 16 }}>Quản lý Podcast</h1>
       <Space
         style={{
           marginBottom: 16,

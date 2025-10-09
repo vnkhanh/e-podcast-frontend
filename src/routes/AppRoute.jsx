@@ -4,15 +4,17 @@ import AuthLayout from "../layouts/AuthLayout/AuthLayout";
 import Login from "../pages/auth/Login";
 import Register from "../pages/auth/Register";
 import ForgotPassword from "../pages/auth/ForgotPassword";
-
+import ResetPassword from "../pages/auth/ResetPassword";
+// Trang chủ
 import Home from "../pages/Home";
 
 // Sinh viên
 import UserLayout from "../layouts/UserLayout/UserLayout";
-import UserDashboard from "../pages/user/UserDashboard";
+import UserDashboard from "../pages/student/UserDashboard";
 
-// Giảng viên
-import TeacherLayout from "../layouts/TeacherLayout/TeacherLayout";
+// Admin & Teacher dùng chung layout
+import AdminLayout from "../layouts/AdminLayout";
+import AdminDashboard from "../pages/admin/AdminDashboard";
 import SubjectPage from "../pages/admin/Subject/SubjectPage";
 import TopicPage from "../pages/admin/Topic/TopicPage";
 import CategoryPage from "../pages/admin/Category/CategoryPage";
@@ -21,12 +23,7 @@ import PodcastPage from "../pages/admin/Podcast/PodcastPage";
 import CreatePodcastUpload from "../pages/admin/Podcast/AddPodcast";
 import PodcastDetailPage from "../pages/admin/Podcast/PodcastDetail";
 import EditPodcast from "../pages/admin/Podcast/EditPodcast";
-
-// Admin hệ thống
-import AdminLayout from "../layouts/AdminLayout";
-import AdminDashboard from "../pages/admin/AdminDashboard";
-// Sau này có thể thêm quản lý giảng viên, user
-// import ManageLecturerPage from "../pages/admin/ManageLecturerPage";
+import UserPage from "../pages/admin/User/UserPage";
 
 import ProtectedRoute from "./ProtectedRoute";
 
@@ -41,12 +38,14 @@ const AppRoute = () => {
         path="/"
         element={
           token && user ? (
-            user.role === "admin" ? (
-              <Navigate to="/admin" replace />
+            user.role === "student" ? (
+              <Navigate to="/dashboard" replace />
             ) : user.role === "teacher" ? (
               <Navigate to="/teacher" replace />
+            ) : user.role === "admin" ? (
+              <Navigate to="/admin" replace />
             ) : (
-              <Navigate to="/dashboard" replace />
+              <Home />
             )
           ) : (
             <Home />
@@ -59,6 +58,7 @@ const AppRoute = () => {
         <Route path="/auth/login" element={<Login />} />
         <Route path="/auth/register" element={<Register />} />
         <Route path="/auth/forgot-password" element={<ForgotPassword />} />
+        <Route path="/auth/reset-password" element={<ResetPassword />} />
       </Route>
 
       {/* Sinh viên */}
@@ -73,12 +73,12 @@ const AppRoute = () => {
         }
       />
 
-      {/* Giảng viên */}
+      {/* Teacher & Admin dùng chung layout */}
       <Route
         path="/teacher"
         element={
-          <ProtectedRoute allowedRoles={['teacher']}>
-            <TeacherLayout />
+          <ProtectedRoute allowedRoles={['teacher', 'admin']}>
+            <AdminLayout />
           </ProtectedRoute>
         }
       >
@@ -93,7 +93,6 @@ const AppRoute = () => {
         <Route path="podcast/:id/edit" element={<EditPodcast />} />
       </Route>
 
-      {/* Admin hệ thống */}
       <Route
         path="/admin"
         element={
@@ -111,8 +110,7 @@ const AppRoute = () => {
         <Route path="podcast" element={<PodcastPage />} />
         <Route path="podcast/create" element={<CreatePodcastUpload />} />
         <Route path="podcast/:id" element={<PodcastDetailPage />} />
-        {/* Thêm route quản lý giảng viên, user sau này */}
-        {/* <Route path="lecturer" element={<ManageLecturerPage />} /> */}
+        <Route path="user" element={<UserPage />} />
       </Route>
     </Routes>
   );

@@ -52,5 +52,23 @@ export const loginWithGoogle = async (idToken) => {
   return res.data;
 };
 
+export async function forgotPassword(email) {
+  try {
+    const res = await axios.post(`${API_BASE_URL}/auth/forgot-password`, { email });
+    return res.data;
+  } catch (err) {
+    throw err.response?.data || err;
+  }
+}
 
-
+export async function resetPassword(token, newPassword) {
+  try {
+    const res = await axios.post(`${API_BASE_URL}/auth/reset-password`, {
+      token,
+      new_password: newPassword,
+    });
+    return res.data;
+  } catch (err) {
+    throw err.response?.data || err;
+  }
+}

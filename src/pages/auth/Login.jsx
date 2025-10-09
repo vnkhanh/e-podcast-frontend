@@ -22,8 +22,10 @@ const Login = () => {
         const role = data.user.role?.toLowerCase();
         if (role === "admin") {
           navigate("/admin");
+        } else if (role === "teacher") {
+          navigate("/teacher"); // sửa lại
         } else {
-          navigate("/dashboard");
+          navigate("/dashboard"); // student
         }
 
       } else {

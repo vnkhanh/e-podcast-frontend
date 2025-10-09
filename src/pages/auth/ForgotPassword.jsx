@@ -1,8 +1,7 @@
 import React, { useState } from "react";
 import { Form, Input, Button, message, Typography } from "antd";
 import { useNavigate } from "react-router-dom";
-// 👉 sau này bạn có thể viết API forgotPassword trong services/api.js
-// import { forgotPassword } from "../../services/api";
+import { forgotPassword } from "../../services/api_auth";
 
 const { Title, Text, Link } = Typography;
 
@@ -10,25 +9,16 @@ const ForgotPassword = () => {
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
-  const onFinish = async (values) => {
+  const onFinish = async ({ email }) => {
     setLoading(true);
     try {
-      // gọi API quên mật khẩu ở đây
-      // const data = await forgotPassword(values.email);
-      // if (data?.success) {
-      //   message.success("Vui lòng kiểm tra email để đặt lại mật khẩu.");
-      //   navigate("/auth/login");
-      // } else {
-      //   message.error(data?.error || "Yêu cầu thất bại!");
-      // }
-
-      // 👉 Tạm thời mock kết quả
-      setTimeout(() => {
-        message.success("Vui lòng kiểm tra email để đặt lại mật khẩu.");
-        navigate("/auth/login");
-      }, 1000);
+      const data = await forgotPassword(email);
+      // Hiển thị thông báo chung từ backend
+      message.success(data?.message || "Vui lòng kiểm tra email để đặt lại mật khẩu.");
+      navigate("/auth/login");
     } catch (err) {
-      message.error("Có lỗi xảy ra!");
+      // Hiển thị lỗi nếu có
+      message.error(err?.error || "Có lỗi xảy ra!");
       console.error("ForgotPassword error:", err);
     } finally {
       setLoading(false);
@@ -36,7 +26,7 @@ const ForgotPassword = () => {
   };
 
   return (
-    <>
+    <div style={{ maxWidth: 400, margin: "40px auto" }}>
       {/* Tiêu đề */}
       <div style={{ textAlign: "center", marginBottom: 24 }}>
         <Title level={3}>Quên mật khẩu</Title>
@@ -75,7 +65,7 @@ const ForgotPassword = () => {
           </Link>
         </div>
       </Form>
-    </>
+    </div>
   );
 };
 
