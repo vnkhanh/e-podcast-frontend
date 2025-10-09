@@ -11,6 +11,10 @@ import {
   Modal,
   Popconfirm,
   Spin,
+  notification,
+  Tag,
+  Progress,
+  Collapse,
 } from "antd";
 import {
   EyeOutlined,
@@ -24,14 +28,14 @@ import {
   getDocumentDetail,
   deleteDocument,
 } from "../../../services/api_document";
-import useAutoWebSocket from "../../../components/admin/useAutoWebSocket";
+import useAutoWebSocket from "../../../utils/useAutoWebSocket";
 
 const { Option } = Select;
+const { Panel } = Collapse;
 
 const DocumentPage = () => {
   const [documents, setDocuments] = useState([]);
   const [loading, setLoading] = useState(false);
-  const [uploading, setUploading] = useState(false);
   const [search, setSearch] = useState("");
   const [status, setStatus] = useState("");
   const [page, setPage] = useState(1);
@@ -42,6 +46,7 @@ const DocumentPage = () => {
   const [detailData, setDetailData] = useState(null);
   const [detailLoading, setDetailLoading] = useState(false);
 
+  // Debounce tìm kiếm
   const [debouncedSearch, setDebouncedSearch] = useState(search);
   useEffect(() => {
     const handler = setTimeout(() => setDebouncedSearch(search), 500);
@@ -62,51 +67,57 @@ const DocumentPage = () => {
     } catch (err) {
       console.error(err);
       message.error("Không thể tải danh sách tài liệu");
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   }, [debouncedSearch, status, page, limit]);
 
   useEffect(() => {
     fetchDocuments();
   }, [fetchDocuments]);
 
-  // WebSocket tự động kết nối lại
+  // === WebSocket cập nhật realtime ===
   const token = localStorage.getItem("token");
   const socketUrl = `ws://localhost:8080/ws/status?token=${token}`;
 
-  useAutoWebSocket(socketUrl, (event) => {
-    let data;
-    try {
-      data = JSON.parse(event.data);
-    } catch (err) {
-      console.log("Non-JSON WS message:", event.data);
-      console.error(err);
-      return;
-    }
+ useAutoWebSocket(socketUrl, (event) => {
+  let data;
+  try {
+    data = JSON.parse(event.data);
+  } catch {
+    return;
+  }
 
-    if (data.type === "document_list_changed") {
+  switch (data.type) {
+    case "document_list_changed":
+      // Khi có file mới upload hoặc bị xoá → reload toàn bộ
       fetchDocuments();
-    }
-  });
+      break;
 
-  // Upload file
-  const handleUpload = async ({ file }) => {
-    setUploading(true);
-    const hide = message.loading("Đang tải lên...", 0);
-    try {
-      await uploadDocument(file);
-      message.success("Upload thành công");
-      // Danh sách sẽ tự reload nhờ WebSocket
-    } catch (err) {
-      console.error(err);
-      message.error("Upload tài liệu thất bại");
-    } finally {
-      hide();
-      setUploading(false);
-    }
-  };
+    case "document_status_update":
+      // Khi trạng thái hoặc tiến trình thay đổi → cập nhật trong state
+      setDocuments((prev) =>
+        prev.map((doc) =>
+          doc.id === data.document_id
+            ? {
+                ...doc,
+                status: data.status,
+                progress: data.progress ?? doc.progress ?? 0,
+              }
+            : doc
+        )
+      );
+      break;
 
-  // Lấy chi tiết
+    default:
+      break;
+  }
+});
+
+
+
+
+  // === Chi tiết tài liệu ===
   const fetchDocumentDetail = async (id) => {
     setDetailLoading(true);
     try {
@@ -121,6 +132,7 @@ const DocumentPage = () => {
     }
   };
 
+  // === Xoá tài liệu ===
   const handleDelete = async (id) => {
     const hide = message.loading("Đang xoá...", 0);
     try {
@@ -135,9 +147,70 @@ const DocumentPage = () => {
     }
   };
 
+  // === Cấu hình cột ===
   const columns = [
-    { title: "Tên tài liệu", dataIndex: "original_name", key: "original_name" },
-    { title: "Trạng thái", dataIndex: "status", key: "status" },
+    {
+      title: "Tên tài liệu",
+      dataIndex: "original_name",
+      key: "original_name",
+    },
+    {
+      title: "Loại",
+      dataIndex: "file_type",
+      key: "file_type",
+      width: 100,
+    },
+    {
+      title: "Kích thước",
+      dataIndex: "file_size",
+      key: "file_size",
+      width: 100,
+      render: (size) =>
+        size ? `${(size / 1024 / 1024).toFixed(2)} MB` : "—",
+    },
+    {
+      title: "Trạng thái",
+      dataIndex: "status",
+      key: "status",
+      render: (_, record) => {
+        const { status, progress = 0 } = record;
+        let color = "default";
+        switch (status) {
+          case "Đang trích xuất":
+            color = "blue";
+            break;
+          case "Đang tạo audio":
+            color = "purple";
+            break;
+          case "Hoàn thành":
+            color = "green";
+            break;
+          case "Lỗi":
+            color = "red";
+            break;
+          case "Đã tải lên":
+            color = "orange";
+            break;
+        }
+
+        return (
+          <div style={{ minWidth: 140 }}>
+            <Tag color={color}>{status}</Tag>
+            {(status === "Đang trích xuất" ||
+              status === "Đang tạo audio" ||
+              status === "Đã trích xuất") && (
+              <Progress
+                percent={progress}
+                size="small"
+                showInfo={false}
+                status={status === "Lỗi" ? "exception" : "active"}
+                style={{ marginTop: 4 }}
+              />
+            )}
+          </div>
+        );
+      },
+    },
     {
       title: "Ngày tạo",
       dataIndex: "created_at",
@@ -167,6 +240,7 @@ const DocumentPage = () => {
     },
   ];
 
+  // === Giao diện chính ===
   return (
     <div style={{ padding: 24 }}>
       <h1>Quản lý tài liệu</h1>
@@ -176,29 +250,49 @@ const DocumentPage = () => {
           placeholder="Tìm kiếm tài liệu"
           allowClear
           onChange={(e) => setSearch(e.target.value)}
-          style={{ width: 200 }}
+          style={{ width: 220 }}
         />
 
         <Select
           allowClear
           placeholder="Lọc theo trạng thái"
           onChange={(value) => setStatus(value || "")}
-          style={{ width: 160 }}
+          style={{ width: 180 }}
         >
           <Option value="Đã tải lên">Đã tải lên</Option>
           <Option value="Đang trích xuất">Đang trích xuất</Option>
+          <Option value="Đã trích xuất">Đã trích xuất</Option>
+          <Option value="Đang tạo audio">Đang tạo audio</Option>
           <Option value="Hoàn thành">Hoàn thành</Option>
           <Option value="Lỗi">Lỗi</Option>
         </Select>
 
         <Upload
-          customRequest={handleUpload}
+          customRequest={async ({ file }) => {
+            try {
+              await uploadDocument(file);
+              notification.success({
+                message: "Tải lên thành công",
+                description: file.name,
+                placement: "topRight",
+                duration: 2,
+              });
+              fetchDocuments(); // Reload ngay sau upload
+            } catch (err) {
+              console.error(err);
+              notification.error({
+                message: "Tải lên thất bại",
+                description: file.name,
+                placement: "topRight",
+                duration: 2,
+              });
+            }
+          }}
           showUploadList={false}
           accept=".pdf,.doc,.docx,.txt"
-          disabled={uploading}
         >
-          <Button type="primary" loading={uploading}>
-            <UploadOutlined /> {uploading ? "Đang tải lên..." : "Tải lên"}
+          <Button type="primary" icon={<UploadOutlined />}>
+            Tải lên
           </Button>
         </Upload>
       </Space>
@@ -230,7 +324,7 @@ const DocumentPage = () => {
         width={700}
       >
         {detailLoading ? (
-          <div style={{ textAlign: "center", padding: "20px" }}>
+          <div style={{ textAlign: "center", padding: 20 }}>
             <Spin indicator={<LoadingOutlined style={{ fontSize: 28 }} spin />} />
           </div>
         ) : detailData ? (
@@ -242,17 +336,6 @@ const DocumentPage = () => {
             <Descriptions.Item label="Loại">
               {detailData.file_type}
             </Descriptions.Item>
-            <Descriptions.Item label="Văn bản đã trích xuất">
-              <div
-                style={{
-                  maxHeight: 200,
-                  overflowY: "auto",
-                  whiteSpace: "pre-wrap",
-                }}
-              >
-                {detailData.extracted_text}
-              </div>
-            </Descriptions.Item>
             <Descriptions.Item label="Trạng thái">
               {detailData.status}
             </Descriptions.Item>
@@ -261,6 +344,21 @@ const DocumentPage = () => {
             </Descriptions.Item>
             <Descriptions.Item label="Ngày cập nhật">
               {new Date(detailData.updated_at).toLocaleString()}
+            </Descriptions.Item>
+            <Descriptions.Item label="Văn bản đã trích xuất">
+              <Collapse ghost>
+                <Panel header="Xem nội dung trích xuất" key="1">
+                  <div
+                    style={{
+                      maxHeight: 300,
+                      overflowY: "auto",
+                      whiteSpace: "pre-wrap",
+                    }}
+                  >
+                    {detailData.extracted_text || "Chưa có dữ liệu"}
+                  </div>
+                </Panel>
+              </Collapse>
             </Descriptions.Item>
           </Descriptions>
         ) : (

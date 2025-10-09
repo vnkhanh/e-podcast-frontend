@@ -105,12 +105,12 @@ const CreatePodcastUpload = () => {
 
     // Ảnh bìa (nếu có)
     if (coverImage) {
-      console.log("🖼️ Ảnh bìa:", coverImage.name);
+      console.log("Ảnh bìa:", coverImage.name);
       formData.append("cover_image", coverImage);
     }
 
     // Giọng đọc và tốc độ
-    if (values.voice) console.log("🎙️ Giọng đọc:", values.voice);
+    if (values.voice) console.log("Giọng đọc:", values.voice);
     formData.append("voice", values.voice || "");
     formData.append("speaking_rate", values.speaking_rate || 1.0);
 
