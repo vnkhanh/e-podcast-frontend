@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Form, Input, Button, Upload, Select, message, Card, Slider, Modal, Space } from "antd";
+import { Form, Input, Button, Upload, Select, message, Card, Slider, Modal, Space, notification } from "antd";
 import { UploadOutlined, PlusOutlined } from "@ant-design/icons";
 import {
   uploadPodcast,
@@ -23,7 +23,7 @@ const CreatePodcastUpload = () => {
   const [categories, setCategories] = useState([]);
   const [topics, setTopics] = useState([]);
   const [tags, setTags] = useState([]);
-  const [loading, setLoading] = useState(false);
+  // const [loading, setLoading] = useState(false);
   const [selectedSubject, setSelectedSubject] = useState(null);
   const [showCreateChapterModal, setShowCreateChapterModal] = useState(false);
   const [form] = Form.useForm();
@@ -146,16 +146,30 @@ const CreatePodcastUpload = () => {
       // Không cần chờ server xử lý toàn bộ
       uploadPodcast(formData)
         .then(() => {
-          message.success("Upload thành công");
+          notification.success({
+            message: "Tải lên thành công",
+            description: "Podcast: " + values.title,
+            placement: "topRight",
+            duration: 2.5,
+            pauseOnHover: true,
+            showProgress: true,
+          });
         })
         .catch((err) => {
           console.error(err);
-          message.error("Upload thất bại");
+          notification.error({
+            message: "Tải lên thất bại",
+            description: "Podcast: " + values.title,
+            placement: "topRight",
+            duration: 2.5,
+            pauseOnHover: true,
+            showProgress: true,
+          });
         });
-
       navigate("/admin/document");
     } catch (err) {
       message.error("Lỗi gửi yêu cầu upload");
+      console.error("Lỗi upload podcast:", err);
     }
 
   };
@@ -322,7 +336,7 @@ const CreatePodcastUpload = () => {
         </Form.Item>
 
         <Form.Item>
-          <Button type="primary" htmlType="submit" loading={loading} block>
+          <Button type="primary" htmlType="submit" block>
             Tải lên Podcast
           </Button>
         </Form.Item>

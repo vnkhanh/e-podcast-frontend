@@ -80,7 +80,7 @@ const DocumentPage = () => {
   const token = localStorage.getItem("token");
   const socketUrl = `ws://localhost:8080/ws/status?token=${token}`;
 
- useAutoWebSocket(socketUrl, (event) => {
+useAutoWebSocket(socketUrl, (event) => {
   let data;
   try {
     data = JSON.parse(event.data);
@@ -113,8 +113,6 @@ const DocumentPage = () => {
       break;
   }
 });
-
-
 
 
   // === Chi tiết tài liệu ===
@@ -276,6 +274,8 @@ const DocumentPage = () => {
                 description: file.name,
                 placement: "topRight",
                 duration: 2,
+                pauseOnHover: true,
+                showProgress: true,
               });
               fetchDocuments(); // Reload ngay sau upload
             } catch (err) {
@@ -285,6 +285,8 @@ const DocumentPage = () => {
                 description: file.name,
                 placement: "topRight",
                 duration: 2,
+                pauseOnHover: true,
+                showProgress: true,
               });
             }
           }}
