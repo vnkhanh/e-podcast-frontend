@@ -143,18 +143,21 @@ const CreatePodcastUpload = () => {
 
     // ====== GỬI LÊN BACKEND ======
     try {
-      setLoading(true);
-      const res = await uploadPodcast(formData);
-      console.log("Server response:", res);
-      message.success("Tải lên thành công");
+      // Không cần chờ server xử lý toàn bộ
+      uploadPodcast(formData)
+        .then(() => {
+          message.success("Upload thành công");
+        })
+        .catch((err) => {
+          console.error(err);
+          message.error("Upload thất bại");
+        });
+
       navigate("/admin/document");
     } catch (err) {
-      console.error("Lỗi upload:", err);
-      console.error("Phản hồi từ server:", err.response?.data);
-      message.error(err.response?.data?.error || "Lỗi khi tải lên");
-    } finally {
-      setLoading(false);
+      message.error("Lỗi gửi yêu cầu upload");
     }
+
   };
 
 
