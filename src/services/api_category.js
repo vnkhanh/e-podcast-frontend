@@ -81,3 +81,13 @@ export const getCategoryDetail = async (id) => {
   return res.data;
 };
 
+/////USER
+export async function listCategoriesUser() {
+    const token = localStorage.getItem("token");
+    const res = await axios.get(`${API_BASE_URL}/user/categories`, {
+        headers: {
+            Authorization: `Bearer ${token}`,
+        },
+    });
+    return res.data.categories; // Backend trả về { categories: [...]  }
+}

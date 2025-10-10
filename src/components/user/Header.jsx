@@ -1,9 +1,11 @@
 import React from 'react'
-import { Layout, Menu, Input, Button, Avatar, Dropdown, Typography } from 'antd';
+import { Layout, Menu, Input, Button, Avatar, Dropdown, Typography, message } from 'antd';
 import {
     UserOutlined,
     BookOutlined,
-    SearchOutlined
+    SearchOutlined,
+    LockOutlined,
+    LogoutOutlined
 } from '@ant-design/icons';
 import { useNavigate } from "react-router-dom";
 import LogoutButton from '../LogoutButton';
@@ -38,7 +40,14 @@ const AppHeader = () => {
     },
     {
       key: 'logout',
-      label: <LogoutButton />,
+      icon: <LogoutOutlined />,
+      label: 'Đăng xuất',
+      onClick: () => {
+        localStorage.removeItem("token");
+        localStorage.removeItem("user");
+        message.success("Đã đăng xuất!");
+        navigate("/auth/login", { replace: true });
+      }
     },
   ];
 
@@ -67,7 +76,7 @@ const AppHeader = () => {
         margin: '0 auto'
       }}>
         <div style={{ display: 'flex', alignItems: 'center' }}>
-          <div style={{ marginRight: 40 }}>
+          <div style={{ marginRight: 40 }} onClick={() => navigate('/')}>
             <Title level={3} style={{ color: '#1890ff', margin: 0 }}>E-Podcast</Title>
           </div>
           
@@ -99,7 +108,7 @@ const AppHeader = () => {
               <Avatar size="large" icon={<UserOutlined />} />
             </Dropdown>
           ) : (
-            <Button type="primary" onClick={() => navigate('/login')}>
+            <Button type="primary" onClick={() => navigate('/auth/login')}>
               Đăng nhập
             </Button>
           )}

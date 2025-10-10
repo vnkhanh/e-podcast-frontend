@@ -19,7 +19,7 @@ function GoogleLoginButton() {
       if (data.user.vai_tro === "admin") {
           navigate("/admin");
         } else {
-          navigate("/dashboard");
+          navigate("/");
         }
     } catch (error) {
       console.error("Lỗi login Google:", error.response?.data || error);
@@ -30,7 +30,7 @@ function GoogleLoginButton() {
     /* global google */
     google.accounts.id.initialize({
       client_id:
-        "232923029113-4qmipgl9dlonv1p6t7i0vbgu2l7j2cpn.apps.googleusercontent.com",
+        "121001821565-au2kd6go5fuo8dtvtt0d042tvng5sqe0.apps.googleusercontent.com",
       callback: handleCredentialResponse,
     });
 

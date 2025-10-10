@@ -11,6 +11,7 @@ import Home from "../pages/Home";
 // Sinh viên
 import UserLayout from "../layouts/UserLayout/UserLayout";
 import UserDashboard from "../pages/student/UserDashboard";
+import CategoryPodcastsPage from "../pages/student/CategoryPodcastsPage";
 
 // Admin & Teacher dùng chung layout
 import AdminLayout from "../layouts/AdminLayout";
@@ -39,7 +40,7 @@ const AppRoute = () => {
         element={
           token && user ? (
             user.role === "student" ? (
-              <Navigate to="/dashboard" replace />
+              <Navigate to="/" replace />
             ) : user.role === "teacher" ? (
               <Navigate to="/teacher" replace />
             ) : user.role === "admin" ? (
@@ -63,15 +64,14 @@ const AppRoute = () => {
 
       {/* Sinh viên */}
       <Route
-        path="/dashboard"
+        path="/"
         element={
-          <ProtectedRoute allowedRoles={['student']}>
-            <UserLayout>
-              <UserDashboard />
-            </UserLayout>
-          </ProtectedRoute>
+            <UserLayout/>
         }
-      />
+      >
+        <Route index element={<UserDashboard />} />
+        <Route path="categories/:slug" element={<CategoryPodcastsPage />} />
+      </Route>
 
       {/* Teacher & Admin dùng chung layout */}
       <Route

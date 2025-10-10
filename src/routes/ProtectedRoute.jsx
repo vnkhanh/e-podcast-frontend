@@ -9,7 +9,7 @@ const roleHierarchy = {
 };
 
 const defaultRoutes = {
-  student: "/dashboard",
+  student: "/",
   teacher: "/teacher",
   admin: "/admin",
 };

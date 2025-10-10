@@ -1,20 +1,23 @@
-import React from 'react'
-import LogoutButton from '../../components/LogoutButton'
+import React from "react";
+import { Layout } from "antd";
+import HeroSection from "../../components/user/HeroSection";
+import CategorySection from "../../components/user/CategorySection";
+import FeaturedPodcasts from "../../components/user/FeaturedPodcasts";
+import PopularCourses from "../../components/user/PopularCourses";
+import Testimonials from "../../components/user/Testimonials";
+
+const { Content } = Layout;
 
 function UserDashboard() {
   return (
-    <Layout>
-      <AppHeader />
-      <Content>
-        <HeroSection />
-        <CategorySection />
-        <FeaturedPodcasts />
-        <PopularCourses />
-        <Testimonials />
-      </Content>
-      <AppFooter />
-    </Layout>
-  )
+    <>
+      <HeroSection />
+      <CategorySection />
+      <FeaturedPodcasts />
+      <PopularCourses />
+      <Testimonials />
+    </>
+  );
 }
 
-export default UserDashboard
+export default UserDashboard;

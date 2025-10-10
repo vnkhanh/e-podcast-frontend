@@ -1,73 +1,146 @@
 import React from 'react';
-import { Row, Col, Button, Typography, Card } from 'antd';
+import { Row, Col, Button, Typography, Card, Space } from 'antd';
 import { PlayCircleOutlined, RocketOutlined } from '@ant-design/icons';
 
-const { Title, Paragraph } = Typography;
+const { Title, Paragraph, Text } = Typography;
 
 const HeroSection = () => {
   return (
-    <div className="hero-section">
-      <Row gutter={[32, 32]} align="middle">
-        <Col xs={24} lg={12}>
-          <div className="hero-content">
-            <Title level={1} className="hero-title">
-              Học tập qua Podcast
-              <span className="highlight"> Hiệu quả hơn</span>
-            </Title>
-            
-            <Paragraph className="hero-description">
-              Khám phá thế giới tri thức qua các podcast giáo dục chất lượng cao. 
-              Học mọi lúc, mọi nơi với E-Podcast - nền tảng học tập trực tuyến hàng đầu.
-            </Paragraph>
-            
-            <div className="hero-actions">
-              <Button 
-                type="primary" 
-                size="large" 
+    <div
+      style={{
+        background: 'linear-gradient(90deg, #f0f5ff 0%, #ffffff 100%)',
+        padding: '80px 40px',
+      }}
+    >
+      <Row gutter={[48, 48]} align="middle" justify="center">
+        {/* LEFT CONTENT */}
+        <Col xs={24} md={12}>
+          <Space direction="vertical" size="large" style={{ width: '100%' }}>
+            <div>
+              <Title level={1} style={{ fontWeight: 700, fontSize: '2.8rem' }}>
+                Học tập qua Podcast
+                <Text style={{ color: '#1677ff' }}> Hiệu quả hơn</Text>
+              </Title>
+
+              <Paragraph style={{ fontSize: '1.1rem', color: '#555', marginTop: 16 }}>
+                Khám phá thế giới tri thức qua các podcast giáo dục chất lượng cao.  
+                Học mọi lúc, mọi nơi với <b>E-Podcast</b> — nền tảng học tập trực tuyến hàng đầu.
+              </Paragraph>
+            </div>
+
+            <Space size="middle">
+              <Button
+                type="primary"
+                size="large"
                 icon={<PlayCircleOutlined />}
-                className="cta-button"
+                style={{ borderRadius: 8, fontWeight: 500 }}
               >
                 Bắt đầu ngay
               </Button>
-              
-              <Button 
-                size="large" 
+
+              <Button
+                size="large"
                 icon={<RocketOutlined />}
-                className="secondary-button"
+                style={{ borderRadius: 8 }}
               >
                 Khám phá khóa học
               </Button>
-            </div>
-            
-            <div className="hero-stats">
-              <div className="stat-item">
-                <h3>500+</h3>
-                <p>Podcast giáo dục</p>
-              </div>
-              <div className="stat-item">
-                <h3>10,000+</h3>
-                <p>Học viên</p>
-              </div>
-              <div className="stat-item">
-                <h3>50+</h3>
-                <p>Chuyên gia</p>
-              </div>
-            </div>
-          </div>
+            </Space>
+
+            <Row gutter={[16, 16]} style={{ marginTop: 40 }}>
+              <Col span={8}>
+                <Card
+                  bordered={false}
+                  style={{
+                    textAlign: 'center',
+                    background: '#fafafa',
+                    borderRadius: 12,
+                  }}
+                >
+                  <Title level={3} style={{ margin: 0 }}>
+                    500+
+                  </Title>
+                  <Text type="secondary">Podcast giáo dục</Text>
+                </Card>
+              </Col>
+
+              <Col span={8}>
+                <Card
+                  bordered={false}
+                  style={{
+                    textAlign: 'center',
+                    background: '#fafafa',
+                    borderRadius: 12,
+                  }}
+                >
+                  <Title level={3} style={{ margin: 0 }}>
+                    10,000+
+                  </Title>
+                  <Text type="secondary">Học viên</Text>
+                </Card>
+              </Col>
+
+              <Col span={8}>
+                <Card
+                  bordered={false}
+                  style={{
+                    textAlign: 'center',
+                    background: '#fafafa',
+                    borderRadius: 12,
+                  }}
+                >
+                  <Title level={3} style={{ margin: 0 }}>
+                    50+
+                  </Title>
+                  <Text type="secondary">Chuyên gia</Text>
+                </Card>
+              </Col>
+            </Row>
+          </Space>
         </Col>
-        
-        <Col xs={24} lg={12}>
-          <Card className="hero-image-card">
-            <img 
-              src="/api/placeholder/600/400" 
-              alt="Học tập với E-Podcast" 
-              className="hero-image"
-            />
-            <div className="playing-indicator">
-              <div className="playing-now">
-                <PlayCircleOutlined />
-                <span>Đang phát: Kỹ năng học tập hiệu quả</span>
-              </div>
+
+        {/* RIGHT IMAGE */}
+        <Col xs={24} md={12}>
+          <Card
+            hoverable
+            bordered={false}
+            style={{
+              borderRadius: 16,
+              overflow: 'hidden',
+              boxShadow: '0 8px 24px rgba(0,0,0,0.1)',
+              position: 'relative',
+            }}
+            cover={
+              <img
+                src="/api/placeholder/600/400"
+                alt="Học tập với E-Podcast"
+                style={{
+                  width: '100%',
+                  height: 'auto',
+                  objectFit: 'cover',
+                }}
+              />
+            }
+          >
+            <div
+              style={{
+                position: 'absolute',
+                bottom: 16,
+                left: 16,
+                right: 16,
+                background: 'rgba(0,0,0,0.65)',
+                color: '#fff',
+                borderRadius: 12,
+                padding: '12px 16px',
+                display: 'flex',
+                alignItems: 'center',
+                gap: 8,
+              }}
+            >
+              <PlayCircleOutlined style={{ fontSize: 20, color: '#52c41a' }} />
+              <Text style={{ color: '#fff', fontWeight: 500 }}>
+                Đang phát: Kỹ năng học tập hiệu quả
+              </Text>
             </div>
           </Card>
         </Col>
