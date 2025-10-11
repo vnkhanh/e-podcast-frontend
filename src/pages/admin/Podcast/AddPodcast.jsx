@@ -166,7 +166,14 @@ const CreatePodcastUpload = () => {
             showProgress: true,
           });
         });
-      navigate("/admin/document");
+      const user = JSON.parse(localStorage.getItem("user"));
+      if (user?.role === "admin") {
+        navigate("/admin/document");
+      } else if (user?.role === "teacher") {
+        navigate("/teacher/document");
+      } else {
+        navigate("/"); // fallback
+      }
     } catch (err) {
       message.error("Lỗi gửi yêu cầu upload");
       console.error("Lỗi upload podcast:", err);
@@ -265,7 +272,7 @@ const CreatePodcastUpload = () => {
 
         {/* File tài liệu */}
         <Form.Item
-          label="Tài liệu (PDF)"
+          label="Tài liệu (PDF, DOCX, TXT)"
           rules={[{ required: true, message: "Chọn file tài liệu" }]}
         >
           <Upload beforeUpload={(f) => { setFile(f); return false; }} maxCount={1}>

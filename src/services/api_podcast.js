@@ -111,3 +111,14 @@ export async function updatePodcast(id, data) {
   });
   return res.data;
 }
+
+///USER
+export const getFeaturedPodcasts = async () => {
+  const res = await axios.get(`${API_BASE_URL}/user/podcasts/featured`);
+  return res.data.podcasts || [];
+};
+
+export const getPodcastById = async (id) => {
+  const res = await axios.get(`${API_BASE_URL}/user/podcasts/${id}`);
+  return res.data || null;
+}

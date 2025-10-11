@@ -12,6 +12,7 @@ import Home from "../pages/Home";
 import UserLayout from "../layouts/UserLayout/UserLayout";
 import UserDashboard from "../pages/student/UserDashboard";
 import CategoryPodcastsPage from "../pages/student/CategoryPodcastsPage";
+import PodcastDetailPageUser from "../pages/student/PodcastDetailPage";
 
 // Admin & Teacher dùng chung layout
 import AdminLayout from "../layouts/AdminLayout";
@@ -71,6 +72,7 @@ const AppRoute = () => {
       >
         <Route index element={<UserDashboard />} />
         <Route path="categories/:slug" element={<CategoryPodcastsPage />} />
+        <Route path="podcast/:id" element={<PodcastDetailPageUser />} />
       </Route>
 
       {/* Teacher & Admin dùng chung layout */}
