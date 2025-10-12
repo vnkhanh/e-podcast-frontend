@@ -20,8 +20,13 @@ import {
   ReadOutlined,
   BulbOutlined,
 } from "@ant-design/icons";
-import axios from "axios";
+
 import FlashcardStudySection from "./FlashcardStudySection";
+import {
+  getPodcastDetail,
+  createFlashcards,
+  getFlashcardsByPodcast,
+} from "../../services/api_flashcards";
 
 const { Title, Paragraph, Text } = Typography;
 
@@ -33,39 +38,45 @@ const PodcastDetailPageUser = () => {
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [showListModal, setShowListModal] = useState(false);
   const [generating, setGenerating] = useState(false);
-
   const audioRef = useRef(null);
 
+  // === Lấy dữ liệu podcast ===
   useEffect(() => {
-    fetchPodcast();
+    (async () => {
+      try {
+        const data = await getPodcastDetail(id);
+        setPodcast(data);
+        fetchFlashcards(id);
+      } catch (err) {
+        console.error(err);
+        message.error("Không tải được podcast!");
+      } finally {
+        setLoading(false);
+      }
+    })();
   }, [id]);
-
-  const fetchPodcast = async () => {
-    try {
-      const res = await axios.get(`http://localhost:8080/api/user/podcasts/${id}`);
-      setPodcast(res.data.data);
-    } catch (err) {
-      console.error(err);
-    } finally {
-      setLoading(false);
-    }
-  };
 
   const handlePlay = () => {
     if (audioRef.current) audioRef.current.play();
   };
 
+  const fetchFlashcards = async (podcastId) => {
+    try {
+      const { flashcards } = await getFlashcardsByPodcast(podcastId);
+      setFlashcards(flashcards);
+    } catch (err) {
+      console.error(err);
+      message.error("Không tải được flashcards!");
+    }
+  };
+
+  // === Tạo flashcards ===
   const handleGenerateFlashcards = async () => {
     setGenerating(true);
     try {
-      const res = await axios.post(`http://localhost:8080/api/user/documents/${podcast.Document.id}/flashcards`, {
-      }, {
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
-        },
-      });
+      await createFlashcards(podcast.Document.id);
+      await fetchFlashcards(id);
       message.success("Tạo flashcards thành công!");
-      setFlashcards(res.data.data);
       setShowCreateModal(false);
       setShowListModal(true);
     } catch (err) {
@@ -76,31 +87,25 @@ const PodcastDetailPageUser = () => {
     }
   };
 
+
+  // === Xem flashcards có sẵn ===
   const handleViewFlashcards = async () => {
-    try {
-      const res = await axios.get(`http://localhost:8080/api/user/podcasts/${id}/flashcards`,
-        { headers: { Authorization: `Bearer ${localStorage.getItem("token")}` } }
-      );
-      setFlashcards(res.data.data);
-      if (res.data.count === 0) {
-        message.info("Chưa có flashcard nào cho podcast này.");
-      } else {
-        message.success("Lấy flashcards thành công!");
-        setShowListModal(true);
-      }
-    } catch (err) {
-      message.error("Không tải được flashcards!");
-      console.error(err);
+    await fetchFlashcards(id);
+    if (flashcards.length === 0) {
+      message.info("Chưa có flashcard nào cho podcast này.");
+    } else {
+      message.success("Lấy flashcards thành công!");
+      setShowListModal(true);
     }
   };
 
-  if (loading) {
+
+  if (loading)
     return (
       <div style={{ textAlign: "center", padding: "100px 0" }}>
         <Spin size="large" />
       </div>
     );
-  }
 
   if (!podcast)
     return (
@@ -116,13 +121,7 @@ const PodcastDetailPageUser = () => {
     <Row gutter={[24, 24]} justify="center" style={{ padding: "24px" }}>
       {/* Nội dung chính */}
       <Col xs={24} lg={16}>
-        <Card
-          bordered={false}
-          style={{
-            borderRadius: 16,
-            boxShadow: "0 6px 20px rgba(0,0,0,0.08)",
-          }}
-        >
+        <Card bordered={false} style={{ borderRadius: 16, boxShadow: "0 6px 20px rgba(0,0,0,0.08)" }}>
           {cover_image && (
             <img
               src={cover_image}
@@ -149,7 +148,6 @@ const PodcastDetailPageUser = () => {
               style={{ width: "100%", margin: "16px 0", borderRadius: 8 }}
             >
               <source src={audio_url} type="audio/wav" />
-              Trình duyệt của bạn không hỗ trợ thẻ audio.
             </audio>
           )}
 
@@ -163,12 +161,11 @@ const PodcastDetailPageUser = () => {
               Nghe ngay
             </Button>
 
-            {/* Nút Ôn tập */}
             <Button
               icon={<ReadOutlined />}
               onClick={() =>
                 Modal.confirm({
-                  title: "Chọn hành động ôn tập",
+                  title: "Chọn hành động",
                   content: "Bạn muốn tạo flashcards mới hay xem lại các flashcards đã tạo?",
                   okText: "Tạo mới",
                   cancelText: "Xem lại",
@@ -177,7 +174,7 @@ const PodcastDetailPageUser = () => {
                 })
               }
             >
-              Ôn tập
+              Flashcards
             </Button>
           </Space>
         </Card>
@@ -185,13 +182,7 @@ const PodcastDetailPageUser = () => {
 
       {/* Sidebar */}
       <Col xs={24} lg={8}>
-        <Card
-          bordered={false}
-          style={{
-            borderRadius: 16,
-            boxShadow: "0 6px 20px rgba(0,0,0,0.08)",
-          }}
-        >
+        <Card bordered={false} style={{ borderRadius: 16, boxShadow: "0 6px 20px rgba(0,0,0,0.08)" }}>
           <Title level={4}>Thông tin podcast</Title>
           <Divider />
           {Document && (
@@ -204,9 +195,9 @@ const PodcastDetailPageUser = () => {
           )}
           <br />
           <Text>
-            <ClockCircleOutlined /> Ngày tạo:{" "}
-            {new Date(created_at).toLocaleString("vi-VN")}
+            <ClockCircleOutlined /> Ngày tạo: {new Date(created_at).toLocaleString("vi-VN")}
           </Text>
+
           {categories?.length > 0 && (
             <div style={{ marginTop: 12 }}>
               <Text strong>Danh mục:</Text>
@@ -217,6 +208,7 @@ const PodcastDetailPageUser = () => {
               ))}
             </div>
           )}
+
           {topics?.length > 0 && (
             <div style={{ marginTop: 12 }}>
               <Text strong>Chủ đề:</Text>
@@ -230,7 +222,7 @@ const PodcastDetailPageUser = () => {
         </Card>
       </Col>
 
-      {/* Modal tạo flashcard mới */}
+      {/* Modal tạo flashcards */}
       <Modal
         open={showCreateModal}
         onCancel={() => setShowCreateModal(false)}
@@ -248,7 +240,7 @@ const PodcastDetailPageUser = () => {
         </Button>
       </Modal>
 
-      {/* Modal xem flashcard */}
+      {/* Modal xem flashcards */}
       <Modal
         open={showListModal}
         onCancel={() => setShowListModal(false)}
