@@ -14,6 +14,7 @@ import UserDashboard from "../pages/student/UserDashboard";
 import CategoryPodcastsPage from "../pages/student/CategoryPodcastsPage";
 import PodcastDetailPageUser from "../pages/student/PodcastDetailPage";
 import DocumentDetail from "../pages/student/DocumentDetail";
+import QuizPage from "../pages/student/QuizPage";
 
 // Admin & Teacher dùng chung layout
 import AdminLayout from "../layouts/AdminLayout";
@@ -75,6 +76,7 @@ const AppRoute = () => {
         <Route path="categories/:slug" element={<CategoryPodcastsPage />} />
         <Route path="podcast/:id" element={<PodcastDetailPageUser />} />
         <Route path="documents/:id" element={<DocumentDetail />} />
+        <Route path="quiz/:id" element={<QuizPage />} />
       </Route>
 
       {/* Teacher & Admin dùng chung layout */}

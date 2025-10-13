@@ -18,7 +18,7 @@ import {
   FileTextOutlined,
   ClockCircleOutlined,
   ReadOutlined,
-  BulbOutlined,
+  BulbOutlined, HistoryOutlined
 } from "@ant-design/icons";
 
 import FlashcardStudySection from "./FlashcardStudySection";
@@ -27,7 +27,7 @@ import {
   createFlashcards,
   getFlashcardsByPodcast,
 } from "../../services/api_flashcards";
-
+import { useNavigate } from "react-router-dom";
 const { Title, Paragraph, Text } = Typography;
 
 const PodcastDetailPageUser = () => {
@@ -39,6 +39,7 @@ const PodcastDetailPageUser = () => {
   const [showListModal, setShowListModal] = useState(false);
   const [generating, setGenerating] = useState(false);
   const audioRef = useRef(null);
+  const navigate = useNavigate();
 
   // === Lấy dữ liệu podcast ===
   useEffect(() => {
@@ -176,6 +177,15 @@ const PodcastDetailPageUser = () => {
             >
               Flashcards
             </Button>
+
+            <Button
+              icon={<HistoryOutlined />}
+              onClick={() => navigate(`/quiz/${podcast.Document.id}`)}
+              type="dashed"
+            >
+              Trắc nghiệm
+            </Button>
+
           </Space>
         </Card>
       </Col>
