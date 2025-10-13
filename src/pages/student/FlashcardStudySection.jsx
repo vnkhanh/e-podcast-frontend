@@ -1,25 +1,29 @@
 import React, { useState } from "react";
 import { Card, Button, Divider, Typography, Space } from "antd";
-
+import FlashcardReference from "./FlashcardReference";
+import { LeftOutlined, RightOutlined } from "@ant-design/icons";
 const { Text } = Typography;
 
 const FlashcardStudySection = ({ flashcards }) => {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [showBack, setShowBack] = useState(false);
+
   const total = flashcards.length;
   const currentCard = flashcards[currentIndex];
 
   const handleFlip = () => setShowBack(!showBack);
-
   const handleNext = () => {
     setShowBack(false);
     if (currentIndex < total - 1) setCurrentIndex((prev) => prev + 1);
   };
-
   const handlePrev = () => {
     setShowBack(false);
     if (currentIndex > 0) setCurrentIndex((prev) => prev - 1);
   };
+
+  if (!currentCard) {
+    return <p>Không có flashcard nào để hiển thị.</p>;
+  }
 
   return (
     <div style={{ marginTop: 16 }}>
@@ -27,6 +31,7 @@ const FlashcardStudySection = ({ flashcards }) => {
         Flashcard {currentIndex + 1}/{total}
       </Divider>
 
+      {/* Thẻ flashcard */}
       <div
         className="flashcard-container"
         onClick={handleFlip}
@@ -40,8 +45,8 @@ const FlashcardStudySection = ({ flashcards }) => {
           className={`flashcard ${showBack ? "flipped" : ""}`}
           style={{
             width: "100%",
-            maxWidth: 400,
-            height: 220,
+            maxWidth: 420,
+            height: 240,
             position: "relative",
             transition: "transform 0.6s",
             transformStyle: "preserve-3d",
@@ -60,12 +65,13 @@ const FlashcardStudySection = ({ flashcards }) => {
               textAlign: "center",
               display: "flex",
               alignItems: "center",
-              backgroundColor: "#fdcacaff",
               justifyContent: "center",
-              transform: "rotateY(0deg)",
+              backgroundColor: "#fdcacaff",
             }}
           >
-            <h4 style={{ margin: 0, position: "absolute", top: 16, left: 16 }}>Câu hỏi:</h4>
+            <h4 style={{ margin: 0, position: "absolute", top: 16, left: 16 }}>
+              Câu hỏi:
+            </h4>
             <Text style={{ fontSize: 18, whiteSpace: "pre-line" }}>
               {currentCard.front_text || currentCard.frontText}
             </Text>
@@ -89,7 +95,9 @@ const FlashcardStudySection = ({ flashcards }) => {
               boxShadow: "inset 0 0 10px rgba(0,0,0,0.05)",
             }}
           >
-            <h4 style={{ margin: 0, position: "absolute", top: 16, left: 16 }}>Đáp án:</h4>
+            <h4 style={{ margin: 0, position: "absolute", top: 16, left: 16 }}>
+              Đáp án:
+            </h4>
             <Text style={{ fontSize: 18, whiteSpace: "pre-line" }}>
               {currentCard.back_text || currentCard.backText}
             </Text>
@@ -97,12 +105,20 @@ const FlashcardStudySection = ({ flashcards }) => {
         </div>
       </div>
 
-      <Space style={{ width: "100%", justifyContent: "center", marginTop: 16 }}>
+      {/* --- Thông tin trích dẫn tài liệu --- */}
+      <FlashcardReference currentCard={currentCard} />
+
+      {/* --- Nút điều hướng --- */}
+      <Space style={{ width: "100%", justifyContent: "space-between", marginTop: 16 }}>
         <Button onClick={handlePrev} disabled={currentIndex === 0}>
-          Trước
+          <LeftOutlined /> Trước
         </Button>
-        <Button type="primary" onClick={handleNext} disabled={currentIndex === total - 1}>
-          Tiếp
+        <Button
+          type="primary"
+          onClick={handleNext}
+          disabled={currentIndex === total - 1}
+        >
+          Tiếp<RightOutlined />
         </Button>
       </Space>
 

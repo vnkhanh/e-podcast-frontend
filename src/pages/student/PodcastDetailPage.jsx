@@ -249,11 +249,15 @@ const PodcastDetailPageUser = () => {
         title="Flashcards của bạn"
       >
         {flashcards.length > 0 ? (
-          <FlashcardStudySection flashcards={flashcards} />
+          <FlashcardStudySection 
+            flashcards={flashcards} 
+            docId={podcast.Document?.id} 
+          />
         ) : (
           <Text type="secondary">Chưa có flashcard nào.</Text>
         )}
       </Modal>
+
     </Row>
   );
 };
