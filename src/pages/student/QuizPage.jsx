@@ -29,21 +29,21 @@ const QuizPage = () => {
   const [questions, setQuestions] = useState([]);
   const [answers, setAnswers] = useState({});
   const [score, setScore] = useState(null);
+  const [quizResult, setQuizResult] = useState([]);
+  const [submitting, setSubmitting] = useState(false);
+  const [sourceModal, setSourceModal] = useState({ open: false, text: "" });
 
-  // ✅ Khi podcastId có giá trị thì mới fetch quiz
   useEffect(() => {
-    if (podcastId) {
-      fetchQuiz(podcastId);
-    }
+    if (podcastId) fetchQuiz(podcastId);
   }, [podcastId]);
 
   const fetchQuiz = async (pid) => {
     setLoading(true);
     try {
+      console.log("Fetching quiz for podcastId:", pid);
       const data = await getQuizQuestions(pid);
+      console.log("Quiz data:", data);
       setQuestions(data.questions || []);
-      console.log(data);
-
     } catch (err) {
       console.error(err);
       message.error("Không tải được câu hỏi!");
@@ -55,7 +55,9 @@ const QuizPage = () => {
   const handleGenerateQuiz = async () => {
     setGenerating(true);
     try {
+      console.log("Generating quiz from documentId:", documentId);
       const res = await createQuizFromDocument(documentId);
+      console.log("Generate response:", res);
       message.success("Tạo trắc nghiệm thành công!");
 
       if (res.podcast_id) {
@@ -73,6 +75,11 @@ const QuizPage = () => {
     }
   };
 
+  const handleSelect = (questionId, optionId) => {
+    setAnswers((prev) => ({ ...prev, [questionId]: optionId }));
+    console.log(`Selected for question ${questionId}:`, optionId);
+  };
+
   const handleSubmit = async () => {
     Modal.confirm({
       title: "Nộp bài?",
@@ -80,34 +87,38 @@ const QuizPage = () => {
       okText: "Nộp",
       cancelText: "Hủy",
       onOk: async () => {
+        setSubmitting(true);
         try {
           const finalId = podcastId || localStorage.getItem("current_podcast_id");
           if (!finalId) {
             message.warning("Không xác định được podcastID để nộp bài!");
+            setSubmitting(false);
             return;
           }
 
-          const formattedAnswers = Object.entries(answers).map(([qId, oId]) => ({
-            question_id: qId,
-            option_id: oId,
+          // Gửi tất cả câu, kể cả chưa chọn
+          const formattedAnswers = questions.map((q) => ({
+            question_id: q.id,
+            option_id: answers[q.id] || null,
           }));
 
-          console.log("Submit with podcastId:", finalId);
+          console.log("Submitting quiz for podcastId:", finalId);
           console.log("Answers:", formattedAnswers);
 
           const res = await submitQuiz(finalId, formattedAnswers);
+          console.log("Submit response:", res);
+
           setScore(res.score);
+          setQuizResult(res.results ?? []);
           message.success("Đã nộp bài!");
         } catch (err) {
           console.error(err);
           message.error("Lỗi khi nộp bài!");
+        } finally {
+          setSubmitting(false);
         }
       },
     });
-  };
-
-  const handleSelect = (questionId, optionId) => {
-    setAnswers((prev) => ({ ...prev, [questionId]: optionId }));
   };
 
   if (loading)
@@ -137,21 +148,35 @@ const QuizPage = () => {
       ) : (
         <Space direction="vertical" style={{ width: "100%" }}>
           {questions.map((q, index) => (
-            <Card key={q.id} style={{ borderRadius: 12 }}>
+            <Card
+              key={q.id}
+              style={{ borderRadius: 12 }}
+              extra={
+                <Button
+                  icon={<BulbOutlined />}
+                  size="small"
+                  onClick={() =>
+                    setSourceModal({ open: true, text: q.source_text })
+                  }
+                >
+                  Gợi ý
+                </Button>
+              }
+            >
               <Title level={5}>
                 Câu {index + 1}: {q.question}
               </Title>
               <Radio.Group
                 onChange={(e) => handleSelect(q.id, e.target.value)}
-                value={answers[q.id]}
+                value={answers[q.id] || null}
                 style={{ display: "flex", flexDirection: "column", gap: 8 }}
+                disabled={submitting}
               >
                 {(q.Options || []).map((opt) => (
-                <Radio key={opt.id} value={opt.id}>
+                  <Radio key={opt.id} value={opt.id}>
                     {opt.option_text}
-                </Radio>
+                  </Radio>
                 ))}
-
               </Radio.Group>
             </Card>
           ))}
@@ -161,22 +186,84 @@ const QuizPage = () => {
             icon={<SendOutlined />}
             size="large"
             onClick={handleSubmit}
+            loading={submitting}
           >
             Nộp bài
           </Button>
         </Space>
       )}
 
-      {score !== null && (
-        <Modal
-          open={true}
-          footer={null}
-          onCancel={() => setScore(null)}
-          title="Kết quả bài làm"
-        >
-          <Title level={3}>Điểm của bạn: {score.toFixed(2)} / 10</Title>
-        </Modal>
-      )}
+      {/* Modal trích dẫn */}
+      <Modal
+        open={sourceModal.open}
+        footer={null}
+        onCancel={() => setSourceModal({ open: false, text: "" })}
+        title="Trích dẫn từ tài liệu"
+      >
+        <Text>{sourceModal.text}</Text>
+      </Modal>
+
+      {/* Modal kết quả */}
+      <Modal
+        open={score !== null}
+        footer={null}
+        onCancel={() => {
+          setScore(null);
+          setQuizResult([]);
+        }}
+        title="Kết quả bài làm"
+        width={800}
+      >
+        <Title level={3}>Điểm của bạn: {score?.toFixed(2)} / 10</Title>
+
+        {console.log("QuizResult for modal:", quizResult)}
+
+        {quizResult.map((q, idx) => {
+          const selectedId = q.selected_id?.toString();
+          const correctId = q.correct_id?.toString();
+          const options = Array.isArray(q.options) ? q.options : [];
+
+          return (
+            <Card
+              key={q.question_id}
+              type="inner"
+              title={`Câu ${idx + 1}: ${q.question}`}
+            >
+              <Radio.Group
+                value={selectedId || null}
+                disabled
+                style={{ display: "flex", flexDirection: "column", gap: 4 }}
+              >
+                {options.map((opt) => {
+                  const optId = opt.id?.toString();
+                  let color = "inherit";
+
+                  if (optId === correctId) color = "green";
+                  else if (optId === selectedId && optId !== correctId) color = "red";
+
+                  return (
+                    <Radio key={optId} value={optId} style={{ color }}>
+                      {opt.option_text}
+                      {optId === correctId ? " (Đáp án đúng)" : ""}
+                      {optId === selectedId && optId !== correctId
+                        ? " (Bạn chọn)"
+                        : ""}
+                    </Radio>
+                  );
+                })}
+              </Radio.Group>
+
+              {!selectedId ? (
+                <Text type="warning">Bạn chưa chọn đáp án ❌</Text>
+              ) : (
+                <Text type={selectedId === correctId ? "success" : "danger"}>
+                  {selectedId === correctId ? "Đúng" : "Sai"}
+                </Text>
+              )}
+            </Card>
+          );
+        })}
+      </Modal>
     </div>
   );
 };
