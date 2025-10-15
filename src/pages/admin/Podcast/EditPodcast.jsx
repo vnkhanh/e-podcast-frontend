@@ -7,7 +7,6 @@ import {
   Select,
   message,
   Card,
-  Slider,
   Modal,
   Space,
   notification,
@@ -79,6 +78,7 @@ const EditPodcast = () => {
           category_ids: data.categories?.map((c) => c.id),
           topic_ids: data.topics?.map((t) => t.id),
           tags_combined: data.tags?.map((t) => t.id),
+          status: data.status
         });
 
         if (data.chapter?.subject?.id) {
@@ -131,6 +131,7 @@ const EditPodcast = () => {
     formData.append("title", values.title);
     formData.append("description", values.description || "");
     formData.append("subject_id", values.subject_id || "");
+    formData.append("status", values.status || "");
 
     // Chương
     if (values.chapter_id) {
@@ -205,6 +206,13 @@ const EditPodcast = () => {
           <Input placeholder="Tên podcast" />
         </Form.Item>
 
+        {/* Trạng thái */}
+        <Form.Item name="status" label="Trạng thái">
+          <Select>
+            <Option value="published">Công khai</Option>
+            <Option value="draft">Bản nháp</Option>
+          </Select>
+        </Form.Item>
         {/* Môn học */}
         <Form.Item
           name="subject_id"

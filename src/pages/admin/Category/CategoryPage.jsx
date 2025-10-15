@@ -1,10 +1,10 @@
 import React, { useEffect, useState } from "react";
-import { Space, Input, Select, Button, Table, message, Form, Modal, Switch, Popconfirm, Descriptions} from "antd";
+import { Space, Input, Select, Button, Table, message, Form, Modal, Switch, Popconfirm, Descriptions, Typography} from "antd";
 import { listCategories, createCategory, deleteCategory, toggleCategoryStatus, updateCategory, getCategoryDetail } from "../../../services/api_category"; 
-import { DeleteOutlined, EditOutlined, EyeOutlined } from "@ant-design/icons";
+import { DeleteOutlined, EditOutlined, EyeOutlined, PlusOutlined } from "@ant-design/icons";
 import CategoryFormEdit from "./CategoryFormEdit";
 const { Option } = Select;
-
+const { Title, Text } = Typography
 const CategoryPage = () => {
   const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -203,13 +203,21 @@ const handleDelete = async (id) => {
 
   return (
     <div style={{ padding: 24 }}>
-      <h1 style={{ marginBottom: 16 }}>Quản lý Danh mục</h1>
+      <div style={{ marginBottom: 24 }}>
+        <Title level={2} style={{ margin: 0 }}>
+          Quản lý Danh mục
+        </Title>
+        <Text type="secondary">
+          Tạo và quản lý các danh mục của bạn
+        </Text>
+      </div>
 
       <Space style={{ marginBottom: 16 }}>
         {/* Tìm kiếm */}
         <Input.Search
           placeholder="Tìm kiếm danh mục"
           allowClear
+          enterButton
           onSearch={(val) => {
             setSearch(val);
             setPage(1); // reset về trang 1
@@ -234,7 +242,7 @@ const handleDelete = async (id) => {
           <Option value="false">Ngừng</Option>
         </Select>
 
-      <Button type="primary" onClick={() => setVisible(true)}>
+      <Button type="primary" icon={<PlusOutlined/>} onClick={() => setVisible(true)}>
         Thêm danh mục
       </Button>
     </Space>

@@ -46,11 +46,11 @@ export async function listTags() {
   return res.data; // trả về mảng tags
 }
 
-export async function listPodcasts({ page = 1, limit = 10, search = "" } = {}) {
+export async function listPodcasts({ page = 1, limit = 10, search = "", status = "" } = {}) {
   const token = localStorage.getItem("token"); 
   const res = await axios.get(`${API_BASE_URL}/admin/podcasts`, {
     headers: { Authorization: `Bearer ${token}` },
-    params: { page, limit, search },
+    params: { page, limit, search, status },
   });
   return res.data;
 }

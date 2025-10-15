@@ -8,7 +8,7 @@ import {
   Popconfirm,
   Switch,
   Input,
-  Descriptions,
+  Descriptions, Typography,
   Select, Form
 } from "antd";
 import {
@@ -29,6 +29,7 @@ import SubjectForm from "./SubjectForm";
 import SubjectFormEdit from "./SubjectFormEdit";
 
 const { Option } = Select;
+const { Title, Text } = Typography;
 
 const SubjectPage = () => {
   const [form] = Form.useForm();
@@ -237,10 +238,19 @@ const handleCreate = async (values) => {
 
   return (
     <div style={{ padding: 24 }}>
-      <h1 style={{ marginBottom: 16 }}>Quản lý Môn học</h1>
+      <div style={{ marginBottom: 24 }}>
+        <Title level={2} style={{ margin: 0 }}>
+          Quản lý Môn học
+        </Title>
+        <Text type="secondary">
+          Tạo và quản lý các môn học của bạn
+        </Text>
+      </div>
+
       <Space style={{ marginBottom: 16 }}>
         <Input.Search
           placeholder="Tìm kiếm môn học"
+          enterButton
           allowClear
           onSearch={setSearchText}
           onChange={(e) => setSearchText(e.target.value)}

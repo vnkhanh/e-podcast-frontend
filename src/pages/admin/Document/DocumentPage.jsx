@@ -13,7 +13,7 @@ import {
   Spin,
   notification,
   Tag,
-  Progress,
+  Progress, Typography,
   Collapse,
 } from "antd";
 import {
@@ -32,6 +32,7 @@ import useAutoWebSocket from "../../../utils/useAutoWebSocket";
 
 const { Option } = Select;
 const { Panel } = Collapse;
+const { Title, Text } = Typography;
 
 const DocumentPage = () => {
   const [documents, setDocuments] = useState([]);
@@ -241,12 +242,20 @@ useAutoWebSocket(socketUrl, (event) => {
   // === Giao diện chính ===
   return (
     <div style={{ padding: 24 }}>
-      <h1>Quản lý tài liệu</h1>
+      <div style={{ marginBottom: 24 }}>
+        <Title level={2} style={{ margin: 0 }}>
+          Quản lý Tài liệu
+        </Title>
+        <Text type="secondary">
+          Quản lý các tài liệu của bạn
+        </Text>
+      </div>
 
       <Space style={{ marginBottom: 16 }}>
         <Input.Search
           placeholder="Tìm kiếm tài liệu"
           allowClear
+          enterButton
           onChange={(e) => setSearch(e.target.value)}
           style={{ width: 220 }}
         />
