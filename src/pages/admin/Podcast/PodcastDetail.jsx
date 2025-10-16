@@ -10,7 +10,6 @@ import {
   Row,
   Col,
   message,
-  Table,
   Button,
   Space,
   Image,

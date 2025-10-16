@@ -10,20 +10,20 @@ import {
   Modal,
   message,
 } from "antd";
-import { BulbOutlined, SendOutlined } from "@ant-design/icons";
+import {
+  BulbOutlined,
+  SendOutlined,
+  ArrowLeftOutlined,
+} from "@ant-design/icons";
 import {
   createQuizFromDocument,
   getQuizQuestions,
   submitQuiz,
 } from "../../services/api_quiz";
-
+import { useNavigate } from "react-router-dom";
 const { Title, Text } = Typography;
-
 const QuizPage = () => {
-  const { id: documentId } = useParams();
-  const [podcastId, setPodcastId] = useState(
-    localStorage.getItem("current_podcast_id") || null
-  );
+  const { id } = useParams(); // id này là podcast_id
   const [loading, setLoading] = useState(false);
   const [generating, setGenerating] = useState(false);
   const [questions, setQuestions] = useState([]);
@@ -32,10 +32,12 @@ const QuizPage = () => {
   const [quizResult, setQuizResult] = useState([]);
   const [submitting, setSubmitting] = useState(false);
   const [sourceModal, setSourceModal] = useState({ open: false, text: "" });
+  const navigate = useNavigate();
 
+  // Mỗi podcast có quiz riêng → chỉ fetch theo podcastId
   useEffect(() => {
-    if (podcastId) fetchQuiz(podcastId);
-  }, [podcastId]);
+    if (id) fetchQuiz(id);
+  }, [id]);
 
   const fetchQuiz = async (pid) => {
     setLoading(true);
@@ -43,41 +45,49 @@ const QuizPage = () => {
       console.log("Fetching quiz for podcastId:", pid);
       const data = await getQuizQuestions(pid);
       console.log("Quiz data:", data);
-      setQuestions(data.questions || []);
+      setQuestions(data?.questions || []);
     } catch (err) {
       console.error(err);
-      message.error("Không tải được câu hỏi!");
+      message.error("Không tải được câu hỏi cho podcast này!");
     } finally {
       setLoading(false);
     }
   };
 
   const handleGenerateQuiz = async () => {
-    setGenerating(true);
-    try {
-      console.log("Generating quiz from documentId:", documentId);
-      const res = await createQuizFromDocument(documentId);
-      console.log("Generate response:", res);
-      message.success("Tạo trắc nghiệm thành công!");
+    Modal.confirm({
+      title: "Tạo trắc nghiệm từ tài liệu?",
+      content:
+        "Hệ thống sẽ dùng nội dung của document liên kết với podcast này để sinh câu hỏi tự động.",
+      okText: "Tạo",
+      cancelText: "Hủy",
+      async onOk() {
+        setGenerating(true);
+        try {
+          const podcastRes = await getQuizQuestions(id);
+          const documentId = podcastRes.data?.document_id;
 
-      if (res.podcast_id) {
-        setPodcastId(res.podcast_id);
-        localStorage.setItem("current_podcast_id", res.podcast_id);
-        fetchQuiz(res.podcast_id);
-      } else {
-        message.warning("Không tìm thấy podcast_id trong phản hồi!");
-      }
-    } catch (err) {
-      console.error(err);
-      message.error("Lỗi khi tạo trắc nghiệm!");
-    } finally {
-      setGenerating(false);
-    }
+          if (!documentId) {
+            message.error("Không tìm thấy document liên kết với podcast này!");
+            return;
+          }
+
+          const res = await createQuizFromDocument(documentId); // truyền documentId đúng
+          console.log("Generate response:", res);
+          message.success("Tạo trắc nghiệm thành công!");
+          fetchQuiz(id);
+        } catch (err) {
+          console.error(err);
+          message.error("Lỗi khi tạo trắc nghiệm!");
+        } finally {
+          setGenerating(false);
+        }
+      },
+    });
   };
 
   const handleSelect = (questionId, optionId) => {
     setAnswers((prev) => ({ ...prev, [questionId]: optionId }));
-    console.log(`Selected for question ${questionId}:`, optionId);
   };
 
   const handleSubmit = async () => {
@@ -86,27 +96,21 @@ const QuizPage = () => {
       content: "Bạn có chắc chắn muốn nộp bài làm không?",
       okText: "Nộp",
       cancelText: "Hủy",
-      onOk: async () => {
+      async onOk() {
         setSubmitting(true);
         try {
-          const finalId =
-            podcastId || localStorage.getItem("current_podcast_id");
-          if (!finalId) {
-            message.warning("Không xác định được podcastID để nộp bài!");
+          if (!id) {
+            message.warning("Không xác định được podcast để nộp bài!");
             setSubmitting(false);
             return;
           }
 
-          // Gửi tất cả câu, kể cả chưa chọn
           const formattedAnswers = questions.map((q) => ({
             question_id: q.id,
             option_id: answers[q.id] || null,
           }));
 
-          console.log("Submitting quiz for podcastId:", finalId);
-          console.log("Answers:", formattedAnswers);
-
-          const res = await submitQuiz(finalId, formattedAnswers);
+          const res = await submitQuiz(id, formattedAnswers);
           console.log("Submit response:", res);
 
           setScore(res.score);
@@ -131,7 +135,10 @@ const QuizPage = () => {
 
   return (
     <div style={{ padding: 24 }}>
-      <Title level={2}>Bài trắc nghiệm</Title>
+      <Button icon={<ArrowLeftOutlined />} onClick={() => navigate(-1)}>
+        Quay Lại
+      </Button>
+      <Title level={2}>Bài trắc nghiệm Podcast</Title>
 
       <Space style={{ marginBottom: 16 }}>
         <Button
@@ -145,7 +152,7 @@ const QuizPage = () => {
       </Space>
 
       {questions.length === 0 ? (
-        <Text type="secondary">Chưa có câu hỏi nào cho podcast này.</Text>
+        <Text type="secondary">Chưa có trắc nghiệm nào cho podcast này.</Text>
       ) : (
         <Space direction="vertical" style={{ width: "100%" }}>
           {questions.map((q, index) => (
@@ -216,8 +223,6 @@ const QuizPage = () => {
         width={800}
       >
         <Title level={3}>Điểm của bạn: {score?.toFixed(2)} / 10</Title>
-
-        {console.log("QuizResult for modal:", quizResult)}
 
         {quizResult.map((q, idx) => {
           const selectedId = q.selected_id?.toString();
