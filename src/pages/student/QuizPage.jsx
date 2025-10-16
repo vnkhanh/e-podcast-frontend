@@ -89,7 +89,8 @@ const QuizPage = () => {
       onOk: async () => {
         setSubmitting(true);
         try {
-          const finalId = podcastId || localStorage.getItem("current_podcast_id");
+          const finalId =
+            podcastId || localStorage.getItem("current_podcast_id");
           if (!finalId) {
             message.warning("Không xác định được podcastID để nộp bài!");
             setSubmitting(false);
@@ -239,7 +240,8 @@ const QuizPage = () => {
                   let color = "inherit";
 
                   if (optId === correctId) color = "green";
-                  else if (optId === selectedId && optId !== correctId) color = "red";
+                  else if (optId === selectedId && optId !== correctId)
+                    color = "red";
 
                   return (
                     <Radio key={optId} value={optId} style={{ color }}>
@@ -254,7 +256,7 @@ const QuizPage = () => {
               </Radio.Group>
 
               {!selectedId ? (
-                <Text type="warning">Bạn chưa chọn đáp án ❌</Text>
+                <Text type="warning">Bạn chưa chọn đáp án</Text>
               ) : (
                 <Text type={selectedId === correctId ? "success" : "danger"}>
                   {selectedId === correctId ? "Đúng" : "Sai"}

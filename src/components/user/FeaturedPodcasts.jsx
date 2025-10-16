@@ -1,6 +1,11 @@
 import React, { useEffect, useState } from "react";
 import { Row, Col, Card, Button, Typography, Rate, Spin } from "antd";
-import { PlayCircleOutlined, ClockCircleOutlined, LikeOutlined, HeartOutlined } from "@ant-design/icons";
+import {
+  PlayCircleOutlined,
+  ClockCircleOutlined,
+  LikeOutlined,
+  HeartOutlined,
+} from "@ant-design/icons";
 import { getFeaturedPodcasts } from "../../services/api_podcast";
 import { useNavigate } from "react-router-dom";
 
@@ -125,7 +130,6 @@ const FeaturedPodcasts = () => {
                     ? `Chương: ${podcast.chapter.name}`
                     : "Podcast"}
                 </Text>
-
                 <div
                   style={{
                     marginTop: 8,
@@ -163,7 +167,9 @@ const FeaturedPodcasts = () => {
                     borderRadius: 8,
                     fontWeight: 500,
                   }}
-                  onClick={() => { navigate(`/podcast/${podcast.id}`); }}
+                  onClick={() => {
+                    navigate(`/podcast/${podcast.id}`);
+                  }}
                 >
                   Nghe ngay
                 </Button>

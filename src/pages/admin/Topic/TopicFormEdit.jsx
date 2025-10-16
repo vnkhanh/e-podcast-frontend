@@ -10,7 +10,7 @@ const TopicFormEdit = ({ form, initialValues, onFinish, loading }) => {
 
   return (
     <Form
-      form={form}        // dùng form từ prop
+      form={form} // dùng form từ prop
       layout="vertical"
       onFinish={onFinish}
       autoComplete="off"
@@ -31,6 +31,5 @@ const TopicFormEdit = ({ form, initialValues, onFinish, loading }) => {
     </Form>
   );
 };
-
 
 export default TopicFormEdit;

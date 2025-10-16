@@ -8,8 +8,10 @@ import {
   Popconfirm,
   Switch,
   Input,
-  Descriptions, Typography,
-  Select, Form
+  Descriptions,
+  Typography,
+  Select,
+  Form,
 } from "antd";
 import {
   PlusOutlined,
@@ -82,32 +84,31 @@ const SubjectPage = () => {
     loadSubjects();
   }, [loadSubjects]);
 
-const handleCreate = async (values) => {
-  try {
-    setCreating(true);
-    await createSubject(values.name);
-    message.success("Thêm môn học thành công");
-    setModalVisible(false);
-    loadSubjects();
-    form.resetFields(); // nếu dùng form AntD
-  } catch (err) {
-    const errorMsg = err.response?.data?.error || "Lỗi khi thêm môn học";
-    if (errorMsg.includes("đã tồn tại")) {
-      // hiển thị lỗi trực tiếp dưới input
-      form.setFields([
-        {
-          name: "name",
-          errors: [errorMsg],
-        },
-      ]);
-    } else {
-      message.error(errorMsg);
+  const handleCreate = async (values) => {
+    try {
+      setCreating(true);
+      await createSubject(values.name);
+      message.success("Thêm môn học thành công");
+      setModalVisible(false);
+      loadSubjects();
+      form.resetFields(); // nếu dùng form AntD
+    } catch (err) {
+      const errorMsg = err.response?.data?.error || "Lỗi khi thêm môn học";
+      if (errorMsg.includes("đã tồn tại")) {
+        // hiển thị lỗi trực tiếp dưới input
+        form.setFields([
+          {
+            name: "name",
+            errors: [errorMsg],
+          },
+        ]);
+      } else {
+        message.error(errorMsg);
+      }
+    } finally {
+      setCreating(false);
     }
-  } finally {
-    setCreating(false);
-  }
-};
-
+  };
 
   // delete
   const handleDelete = async (id) => {
@@ -131,7 +132,6 @@ const handleCreate = async (values) => {
     } catch (err) {
       message.error("Không thể lấy chi tiết môn học");
       console.error(err);
-
     } finally {
       setDetailLoading(false);
     }
@@ -164,7 +164,6 @@ const handleCreate = async (values) => {
       setUpdating(false);
     }
   };
-
 
   // toggle
   const handleToggle = async (id) => {
@@ -203,8 +202,7 @@ const handleCreate = async (values) => {
       dataIndex: "created_at",
       key: "created_at",
       render: (text) => new Date(text).toLocaleString(),
-      sorter: (a, b) =>
-        new Date(a.created_at) - new Date(b.created_at),
+      sorter: (a, b) => new Date(a.created_at) - new Date(b.created_at),
       sortDirections: ["ascend", "descend"],
     },
     {
@@ -242,9 +240,7 @@ const handleCreate = async (values) => {
         <Title level={2} style={{ margin: 0 }}>
           Quản lý Môn học
         </Title>
-        <Text type="secondary">
-          Tạo và quản lý các môn học của bạn
-        </Text>
+        <Text type="secondary">Tạo và quản lý các môn học của bạn</Text>
       </div>
 
       <Space style={{ marginBottom: 16 }}>
@@ -343,9 +339,7 @@ const handleCreate = async (values) => {
         ) : detailData ? (
           <Descriptions bordered column={1}>
             <Descriptions.Item label="ID">{detailData.id}</Descriptions.Item>
-            <Descriptions.Item label="Tên">
-              {detailData.name}
-            </Descriptions.Item>
+            <Descriptions.Item label="Tên">{detailData.name}</Descriptions.Item>
             <Descriptions.Item label="Slug">
               {detailData.slug || "—"}
             </Descriptions.Item>

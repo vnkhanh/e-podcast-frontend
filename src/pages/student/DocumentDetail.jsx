@@ -22,10 +22,10 @@ function DocumentDetail() {
           // Chia nội dung thành đoạn nhỏ theo 2 dòng trống
           const parts = data.extracted_text
             .replace(/\r\n/g, "\n") // chuẩn hóa newline
-            .split(/\n+/)           // chia theo 1 hoặc nhiều dòng trống
+            .split(/\n+/) // chia theo 1 hoặc nhiều dòng trống
             .map((t) => t.trim())
             .filter((t) => t.length > 0);
-            console.log("Số đoạn:", parts.length, parts);
+          console.log("Số đoạn:", parts.length, parts);
           setChunks(parts);
         } else {
           setChunks([]);

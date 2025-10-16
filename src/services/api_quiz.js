@@ -32,7 +32,7 @@ export async function getQuizQuestions(podcastId) {
 // === Nộp bài làm trắc nghiệm ===
 // POST /podcasts/:podcast_id/quiz/submit
 export async function submitQuiz(podcastId, answers) {
-  const formattedAnswers = answers.map(a => ({
+  const formattedAnswers = answers.map((a) => ({
     question_id: a.question_id ?? a.questionId,
     option_id: a.option_id ?? a.selectedOptionId,
   }));
@@ -50,7 +50,6 @@ export async function submitQuiz(podcastId, answers) {
   return res.data;
 }
 
-
 // === Lấy tất cả các lần làm quiz của người dùng ===
 // GET /quiz/attempt
 export async function getUserQuizAttempts() {
@@ -62,7 +61,7 @@ export async function getUserQuizAttempts() {
   return res.data;
 }
 
-// === 5️⃣ Xem chi tiết 1 lần làm quiz cụ thể ===
+// === Xem chi tiết 1 lần làm quiz cụ thể ===
 // GET /quiz/attempts/:attempt_id
 export async function getQuizAttemptDetail(attemptId) {
   const res = await axios.get(`${API_BASE_URL}/quiz/attempts/${attemptId}`, {

@@ -27,7 +27,6 @@ const Login = () => {
         } else {
           navigate("/dashboard"); // student
         }
-
       } else {
         message.error(data?.message || "Đăng nhập thất bại!");
       }
@@ -80,12 +79,7 @@ const Login = () => {
         </div>
 
         <Form.Item>
-          <Button
-            type="primary"
-            htmlType="submit"
-            loading={loading}
-            block
-          >
+          <Button type="primary" htmlType="submit" loading={loading} block>
             Đăng nhập
           </Button>
         </Form.Item>

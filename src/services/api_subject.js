@@ -53,7 +53,7 @@ export async function updateSubject(id, name) {
 export async function toggleSubjectStatus(id) {
   const res = await api.patch(`/admin/subjects/${id}/toggle-status`);
   return res.data; // { message, subject }
-};
+}
 
 export const getSubjects = async () => {
   const res = await api.get(`/admin/subjects/get`);
@@ -63,4 +63,3 @@ export const getChaptersBySubject = async (subjectId) => {
   const res = await api.get(`/admin/chapters?subject_id=${subjectId}`);
   return res.data;
 };
-

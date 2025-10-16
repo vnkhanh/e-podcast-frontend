@@ -11,7 +11,12 @@ const API_BASE_URL = "http://localhost:8080/api";
  * @param {string} options.role
  * @returns {Promise} { users: [], pagination: {} }
  */
-export async function listUsers({ page = 1, limit = 10, name = "", role = "" } = {}) {
+export async function listUsers({
+  page = 1,
+  limit = 10,
+  name = "",
+  role = "",
+} = {}) {
   const token = localStorage.getItem("token");
   const res = await axios.get(`${API_BASE_URL}/admin/users`, {
     headers: { Authorization: `Bearer ${token}` },
@@ -56,8 +61,12 @@ export async function createLecturer(data) {
 
 export async function ToggleUserStatus(userId) {
   const token = localStorage.getItem("token");
-  const res = await axios.patch(`${API_BASE_URL}/admin/users/${userId}/toggle-status`, {}, {
-    headers: { Authorization: `Bearer ${token}` },
-  });
+  const res = await axios.patch(
+    `${API_BASE_URL}/admin/users/${userId}/toggle-status`,
+    {},
+    {
+      headers: { Authorization: `Bearer ${token}` },
+    }
+  );
   return res.data;
 }

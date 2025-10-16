@@ -7,12 +7,7 @@ const SubjectFormEdit = ({ form, initialValues, onFinish, loading }) => {
   }, [initialValues, form]);
 
   return (
-    <Form
-      form={form}
-      layout="vertical"
-      onFinish={onFinish}
-      autoComplete="off"
-    >
+    <Form form={form} layout="vertical" onFinish={onFinish} autoComplete="off">
       <Form.Item
         label="Tên môn học"
         name="name"

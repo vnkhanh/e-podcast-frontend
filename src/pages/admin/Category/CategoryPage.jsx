@@ -1,10 +1,35 @@
 import React, { useEffect, useState } from "react";
-import { Space, Input, Select, Button, Table, message, Form, Modal, Switch, Popconfirm, Descriptions, Typography} from "antd";
-import { listCategories, createCategory, deleteCategory, toggleCategoryStatus, updateCategory, getCategoryDetail } from "../../../services/api_category"; 
-import { DeleteOutlined, EditOutlined, EyeOutlined, PlusOutlined } from "@ant-design/icons";
+import {
+  Space,
+  Input,
+  Select,
+  Button,
+  Table,
+  message,
+  Form,
+  Modal,
+  Switch,
+  Popconfirm,
+  Descriptions,
+  Typography,
+} from "antd";
+import {
+  listCategories,
+  createCategory,
+  deleteCategory,
+  toggleCategoryStatus,
+  updateCategory,
+  getCategoryDetail,
+} from "../../../services/api_category";
+import {
+  DeleteOutlined,
+  EditOutlined,
+  EyeOutlined,
+  PlusOutlined,
+} from "@ant-design/icons";
 import CategoryFormEdit from "./CategoryFormEdit";
 const { Option } = Select;
-const { Title, Text } = Typography
+const { Title, Text } = Typography;
 const CategoryPage = () => {
   const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -19,7 +44,6 @@ const CategoryPage = () => {
   const [detailData, setDetailData] = useState(null);
   const [detailLoading, setDetailLoading] = useState(false);
 
-  
   const [page, setPage] = useState(1);
   const [limit, setLimit] = useState(8);
   const [total, setTotal] = useState(0);
@@ -28,7 +52,7 @@ const CategoryPage = () => {
     setLoading(true);
     try {
       const res = await listCategories({
-        search,           // key phải đúng với BE
+        search, // key phải đúng với BE
         status,
         page,
         limit,
@@ -45,7 +69,6 @@ const CategoryPage = () => {
   useEffect(() => {
     fetchCategories();
   }, [search, status, page, limit, fetchCategories]);
-
 
   const handleOk = async () => {
     try {
@@ -83,7 +106,6 @@ const CategoryPage = () => {
     }
   };
 
-
   const handleEdit = (record) => {
     setEditingCategory(record); // mở modal
   };
@@ -113,11 +135,10 @@ const CategoryPage = () => {
     }
   };
 
-
   const fetchCategoryDetail = async (id) => {
     setDetailLoading(true);
     try {
-      const data = await getCategoryDetail(id); 
+      const data = await getCategoryDetail(id);
       setDetailData(data);
       setDetailVisible(true);
     } catch (err) {
@@ -128,8 +149,7 @@ const CategoryPage = () => {
     }
   };
 
-
-const handleDelete = async (id) => {
+  const handleDelete = async (id) => {
     try {
       await deleteCategory(id);
       message.success("Đã xoá danh mục");
@@ -141,65 +161,70 @@ const handleDelete = async (id) => {
   };
 
   const columns = [
-  { 
-    title: "Tên danh mục",
-    dataIndex: "name",
-    key: "name",
-    sorter: (a,b) => a.name.localeCompare(b.name),
-  },
-  {
-    title: "Trạng thái",
-    dataIndex: "status",
-    key: "status",
-    render: (value, record) => (
-      <Switch
-        checked={value}
-        checkedChildren="Kích hoạt"
-        unCheckedChildren="Ngừng"
-        onChange={async () => {
-          try {
-            await toggleCategoryStatus(record.id);
-            message.success("Đã cập nhật trạng thái");
-            fetchCategories(); // reload
-          } catch {
-            message.error("Cập nhật trạng thái thất bại");
-          }
-        }}
-      />
-    )
-  },
-  { 
-    title: "Ngày tạo",
-    dataIndex: "created_at",       
-    key: "created_at",
-    sorter: (a,b) => new Date(a.created_at) - new Date(b.created_at),
-    render: (text) => new Date(text).toLocaleString(),
-  },
-  {
-    title: "Thao tác",
-    key: "action",
-    render: (_, record) => 
-    (<Space>
-      <Popconfirm
-        title="Xoá danh mục?"
-        onConfirm={() => {record.id && handleDelete(record.id)}}
-        okText="Xoá"
-        cancelText="Hủy"
-     >
-        <Button danger icon={<DeleteOutlined />} />
-      </Popconfirm>
-
-      <Button icon={<EditOutlined />} onClick={() => handleEdit(record)}></Button>
-      
-      <Button
-        icon={<EyeOutlined />}
-        type="primary"
-        onClick={() => fetchCategoryDetail(record.id)}
+    {
+      title: "Tên danh mục",
+      dataIndex: "name",
+      key: "name",
+      sorter: (a, b) => a.name.localeCompare(b.name),
+    },
+    {
+      title: "Trạng thái",
+      dataIndex: "status",
+      key: "status",
+      render: (value, record) => (
+        <Switch
+          checked={value}
+          checkedChildren="Kích hoạt"
+          unCheckedChildren="Ngừng"
+          onChange={async () => {
+            try {
+              await toggleCategoryStatus(record.id);
+              message.success("Đã cập nhật trạng thái");
+              fetchCategories(); // reload
+            } catch {
+              message.error("Cập nhật trạng thái thất bại");
+            }
+          }}
         />
-    </Space>)
-  }
-];
+      ),
+    },
+    {
+      title: "Ngày tạo",
+      dataIndex: "created_at",
+      key: "created_at",
+      sorter: (a, b) => new Date(a.created_at) - new Date(b.created_at),
+      render: (text) => new Date(text).toLocaleString(),
+    },
+    {
+      title: "Thao tác",
+      key: "action",
+      render: (_, record) => (
+        <Space>
+          <Popconfirm
+            title="Xoá danh mục?"
+            onConfirm={() => {
+              record.id && handleDelete(record.id);
+            }}
+            okText="Xoá"
+            cancelText="Hủy"
+          >
+            <Button danger icon={<DeleteOutlined />} />
+          </Popconfirm>
 
+          <Button
+            icon={<EditOutlined />}
+            onClick={() => handleEdit(record)}
+          ></Button>
+
+          <Button
+            icon={<EyeOutlined />}
+            type="primary"
+            onClick={() => fetchCategoryDetail(record.id)}
+          />
+        </Space>
+      ),
+    },
+  ];
 
   return (
     <div style={{ padding: 24 }}>
@@ -207,9 +232,7 @@ const handleDelete = async (id) => {
         <Title level={2} style={{ margin: 0 }}>
           Quản lý Danh mục
         </Title>
-        <Text type="secondary">
-          Tạo và quản lý các danh mục của bạn
-        </Text>
+        <Text type="secondary">Tạo và quản lý các danh mục của bạn</Text>
       </div>
 
       <Space style={{ marginBottom: 16 }}>
@@ -242,115 +265,121 @@ const handleDelete = async (id) => {
           <Option value="false">Ngừng</Option>
         </Select>
 
-      <Button type="primary" icon={<PlusOutlined/>} onClick={() => setVisible(true)}>
-        Thêm danh mục
-      </Button>
-    </Space>
+        <Button
+          type="primary"
+          icon={<PlusOutlined />}
+          onClick={() => setVisible(true)}
+        >
+          Thêm danh mục
+        </Button>
+      </Space>
 
-    <Table
-      rowKey="id"
-      columns={columns}
-      dataSource={categories}
-      loading={loading}
-      rowClassName={(record) => (record.status ? "row-active" : "row-inactive")}
-      onRow={(record) => ({
-        style: {
-          backgroundColor: record.status ? "#c7f5edff" : "#ffd0cdff", // xanh / đỏ
-        },
-      })}
-      pagination={{
-        current: page,
-        pageSize: limit,
-        total: total,
-        showSizeChanger: true,
-        onChange: (p, l) => {
-          setPage(p);
-          setLimit(l);
-        },
-      }}
-    />
-    <Modal
-      open={!!editingCategory}
-      title="Cập nhật danh mục"
-      onCancel={() => setEditingCategory(null)}
-      footer={null}
-      destroyOnHidden
-    >
-      {editingCategory && (
-        <CategoryFormEdit
-          form={form}
-          initialValues={editingCategory}
-          onFinish={handleUpdate}
-          loading={updating}
-        />
-      )}
-    </Modal>
-
-   <Modal
-      title="Thêm danh mục mới"
-      open={visible}
-      onCancel={() => setVisible(false)}
-      footer={null} // tắt footer để dùng nút submit trong Form
-    >
-      <Form
-        form={form}
-        layout="vertical"
-        onFinish={handleOk} // submit sẽ gọi handleOk
+      <Table
+        rowKey="id"
+        columns={columns}
+        dataSource={categories}
+        loading={loading}
+        rowClassName={(record) =>
+          record.status ? "row-active" : "row-inactive"
+        }
+        onRow={(record) => ({
+          style: {
+            backgroundColor: record.status ? "#c7f5edff" : "#ffd0cdff", // xanh / đỏ
+          },
+        })}
+        pagination={{
+          current: page,
+          pageSize: limit,
+          total: total,
+          showSizeChanger: true,
+          onChange: (p, l) => {
+            setPage(p);
+            setLimit(l);
+          },
+        }}
+      />
+      <Modal
+        open={!!editingCategory}
+        title="Cập nhật danh mục"
+        onCancel={() => setEditingCategory(null)}
+        footer={null}
+        destroyOnHidden
       >
-        <Form.Item
-          name="name"
-          label="Tên danh mục"
-          rules={[{ required: true, message: "Vui lòng nhập tên danh mục" }]}
+        {editingCategory && (
+          <CategoryFormEdit
+            form={form}
+            initialValues={editingCategory}
+            onFinish={handleUpdate}
+            loading={updating}
+          />
+        )}
+      </Modal>
+
+      <Modal
+        title="Thêm danh mục mới"
+        open={visible}
+        onCancel={() => setVisible(false)}
+        footer={null} // tắt footer để dùng nút submit trong Form
+      >
+        <Form
+          form={form}
+          layout="vertical"
+          onFinish={handleOk} // submit sẽ gọi handleOk
         >
-          <Input placeholder="VD: Toán học" />
-        </Form.Item>
+          <Form.Item
+            name="name"
+            label="Tên danh mục"
+            rules={[{ required: true, message: "Vui lòng nhập tên danh mục" }]}
+          >
+            <Input placeholder="VD: Toán học" />
+          </Form.Item>
 
-        <Form.Item
-          name="status"
-          label="Kích hoạt"
-          valuePropName="checked"
-          initialValue={true}
-        >
-          <Switch />
-        </Form.Item>
+          <Form.Item
+            name="status"
+            label="Kích hoạt"
+            valuePropName="checked"
+            initialValue={true}
+          >
+            <Switch />
+          </Form.Item>
 
-        <Form.Item>
-          <Button type="primary" htmlType="submit" block loading={loading}>
-            Thêm danh mục
-          </Button>
-        </Form.Item>
-      </Form>
-    </Modal>
+          <Form.Item>
+            <Button type="primary" htmlType="submit" block loading={loading}>
+              Thêm danh mục
+            </Button>
+          </Form.Item>
+        </Form>
+      </Modal>
 
-
-    <Modal
+      <Modal
         title="Chi tiết danh mục"
         open={detailVisible}
         onCancel={() => setDetailVisible(false)}
         footer={null}
-        >
+      >
         {detailLoading ? (
-            <p>Đang tải...</p>
+          <p>Đang tải...</p>
         ) : detailData ? (
-            <Descriptions bordered column={1}>
+          <Descriptions bordered column={1}>
             <Descriptions.Item label="ID">{detailData.id}</Descriptions.Item>
             <Descriptions.Item label="Tên">{detailData.name}</Descriptions.Item>
-            <Descriptions.Item label="Slug">{detailData.slug}</Descriptions.Item>
+            <Descriptions.Item label="Slug">
+              {detailData.slug}
+            </Descriptions.Item>
             <Descriptions.Item label="Trạng thái">
-                {detailData.status ? "Kích hoạt" : "Ngừng"}
+              {detailData.status ? "Kích hoạt" : "Ngừng"}
             </Descriptions.Item>
             <Descriptions.Item label="Ngày tạo">
-                {new Date(detailData.created_at).toLocaleString()}
+              {new Date(detailData.created_at).toLocaleString()}
             </Descriptions.Item>
             <Descriptions.Item label="Ngày cập nhật">
-                {new Date(detailData.updated_at).toLocaleString()}
+              {new Date(detailData.updated_at).toLocaleString()}
             </Descriptions.Item>
-            </Descriptions>
+          </Descriptions>
         ) : (
-            <p>Không có dữ liệu</p>
+          <p>Không có dữ liệu</p>
         )}
-    </Modal>
-
+      </Modal>
     </div>
   );
 };

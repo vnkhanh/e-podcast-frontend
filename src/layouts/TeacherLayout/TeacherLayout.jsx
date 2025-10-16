@@ -7,8 +7,9 @@ import {
   GroupOutlined,
   LogoutOutlined,
   BlockOutlined,
-  DockerOutlined
+  DockerOutlined,
 } from "@ant-design/icons";
+
 import { Link, Outlet, useNavigate } from "react-router-dom";
 
 const { Header, Sider, Content } = Layout;
@@ -32,11 +33,7 @@ const TeacherLayout = () => {
       <Menu.Item key="profile" icon={<UserOutlined />}>
         Hồ sơ
       </Menu.Item>
-      <Menu.Item
-        key="logout"
-        icon={<LogoutOutlined />}
-        onClick={handleLogout}
-      >
+      <Menu.Item key="logout" icon={<LogoutOutlined />} onClick={handleLogout}>
         Đăng xuất
       </Menu.Item>
     </Menu>
@@ -102,7 +99,10 @@ const TeacherLayout = () => {
                 cursor: "pointer",
               }}
             >
-              <span>Xin chào, giảng viên {user?.full_name || "Giảng viên"}!</span> &nbsp;&nbsp;&nbsp;
+              <span>
+                Xin chào, giảng viên {user?.full_name || "Giảng viên"}!
+              </span>{" "}
+              &nbsp;&nbsp;&nbsp;
               <Avatar
                 style={{ backgroundColor: "#87d068", marginRight: 8 }}
                 icon={<UserOutlined />}

@@ -1,6 +1,22 @@
 import React, { useState, useEffect } from "react";
-import { Form, Input, Button, Upload, Select, message, Card, Slider, Modal, Space, notification } from "antd";
-import { UploadOutlined, PlusOutlined } from "@ant-design/icons";
+import {
+  Form,
+  Input,
+  Button,
+  Upload,
+  Select,
+  message,
+  Card,
+  Slider,
+  Modal,
+  Space,
+  notification,
+} from "antd";
+import {
+  UploadOutlined,
+  PlusOutlined,
+  ArrowLeftOutlined,
+} from "@ant-design/icons";
 import {
   uploadPodcast,
   listSubjects,
@@ -115,10 +131,14 @@ const CreatePodcastUpload = () => {
     formData.append("speaking_rate", values.speaking_rate || 1.0);
 
     // Danh mục
-    (values.category_ids || []).forEach((id) => formData.append("category_ids[]", id));
+    (values.category_ids || []).forEach((id) =>
+      formData.append("category_ids[]", id)
+    );
 
     // Chủ đề
-    (values.topic_ids || []).forEach((id) => formData.append("topic_ids[]", id));
+    (values.topic_ids || []).forEach((id) =>
+      formData.append("topic_ids[]", id)
+    );
 
     // Tag (id cũ và tag mới)
     if (values.tags_combined?.length) {
@@ -178,177 +198,203 @@ const CreatePodcastUpload = () => {
       message.error("Lỗi gửi yêu cầu upload");
       console.error("Lỗi upload podcast:", err);
     }
-
   };
-
-
 
   // ======= GIAO DIỆN =======
   return (
-    <Card title="Tạo Podcast từ tài liệu" style={{ maxWidth: 700, margin: "40px auto" }}>
-      <Form form={form} layout="vertical" onFinish={onFinish}>
-        {/* Môn học */}
-        <Form.Item
-          name="subject_id"
-          label="Môn học"
-          rules={[{ required: true, message: "Chọn môn học" }]}
-        >
-          <Select
-            placeholder="Chọn môn học"
-            onChange={(value) => {
-              setSelectedSubject(value);
-              fetchChapters(value);
-              form.setFieldsValue({ chapter_id: null });
-            }}
+    <div style={{ padding: 24, maxWidth: 1200, margin: "0 auto" }}>
+      <Button
+        type="default"
+        icon={<ArrowLeftOutlined />}
+        onClick={() => navigate(-1)}
+        style={{ marginBottom: 24 }}
+      >
+        Quay lại
+      </Button>
+      <Card
+        title="Tạo Podcast từ tài liệu"
+        style={{ maxWidth: 700, margin: "40px auto" }}
+      >
+        <Form form={form} layout="vertical" onFinish={onFinish}>
+          {/* Môn học */}
+          <Form.Item
+            name="subject_id"
+            label="Môn học"
+            rules={[{ required: true, message: "Chọn môn học" }]}
           >
-            {subjects.map((s) => (
-              <Option key={s.id} value={s.id}>
-                {s.name}
-              </Option>
-            ))}
-          </Select>
-        </Form.Item>
-
-        {/* Chương */}
-        <Form.Item label="Chương">
-          <Space align="start">
-            <Form.Item name="chapter_id" noStyle>
-              <Select
-                style={{ width: 300 }}
-                placeholder="Chọn chương (nếu có)"
-                options={chapters.map((c) => ({
-                  label: c.title,
-                  value: c.id,
-                }))}
-              />
-            </Form.Item>
-
-            <Button
-              type="dashed"
-              icon={<PlusOutlined />}
-              onClick={() => setShowCreateChapterModal(true)}
+            <Select
+              placeholder="Chọn môn học"
+              onChange={(value) => {
+                setSelectedSubject(value);
+                fetchChapters(value);
+                form.setFieldsValue({ chapter_id: null });
+              }}
             >
-              Tạo chương mới
-            </Button>
-          </Space>
-        </Form.Item>
+              {subjects.map((s) => (
+                <Option key={s.id} value={s.id}>
+                  {s.name}
+                </Option>
+              ))}
+            </Select>
+          </Form.Item>
 
-        {/* Modal tạo chương */}
-        <Modal
-          title="Tạo chương mới"
-          open={showCreateChapterModal}
-          onCancel={() => setShowCreateChapterModal(false)}
-          footer={null}
-        >
-          <Form layout="vertical" onFinish={handleCreateChapter}>
-            <Form.Item
-              name="chapterTitle"
-              label="Tên chương"
-              rules={[{ required: true, message: "Nhập tên chương" }]}
-            >
-              <Input placeholder="VD: Chương 1 - Mở đầu" />
-            </Form.Item>
-            <Form.Item>
-              <Button type="primary" htmlType="submit" block>
-                Tạo chương
+          {/* Chương */}
+          <Form.Item label="Chương">
+            <Space align="start">
+              <Form.Item name="chapter_id" noStyle>
+                <Select
+                  style={{ width: 300 }}
+                  placeholder="Chọn chương (nếu có)"
+                  options={chapters.map((c) => ({
+                    label: c.title,
+                    value: c.id,
+                  }))}
+                />
+              </Form.Item>
+
+              <Button
+                type="dashed"
+                icon={<PlusOutlined />}
+                onClick={() => setShowCreateChapterModal(true)}
+              >
+                Tạo chương mới
               </Button>
-            </Form.Item>
-          </Form>
-        </Modal>
+            </Space>
+          </Form.Item>
 
-        {/* Tên podcast */}
-        <Form.Item
-          name="title"
-          label="Tên podcast"
-          rules={[{ required: true, message: "Nhập tên podcast" }]}
-        >
-          <Input placeholder="Tên podcast" />
-        </Form.Item>
+          {/* Modal tạo chương */}
+          <Modal
+            title="Tạo chương mới"
+            open={showCreateChapterModal}
+            onCancel={() => setShowCreateChapterModal(false)}
+            footer={null}
+          >
+            <Form layout="vertical" onFinish={handleCreateChapter}>
+              <Form.Item
+                name="chapterTitle"
+                label="Tên chương"
+                rules={[{ required: true, message: "Nhập tên chương" }]}
+              >
+                <Input placeholder="VD: Chương 1 - Mở đầu" />
+              </Form.Item>
+              <Form.Item>
+                <Button type="primary" htmlType="submit" block>
+                  Tạo chương
+                </Button>
+              </Form.Item>
+            </Form>
+          </Modal>
 
-        {/* Mô tả */}
-        <Form.Item name="description" label="Mô tả">
-          <Input.TextArea rows={3} placeholder="Mô tả nội dung podcast" />
-        </Form.Item>
+          {/* Tên podcast */}
+          <Form.Item
+            name="title"
+            label="Tên podcast"
+            rules={[{ required: true, message: "Nhập tên podcast" }]}
+          >
+            <Input placeholder="Tên podcast" />
+          </Form.Item>
 
-        {/* File tài liệu */}
-        <Form.Item
-          label="Tài liệu (PDF, DOCX, TXT)"
-          rules={[{ required: true, message: "Chọn file tài liệu" }]}
-        >
-          <Upload beforeUpload={(f) => { setFile(f); return false; }} maxCount={1}>
-            <Button icon={<UploadOutlined />}>Chọn file</Button>
-          </Upload>
-        </Form.Item>
+          {/* Mô tả */}
+          <Form.Item name="description" label="Mô tả">
+            <Input.TextArea rows={3} placeholder="Mô tả nội dung podcast" />
+          </Form.Item>
 
-        {/* Ảnh bìa */}
-        <Form.Item label="Ảnh bìa (tuỳ chọn)">
-          <Upload beforeUpload={(f) => { setCoverImage(f); return false; }} maxCount={1}>
-            <Button icon={<UploadOutlined />}>Chọn ảnh</Button>
-          </Upload>
-        </Form.Item>
+          {/* File tài liệu */}
+          <Form.Item
+            label="Tài liệu (PDF, DOCX, TXT)"
+            rules={[{ required: true, message: "Chọn file tài liệu" }]}
+          >
+            <Upload
+              beforeUpload={(f) => {
+                setFile(f);
+                return false;
+              }}
+              maxCount={1}
+            >
+              <Button icon={<UploadOutlined />}>Chọn file</Button>
+            </Upload>
+          </Form.Item>
 
-        {/* Giọng đọc */}
-        <Form.Item name="voice" label="Giọng đọc" initialValue="vi-VN-Chirp3-HD-Puck">
-          <Select>
-            <Option value="vi-VN-Chirp3-HD-Puck">Puck (Nam)</Option>
-            <Option value="vi-VN-Chirp3-HD-Luna">Luna (Nữ)</Option>
-            <Option value="vi-VN-Chirp3-HD-Lam">Lam (Nam, trẻ)</Option>
-          </Select>
-        </Form.Item>
+          {/* Ảnh bìa */}
+          <Form.Item label="Ảnh bìa (tuỳ chọn)">
+            <Upload
+              beforeUpload={(f) => {
+                setCoverImage(f);
+                return false;
+              }}
+              maxCount={1}
+            >
+              <Button icon={<UploadOutlined />}>Chọn ảnh</Button>
+            </Upload>
+          </Form.Item>
 
-        {/* Tốc độ đọc */}
-        <Form.Item name="speaking_rate" label="Tốc độ đọc" initialValue={1.0}>
-          <Slider min={0.5} max={2.0} step={0.1} />
-        </Form.Item>
+          {/* Giọng đọc */}
+          <Form.Item
+            name="voice"
+            label="Giọng đọc"
+            initialValue="vi-VN-Chirp3-HD-Puck"
+          >
+            <Select>
+              <Option value="vi-VN-Chirp3-HD-Puck">Puck (Nam)</Option>
+              <Option value="vi-VN-Chirp3-HD-Luna">Luna (Nữ)</Option>
+              <Option value="vi-VN-Chirp3-HD-Lam">Lam (Nam, trẻ)</Option>
+            </Select>
+          </Form.Item>
 
-        {/* Danh mục */}
-        <Form.Item
-          name="category_ids"
-          label="Danh mục"
-          rules={[{ required: true, message: "Chọn ít nhất 1 danh mục" }]}
-        >
-          <Select mode="multiple" placeholder="Chọn danh mục">
-            {categories.map((c) => (
-              <Option key={c.id} value={c.id}>
-                {c.name}
-              </Option>
-            ))}
-          </Select>
-        </Form.Item>
+          {/* Tốc độ đọc */}
+          <Form.Item name="speaking_rate" label="Tốc độ đọc" initialValue={1.0}>
+            <Slider min={0.5} max={2.0} step={0.1} />
+          </Form.Item>
 
-        {/* Chủ đề */}
-        <Form.Item
-          name="topic_ids"
-          label="Chủ đề"
-          rules={[{ required: true, message: "Chọn ít nhất 1 chủ đề" }]}
-        >
-          <Select mode="multiple" placeholder="Chọn chủ đề">
-            {topics.map((t) => (
-              <Option key={t.id} value={t.id}>
-                {t.name}
-              </Option>
-            ))}
-          </Select>
-        </Form.Item>
+          {/* Danh mục */}
+          <Form.Item
+            name="category_ids"
+            label="Danh mục"
+            rules={[{ required: true, message: "Chọn ít nhất 1 danh mục" }]}
+          >
+            <Select mode="multiple" placeholder="Chọn danh mục">
+              {categories.map((c) => (
+                <Option key={c.id} value={c.id}>
+                  {c.name}
+                </Option>
+              ))}
+            </Select>
+          </Form.Item>
 
-        {/* Tags */}
-        <Form.Item name="tags_combined" label="Thẻ tag (chọn hoặc tạo mới)">
-          <Select
-            mode="tags"
-            placeholder="Tag cách nhau bởi dấu phẩy"
-            tokenSeparators={[","]}
-            style={{ width: "100%" }}
-            options={tags.map((t) => ({ label: t.name, value: t.id }))}
-          />
-        </Form.Item>
+          {/* Chủ đề */}
+          <Form.Item
+            name="topic_ids"
+            label="Chủ đề"
+            rules={[{ required: true, message: "Chọn ít nhất 1 chủ đề" }]}
+          >
+            <Select mode="multiple" placeholder="Chọn chủ đề">
+              {topics.map((t) => (
+                <Option key={t.id} value={t.id}>
+                  {t.name}
+                </Option>
+              ))}
+            </Select>
+          </Form.Item>
 
-        <Form.Item>
-          <Button type="primary" htmlType="submit" block>
-            Tải lên Podcast
-          </Button>
-        </Form.Item>
-      </Form>
-    </Card>
+          {/* Tags */}
+          <Form.Item name="tags_combined" label="Thẻ tag (chọn hoặc tạo mới)">
+            <Select
+              mode="tags"
+              placeholder="Tag cách nhau bởi dấu phẩy"
+              tokenSeparators={[","]}
+              style={{ width: "100%" }}
+              options={tags.map((t) => ({ label: t.name, value: t.id }))}
+            />
+          </Form.Item>
+
+          <Form.Item>
+            <Button type="primary" htmlType="submit" block>
+              Tải lên Podcast
+            </Button>
+          </Form.Item>
+        </Form>
+      </Card>
+    </div>
   );
 };
 

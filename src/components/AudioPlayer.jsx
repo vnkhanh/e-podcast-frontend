@@ -1,154 +1,401 @@
-import React, { useRef, useState, useEffect } from "react";
+import React, { useState, useRef, useEffect } from "react";
+import { Button, Space, Typography, Popover, Dropdown, Menu } from "antd";
 import {
   PlayCircleFilled,
   PauseCircleFilled,
-  ForwardOutlined,
-  StepBackwardOutlined,
-  SoundOutlined,
-  MutedOutlined,
+  StepBackwardFilled,
+  StepForwardFilled,
+  SoundFilled,
+  ThunderboltOutlined,
+  ReloadOutlined,
 } from "@ant-design/icons";
 
-const AudioPlayer = ({ src }) => {
+const { Text } = Typography;
+
+const CustomAudioPlayer = ({ src, style, size = "default" }) => {
   const audioRef = useRef(null);
+  const volumeSliderRef = useRef(null);
+  const progressBarRef = useRef(null);
   const [isPlaying, setIsPlaying] = useState(false);
-  const [progress, setProgress] = useState(0);
+  const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
+  const [volume, setVolume] = useState(0.7);
   const [isMuted, setIsMuted] = useState(false);
+  const [isDragging, setIsDragging] = useState(false);
+  const [playbackRate, setPlaybackRate] = useState(1.0);
+
+  const handleRateChange = (value) => {
+    setPlaybackRate(value);
+    if (audioRef.current) {
+      audioRef.current.playbackRate = value;
+    }
+  };
+  // Kích thước
+  const sizes = {
+    small: { icon: 20, spacing: 8 },
+    default: { icon: 24, spacing: 12 },
+    large: { icon: 32, spacing: 16 },
+  };
+
+  const { icon: iconSize, spacing } = sizes[size];
 
   useEffect(() => {
     const audio = audioRef.current;
 
-    const updateProgress = () => setProgress(audio.currentTime);
-    const setAudioDuration = () => setDuration(audio.duration);
+    const updateTime = () => {
+      if (!isDragging) {
+        setCurrentTime(audio.currentTime);
+      }
+    };
+    const updateDuration = () => setDuration(audio.duration);
+    const handleEnd = () => setIsPlaying(false);
 
-    audio.addEventListener("timeupdate", updateProgress);
-    audio.addEventListener("loadedmetadata", setAudioDuration);
+    audio.addEventListener("timeupdate", updateTime);
+    audio.addEventListener("loadedmetadata", updateDuration);
+    audio.addEventListener("ended", handleEnd);
 
     return () => {
-      audio.removeEventListener("timeupdate", updateProgress);
-      audio.removeEventListener("loadedmetadata", setAudioDuration);
+      audio.removeEventListener("timeupdate", updateTime);
+      audio.removeEventListener("loadedmetadata", updateDuration);
+      audio.removeEventListener("ended", handleEnd);
     };
-  }, []);
+  }, [isDragging]);
+
+  // Progress Bar Handlers
+  const handleProgressClick = (e) => {
+    const progressBar = progressBarRef.current;
+    const rect = progressBar.getBoundingClientRect();
+    const percent = (e.clientX - rect.left) / rect.width;
+    const newTime = percent * duration;
+
+    audioRef.current.currentTime = newTime;
+    setCurrentTime(newTime);
+  };
+
+  const handleProgressMouseDown = (e) => {
+    setIsDragging(true);
+    handleProgressClick(e);
+
+    const handleMouseMove = (moveEvent) => {
+      handleProgressClick(moveEvent);
+    };
+
+    const handleMouseUp = () => {
+      setIsDragging(false);
+      document.removeEventListener("mousemove", handleMouseMove);
+      document.removeEventListener("mouseup", handleMouseUp);
+    };
+
+    document.addEventListener("mousemove", handleMouseMove);
+    document.addEventListener("mouseup", handleMouseUp);
+  };
+
+  // Volume Slider Handlers
+  const handleVolumeClick = (e) => {
+    const volumeSlider = volumeSliderRef.current;
+    const rect = volumeSlider.getBoundingClientRect();
+    const percent = (rect.bottom - e.clientY) / rect.height;
+    const newVolume = Math.max(0, Math.min(1, percent));
+
+    setVolume(newVolume);
+    audioRef.current.volume = newVolume;
+    setIsMuted(newVolume === 0);
+  };
+
+  const handleVolumeMouseDown = (e) => {
+    handleVolumeClick(e);
+
+    const handleMouseMove = (moveEvent) => {
+      handleVolumeClick(moveEvent);
+    };
+
+    const handleMouseUp = () => {
+      document.removeEventListener("mousemove", handleMouseMove);
+      document.removeEventListener("mouseup", handleMouseUp);
+    };
+
+    document.addEventListener("mousemove", handleMouseMove);
+    document.addEventListener("mouseup", handleMouseUp);
+  };
 
   const togglePlay = () => {
-    const audio = audioRef.current;
-    if (isPlaying) audio.pause();
-    else audio.play();
+    if (isPlaying) {
+      audioRef.current.pause();
+    } else {
+      audioRef.current.play();
+    }
     setIsPlaying(!isPlaying);
   };
 
-  const seek = (seconds) => {
-    const audio = audioRef.current;
-    audio.currentTime = Math.min(Math.max(0, audio.currentTime + seconds), duration);
-    setProgress(audio.currentTime);
-  };
-
-  const handleSeek = (e) => {
-    const audio = audioRef.current;
-    audio.currentTime = e.target.value;
-    setProgress(e.target.value);
-  };
-
-  const toggleMute = () => {
-    const audio = audioRef.current;
-    audio.muted = !audio.muted;
-    setIsMuted(audio.muted);
+  const skip = (seconds) => {
+    audioRef.current.currentTime += seconds;
+    setCurrentTime(audioRef.current.currentTime);
   };
 
   const formatTime = (time) => {
-    if (!time) return "0:00";
-    const mins = Math.floor(time / 60);
-    const secs = Math.floor(time % 60);
-    return `${mins}:${secs < 10 ? "0" : ""}${secs}`;
+    if (!time || isNaN(time)) return "00:00";
+    const minutes = Math.floor(time / 60);
+    const seconds = Math.floor(time % 60);
+    return `${minutes.toString().padStart(2, "0")}:${seconds
+      .toString()
+      .padStart(2, "0")}`;
   };
+
+  const reset = () => {
+    audioRef.current.currentTime = 0;
+    setCurrentTime(0);
+    if (isPlaying) {
+      audioRef.current.play();
+    }
+  };
+
+  // Custom Progress Bar Component
+  const ProgressBar = () => (
+    <div style={{ marginBottom: spacing }}>
+      <div
+        ref={progressBarRef}
+        style={{
+          height: 6,
+          background: "#f0f0f0",
+          borderRadius: 3,
+          cursor: "pointer",
+          position: "relative",
+          marginBottom: 4,
+        }}
+        onClick={handleProgressClick}
+        onMouseDown={handleProgressMouseDown}
+      >
+        <div
+          style={{
+            height: "100%",
+            background: "#1890ff",
+            borderRadius: 3,
+            width: `${(currentTime / duration) * 100}%`,
+            transition: isDragging ? "none" : "width 0.1s ease",
+          }}
+        />
+        <div
+          style={{
+            position: "absolute",
+            top: "50%",
+            left: `${(currentTime / duration) * 100}%`,
+            transform: "translate(-50%, -50%)",
+            width: 12,
+            height: 12,
+            background: "#1890ff",
+            borderRadius: "50%",
+            border: "2px solid #fff",
+            boxShadow: "0 2px 4px rgba(0,0,0,0.2)",
+            cursor: "pointer",
+          }}
+        />
+      </div>
+
+      {/* Thời gian */}
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+          marginTop: spacing / 2,
+        }}
+      >
+        <Text type="secondary" style={{ fontSize: iconSize - 6 }}>
+          {formatTime(currentTime)}
+        </Text>
+        <Text type="secondary" style={{ fontSize: iconSize - 6 }}>
+          {formatTime(duration)}
+        </Text>
+      </div>
+    </div>
+  );
+
+  // Custom Volume Slider Component
+  const VolumeSlider = () => (
+    <div
+      ref={volumeSliderRef}
+      style={{
+        width: 24,
+        height: 80,
+        background: "#fafafa",
+        borderRadius: 12,
+        padding: "8px 4px",
+        border: "1px solid #d9d9d9",
+        cursor: "pointer",
+        position: "relative",
+      }}
+      onClick={handleVolumeClick}
+      onMouseDown={handleVolumeMouseDown}
+    >
+      <div
+        style={{
+          position: "absolute",
+          bottom: 8,
+          left: "50%",
+          transform: "translateX(-50%)",
+          width: 4,
+          height: `calc(100% - 16px)`,
+          background: "#f0f0f0",
+          borderRadius: 2,
+        }}
+      >
+        <div
+          style={{
+            position: "absolute",
+            bottom: 0,
+            left: 0,
+            width: "100%",
+            height: `${volume * 100}%`,
+            background: volume === 0 ? "#ff4d4f" : "#52c41a",
+            borderRadius: 2,
+            transition: "height 0.1s ease",
+          }}
+        />
+        <div
+          style={{
+            position: "absolute",
+            bottom: `${volume * 100}%`,
+            left: "50%",
+            transform: "translate(-50%, 50%)",
+            width: 12,
+            height: 12,
+            background: volume === 0 ? "#ff4d4f" : "#52c41a",
+            borderRadius: "50%",
+            border: "2px solid #fff",
+            boxShadow: "0 2px 4px rgba(0,0,0,0.2)",
+          }}
+        />
+      </div>
+    </div>
+  );
+
+  // Nội dung popover âm lượng
+  const volumeContent = (
+    <div style={{ padding: "4px 0" }}>
+      <VolumeSlider />
+      <div style={{ textAlign: "center", marginTop: 8 }}>
+        <Text type="secondary" style={{ fontSize: 12 }}>
+          {Math.round(volume * 100)}%
+        </Text>
+      </div>
+    </div>
+  );
+
+  const speedMenu = (
+    <Menu
+      onClick={({ key }) => handleRateChange(parseFloat(key))}
+      items={[
+        { label: "0.5x", key: "0.5" },
+        { label: "0.75x", key: "0.75" },
+        { label: "1.0x", key: "1.0" },
+        { label: "1.25x", key: "1.25" },
+        { label: "1.5x", key: "1.5" },
+        { label: "2.0x", key: "2.0" },
+      ]}
+    />
+  );
 
   return (
     <div
       style={{
-        width: "100%",
-        marginTop: 8,
-        display: "flex",
-        flexDirection: "column",
-        alignItems: "center",
-        background: "#fafafa",
-        borderRadius: 6,
-        padding: "8px 10px",
+        background: "#fff",
+        borderRadius: 12,
+        padding: spacing,
+        boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
+        border: "1px solid #f0f0f0",
+        ...style,
       }}
     >
-      <audio ref={audioRef} src={src} style={{ display: "none" }} />
+      {/* Audio element ẩn */}
+      <audio ref={audioRef} src={src} preload="metadata" />
 
-      {/* Control buttons */}
+      {/* Progress Bar custom */}
+      <ProgressBar />
+
+      {/* Controls */}
       <div
         style={{
           display: "flex",
+          justifyContent: "space-between",
           alignItems: "center",
-          gap: 12,
-          marginBottom: 6,
         }}
       >
-        <StepBackwardOutlined
-          onClick={() => seek(-15)}
-          style={{ fontSize: 18, cursor: "pointer" }}
-        />
-        <button
-          onClick={togglePlay}
-          style={{
-            border: "none",
-            background: "none",
-            cursor: "pointer",
-            fontSize: 26,
-          }}
-        >
-          {isPlaying ? (
-            <PauseCircleFilled style={{ fontSize: 28, color: "#000" }} />
-          ) : (
-            <PlayCircleFilled style={{ fontSize: 28, color: "#000" }} />
-          )}
-        </button>
-        <ForwardOutlined
-          onClick={() => seek(15)}
-          style={{ fontSize: 18, cursor: "pointer" }}
-        />
-      </div>
+        {/* Nhóm điều khiển chính */}
+        <Space size={spacing / 2}>
+          <Button
+            type="text"
+            icon={<StepBackwardFilled style={{ fontSize: iconSize - 4 }} />}
+            onClick={() => skip(-10)}
+            style={{ color: "#666" }}
+          />
 
-      {/* Progress bar */}
-      <div
-        style={{
-          width: "100%",
-          display: "flex",
-          alignItems: "center",
-          gap: 6,
-        }}
-      >
-        <span style={{ fontSize: 11, width: 30, textAlign: "right" }}>
-          {formatTime(progress)}
-        </span>
-        <input
-          type="range"
-          min="0"
-          max={duration || 0}
-          value={progress}
-          onChange={handleSeek}
-          style={{
-            flex: 1,
-            accentColor: "#1890ff",
-            cursor: "pointer",
-          }}
-        />
-        <span style={{ fontSize: 11, width: 30 }}>{formatTime(duration)}</span>
-        <button
-          onClick={toggleMute}
-          style={{
-            border: "none",
-            background: "none",
-            cursor: "pointer",
-          }}
+          <Button
+            type="text"
+            icon={
+              isPlaying ? (
+                <PauseCircleFilled
+                  style={{ fontSize: iconSize + 4, color: "#1890ff" }}
+                />
+              ) : (
+                <PlayCircleFilled
+                  style={{ fontSize: iconSize + 4, color: "#1890ff" }}
+                />
+              )
+            }
+            onClick={togglePlay}
+          />
+
+          <Button
+            type="text"
+            icon={<StepForwardFilled style={{ fontSize: iconSize - 4 }} />}
+            onClick={() => skip(10)}
+            style={{ color: "#666" }}
+          />
+
+          <Button
+            type="text"
+            icon={<ReloadOutlined style={{ fontSize: iconSize - 4 }} />}
+            onClick={reset}
+            style={{ color: "#666" }}
+          />
+        </Space>
+
+        <Dropdown overlay={speedMenu} placement="topCenter" trigger={["click"]}>
+          <Button
+            type="text"
+            icon={
+              <ThunderboltOutlined
+                style={{ fontSize: iconSize - 6, color: "#666" }}
+              />
+            }
+            style={{ fontWeight: 500 }}
+          >
+            {playbackRate}x
+          </Button>
+        </Dropdown>
+
+        {/* Âm lượng với Popover */}
+        <Popover
+          content={volumeContent}
+          trigger="click"
+          placement="top"
+          overlayStyle={{ padding: 0 }}
         >
-          {isMuted ? <MutedOutlined /> : <SoundOutlined />}
-        </button>
+          <Button
+            type="text"
+            icon={
+              <SoundFilled
+                style={{
+                  fontSize: iconSize - 4,
+                  color: isMuted ? "#ff4d4f" : "#666",
+                }}
+              />
+            }
+          />
+        </Popover>
       </div>
     </div>
   );
 };
 
-export default AudioPlayer;
+export default CustomAudioPlayer;

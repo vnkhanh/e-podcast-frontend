@@ -66,12 +66,7 @@ const AppRoute = () => {
       </Route>
 
       {/* Sinh viên */}
-      <Route
-        path="/"
-        element={
-            <UserLayout/>
-        }
-      >
+      <Route path="/" element={<UserLayout />}>
         <Route index element={<UserDashboard />} />
         <Route path="categories/:slug" element={<CategoryPodcastsPage />} />
         <Route path="podcast/:id" element={<PodcastDetailPageUser />} />
@@ -83,7 +78,7 @@ const AppRoute = () => {
       <Route
         path="/teacher"
         element={
-          <ProtectedRoute allowedRoles={['teacher', 'admin']}>
+          <ProtectedRoute allowedRoles={["teacher", "admin"]}>
             <AdminLayout />
           </ProtectedRoute>
         }
@@ -102,7 +97,7 @@ const AppRoute = () => {
       <Route
         path="/admin"
         element={
-          <ProtectedRoute allowedRoles={['admin']}>
+          <ProtectedRoute allowedRoles={["admin"]}>
             <AdminLayout />
           </ProtectedRoute>
         }

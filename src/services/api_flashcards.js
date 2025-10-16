@@ -24,9 +24,12 @@ export const createFlashcards = async (documentId) => {
 
 // === Lấy flashcards theo podcast ===
 export async function getFlashcardsByPodcast(podcastId) {
-  const res = await axios.get(`${API_BASE_URL}/podcasts/${podcastId}/flashcards`, {
-    headers: authHeader()
-  });
+  const res = await axios.get(
+    `${API_BASE_URL}/podcasts/${podcastId}/flashcards`,
+    {
+      headers: authHeader(),
+    }
+  );
   return {
     flashcards: res.data.data || [],
     count: res.data.count || 0,

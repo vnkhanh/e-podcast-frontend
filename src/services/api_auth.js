@@ -4,14 +4,18 @@ const API_BASE_URL = "http://localhost:8080/api";
 
 export async function login(email, password) {
   try {
-    const res = await axios.post(`${API_BASE_URL}/auth/login`, {
-      email,
-      password: password, // phải đúng với backend
-    }, {
-      headers: {
-        "Content-Type": "application/json",
+    const res = await axios.post(
+      `${API_BASE_URL}/auth/login`,
+      {
+        email,
+        password: password, // phải đúng với backend
       },
-    });
+      {
+        headers: {
+          "Content-Type": "application/json",
+        },
+      }
+    );
 
     console.log("Login success:", res.data);
     return res.data; // { token, user }
@@ -29,13 +33,17 @@ export async function login(email, password) {
 
 export async function register(email, password, ho_ten) {
   try {
-    const res = await axios.post(`${API_BASE_URL}/auth/register`, {
-      email,
-      password: password,
-      full_name: ho_ten,
-    }, {
-      headers: { "Content-Type": "application/json" },
-    });
+    const res = await axios.post(
+      `${API_BASE_URL}/auth/register`,
+      {
+        email,
+        password: password,
+        full_name: ho_ten,
+      },
+      {
+        headers: { "Content-Type": "application/json" },
+      }
+    );
 
     return res.data; // user object
   } catch (err) {
@@ -43,7 +51,6 @@ export async function register(email, password, ho_ten) {
     throw err;
   }
 }
-
 
 export const loginWithGoogle = async (idToken) => {
   const res = await axios.post(`${API_BASE_URL}/auth/logingoogle`, {
@@ -54,7 +61,9 @@ export const loginWithGoogle = async (idToken) => {
 
 export async function forgotPassword(email) {
   try {
-    const res = await axios.post(`${API_BASE_URL}/auth/forgot-password`, { email });
+    const res = await axios.post(`${API_BASE_URL}/auth/forgot-password`, {
+      email,
+    });
     return res.data;
   } catch (err) {
     throw err.response?.data || err;

@@ -1,6 +1,6 @@
-import React from 'react';
-import { Row, Col, Button, Typography, Card, Space } from 'antd';
-import { PlayCircleOutlined, RocketOutlined } from '@ant-design/icons';
+import React from "react";
+import { Row, Col, Button, Typography, Card, Space } from "antd";
+import { PlayCircleOutlined, RocketOutlined } from "@ant-design/icons";
 
 const { Title, Paragraph, Text } = Typography;
 
@@ -8,23 +8,26 @@ const HeroSection = () => {
   return (
     <div
       style={{
-        background: 'linear-gradient(90deg, #f0f5ff 0%, #ffffff 100%)',
-        padding: '80px 40px',
+        background: "linear-gradient(90deg, #f0f5ff 0%, #ffffff 100%)",
+        padding: "80px 40px",
       }}
     >
       <Row gutter={[48, 48]} align="middle" justify="center">
         {/* LEFT CONTENT */}
         <Col xs={24} md={12}>
-          <Space direction="vertical" size="large" style={{ width: '100%' }}>
+          <Space direction="vertical" size="large" style={{ width: "100%" }}>
             <div>
-              <Title level={1} style={{ fontWeight: 700, fontSize: '2.8rem' }}>
+              <Title level={1} style={{ fontWeight: 700, fontSize: "2.8rem" }}>
                 Học tập qua Podcast
-                <Text style={{ color: '#1677ff' }}> Hiệu quả hơn</Text>
+                <Text style={{ color: "#1677ff" }}> Hiệu quả hơn</Text>
               </Title>
 
-              <Paragraph style={{ fontSize: '1.1rem', color: '#555', marginTop: 16 }}>
-                Khám phá thế giới tri thức qua các podcast giáo dục chất lượng cao.  
-                Học mọi lúc, mọi nơi với <b>E-Podcast</b> — nền tảng học tập trực tuyến hàng đầu.
+              <Paragraph
+                style={{ fontSize: "1.1rem", color: "#555", marginTop: 16 }}
+              >
+                Khám phá thế giới tri thức qua các podcast giáo dục chất lượng
+                cao. Học mọi lúc, mọi nơi với <b>E-Podcast</b> — nền tảng học
+                tập trực tuyến hàng đầu.
               </Paragraph>
             </div>
 
@@ -52,8 +55,8 @@ const HeroSection = () => {
                 <Card
                   bordered={false}
                   style={{
-                    textAlign: 'center',
-                    background: '#fafafa',
+                    textAlign: "center",
+                    background: "#fafafa",
                     borderRadius: 12,
                   }}
                 >
@@ -68,8 +71,8 @@ const HeroSection = () => {
                 <Card
                   bordered={false}
                   style={{
-                    textAlign: 'center',
-                    background: '#fafafa',
+                    textAlign: "center",
+                    background: "#fafafa",
                     borderRadius: 12,
                   }}
                 >
@@ -84,8 +87,8 @@ const HeroSection = () => {
                 <Card
                   bordered={false}
                   style={{
-                    textAlign: 'center',
-                    background: '#fafafa',
+                    textAlign: "center",
+                    background: "#fafafa",
                     borderRadius: 12,
                   }}
                 >
@@ -106,39 +109,39 @@ const HeroSection = () => {
             bordered={false}
             style={{
               borderRadius: 16,
-              overflow: 'hidden',
-              boxShadow: '0 8px 24px rgba(0,0,0,0.1)',
-              position: 'relative',
+              overflow: "hidden",
+              boxShadow: "0 8px 24px rgba(0,0,0,0.1)",
+              position: "relative",
             }}
             cover={
               <img
                 src="/api/placeholder/600/400"
                 alt="Học tập với E-Podcast"
                 style={{
-                  width: '100%',
-                  height: 'auto',
-                  objectFit: 'cover',
+                  width: "100%",
+                  height: "auto",
+                  objectFit: "cover",
                 }}
               />
             }
           >
             <div
               style={{
-                position: 'absolute',
+                position: "absolute",
                 bottom: 16,
                 left: 16,
                 right: 16,
-                background: 'rgba(0,0,0,0.65)',
-                color: '#fff',
+                background: "rgba(0,0,0,0.65)",
+                color: "#fff",
                 borderRadius: 12,
-                padding: '12px 16px',
-                display: 'flex',
-                alignItems: 'center',
+                padding: "12px 16px",
+                display: "flex",
+                alignItems: "center",
                 gap: 8,
               }}
             >
-              <PlayCircleOutlined style={{ fontSize: 20, color: '#52c41a' }} />
-              <Text style={{ color: '#fff', fontWeight: 500 }}>
+              <PlayCircleOutlined style={{ fontSize: 20, color: "#52c41a" }} />
+              <Text style={{ color: "#fff", fontWeight: 500 }}>
                 Đang phát: Kỹ năng học tập hiệu quả
               </Text>
             </div>

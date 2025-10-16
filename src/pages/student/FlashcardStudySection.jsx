@@ -109,7 +109,13 @@ const FlashcardStudySection = ({ flashcards }) => {
       <FlashcardReference currentCard={currentCard} />
 
       {/* --- Nút điều hướng --- */}
-      <Space style={{ width: "100%", justifyContent: "space-between", marginTop: 16 }}>
+      <Space
+        style={{
+          width: "100%",
+          justifyContent: "space-between",
+          marginTop: 16,
+        }}
+      >
         <Button onClick={handlePrev} disabled={currentIndex === 0}>
           <LeftOutlined /> Trước
         </Button>
@@ -118,7 +124,8 @@ const FlashcardStudySection = ({ flashcards }) => {
           onClick={handleNext}
           disabled={currentIndex === total - 1}
         >
-          Tiếp<RightOutlined />
+          Tiếp
+          <RightOutlined />
         </Button>
       </Space>
 

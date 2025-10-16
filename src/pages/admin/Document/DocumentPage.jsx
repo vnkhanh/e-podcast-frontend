@@ -13,7 +13,8 @@ import {
   Spin,
   notification,
   Tag,
-  Progress, Typography,
+  Progress,
+  Typography,
   Collapse,
 } from "antd";
 import {
@@ -81,40 +82,39 @@ const DocumentPage = () => {
   const token = localStorage.getItem("token");
   const socketUrl = `ws://localhost:8080/ws/status?token=${token}`;
 
-useAutoWebSocket(socketUrl, (event) => {
-  let data;
-  try {
-    data = JSON.parse(event.data);
-  } catch {
-    return;
-  }
+  useAutoWebSocket(socketUrl, (event) => {
+    let data;
+    try {
+      data = JSON.parse(event.data);
+    } catch {
+      return;
+    }
 
-  switch (data.type) {
-    case "document_list_changed":
-      // Khi có file mới upload hoặc bị xoá → reload toàn bộ
-      fetchDocuments();
-      break;
+    switch (data.type) {
+      case "document_list_changed":
+        // Khi có file mới upload hoặc bị xoá → reload toàn bộ
+        fetchDocuments();
+        break;
 
-    case "document_status_update":
-      // Khi trạng thái hoặc tiến trình thay đổi → cập nhật trong state
-      setDocuments((prev) =>
-        prev.map((doc) =>
-          doc.id === data.document_id
-            ? {
-                ...doc,
-                status: data.status,
-                progress: data.progress ?? doc.progress ?? 0,
-              }
-            : doc
-        )
-      );
-      break;
+      case "document_status_update":
+        // Khi trạng thái hoặc tiến trình thay đổi → cập nhật trong state
+        setDocuments((prev) =>
+          prev.map((doc) =>
+            doc.id === data.document_id
+              ? {
+                  ...doc,
+                  status: data.status,
+                  progress: data.progress ?? doc.progress ?? 0,
+                }
+              : doc
+          )
+        );
+        break;
 
-    default:
-      break;
-  }
-});
-
+      default:
+        break;
+    }
+  });
 
   // === Chi tiết tài liệu ===
   const fetchDocumentDetail = async (id) => {
@@ -164,8 +164,7 @@ useAutoWebSocket(socketUrl, (event) => {
       dataIndex: "file_size",
       key: "file_size",
       width: 100,
-      render: (size) =>
-        size ? `${(size / 1024 / 1024).toFixed(2)} MB` : "—",
+      render: (size) => (size ? `${(size / 1024 / 1024).toFixed(2)} MB` : "—"),
     },
     {
       title: "Trạng thái",
@@ -246,9 +245,7 @@ useAutoWebSocket(socketUrl, (event) => {
         <Title level={2} style={{ margin: 0 }}>
           Quản lý Tài liệu
         </Title>
-        <Text type="secondary">
-          Quản lý các tài liệu của bạn
-        </Text>
+        <Text type="secondary">Quản lý các tài liệu của bạn</Text>
       </div>
 
       <Space style={{ marginBottom: 16 }}>
@@ -336,7 +333,9 @@ useAutoWebSocket(socketUrl, (event) => {
       >
         {detailLoading ? (
           <div style={{ textAlign: "center", padding: 20 }}>
-            <Spin indicator={<LoadingOutlined style={{ fontSize: 28 }} spin />} />
+            <Spin
+              indicator={<LoadingOutlined style={{ fontSize: 28 }} spin />}
+            />
           </div>
         ) : detailData ? (
           <Descriptions bordered column={1}>

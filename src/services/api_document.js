@@ -7,7 +7,7 @@ export async function listDocuments({ status, search, page, limit } = {}) {
 
   const params = {};
   if (status) params.status = status;
-  if (search) params.search = search;  // phải đúng key "search" như BE
+  if (search) params.search = search; // phải đúng key "search" như BE
   if (page) params.page = page;
   if (limit) params.limit = limit;
 
@@ -22,37 +22,37 @@ export async function listDocuments({ status, search, page, limit } = {}) {
 
 // Upload document (multipart form-data)
 export async function uploadDocument(file) {
-    const token = localStorage.getItem("token");
-    const formData = new FormData();
-    formData.append("file", file);
-    const res = await axios.post(`${API_BASE_URL}/admin/documents`, formData, {
-        headers: { 
-            "Content-Type": "multipart/form-data",
-            Authorization: `Bearer ${token}`
-        },
-    });
-    console.log("Kết quả API:", res.data);
-    return res.data; // { message, tai_lieu }
+  const token = localStorage.getItem("token");
+  const formData = new FormData();
+  formData.append("file", file);
+  const res = await axios.post(`${API_BASE_URL}/admin/documents`, formData, {
+    headers: {
+      "Content-Type": "multipart/form-data",
+      Authorization: `Bearer ${token}`,
+    },
+  });
+  console.log("Kết quả API:", res.data);
+  return res.data; // { message, tai_lieu }
 }
 
 // Lấy chi tiết tài liệu theo id
 export const getDocumentDetail = async (id) => {
-    const token = localStorage.getItem("token");
-    const res = await axios.get(`${API_BASE_URL}/admin/documents/${id}`, {
-        headers: {
-        Authorization: `Bearer ${token}`,
-        },
-    });
+  const token = localStorage.getItem("token");
+  const res = await axios.get(`${API_BASE_URL}/admin/documents/${id}`, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
   return res.data;
 };
 
 //Xóa
 export async function deleteDocument(id) {
-    const token = localStorage.getItem("token");
-    const res = await axios.delete(`${API_BASE_URL}/admin/documents/${id}`, {
-        headers: {
-            Authorization: `Bearer ${token}`,
-        },
-    });
-    return res.data; // { message: "...", topic: {...} }
+  const token = localStorage.getItem("token");
+  const res = await axios.delete(`${API_BASE_URL}/admin/documents/${id}`, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+  return res.data; // { message: "...", topic: {...} }
 }

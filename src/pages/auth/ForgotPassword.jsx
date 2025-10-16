@@ -14,7 +14,9 @@ const ForgotPassword = () => {
     try {
       const data = await forgotPassword(email);
       // Hiển thị thông báo chung từ backend
-      message.success(data?.message || "Vui lòng kiểm tra email để đặt lại mật khẩu.");
+      message.success(
+        data?.message || "Vui lòng kiểm tra email để đặt lại mật khẩu."
+      );
       navigate("/auth/login");
     } catch (err) {
       // Hiển thị lỗi nếu có

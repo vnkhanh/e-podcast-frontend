@@ -1,20 +1,17 @@
 import axios from "axios";
 
-
 const API_BASE_URL = "http://localhost:8080/api";
 
-
 export const uploadPodcast = async (data) => {
-const token = localStorage.getItem("token");
-const res = await axios.post(`${API_BASE_URL}/admin/podcasts`, data, {
-headers: {
-Authorization: `Bearer ${token}`,
-"Content-Type": "multipart/form-data",
-},
-});
-return res.data;
+  const token = localStorage.getItem("token");
+  const res = await axios.post(`${API_BASE_URL}/admin/podcasts`, data, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+      "Content-Type": "multipart/form-data",
+    },
+  });
+  return res.data;
 };
-
 
 export async function listSubjects() {
   const token = localStorage.getItem("token");
@@ -46,8 +43,13 @@ export async function listTags() {
   return res.data; // trả về mảng tags
 }
 
-export async function listPodcasts({ page = 1, limit = 10, search = "", status = "" } = {}) {
-  const token = localStorage.getItem("token"); 
+export async function listPodcasts({
+  page = 1,
+  limit = 10,
+  search = "",
+  status = "",
+} = {}) {
+  const token = localStorage.getItem("token");
   const res = await axios.get(`${API_BASE_URL}/admin/podcasts`, {
     headers: { Authorization: `Bearer ${token}` },
     params: { page, limit, search, status },
@@ -65,16 +67,23 @@ export async function getPodcastDetail(id) {
 
 export async function listChaptersBySubject(subjectId) {
   const token = localStorage.getItem("token");
-  const res = await axios.get(`${API_BASE_URL}/admin/subjects/${subjectId}/chapters`, {
-    headers: { Authorization: `Bearer ${token}` },
-  });
+  const res = await axios.get(
+    `${API_BASE_URL}/admin/subjects/${subjectId}/chapters`,
+    {
+      headers: { Authorization: `Bearer ${token}` },
+    }
+  );
   return res.data;
 }
 export async function createChapter(data) {
   const token = localStorage.getItem("token");
-  const res = await axios.post(`${API_BASE_URL}/admin/subjects/${data.subject_id}/chapters`, data, {
-    headers: { Authorization: `Bearer ${token}` },
-  });
+  const res = await axios.post(
+    `${API_BASE_URL}/admin/subjects/${data.subject_id}/chapters`,
+    data,
+    {
+      headers: { Authorization: `Bearer ${token}` },
+    }
+  );
   return res.data;
 }
 
@@ -91,7 +100,9 @@ export const updatePodcast = async (id, data, isMultipart = false) => {
   const token = localStorage.getItem("token");
   const headers = { Authorization: `Bearer ${token}` };
   if (isMultipart) headers["Content-Type"] = "multipart/form-data";
-  const res = await axios.put(`${API_BASE_URL}/admin/podcasts/${id}`, data, { headers });
+  const res = await axios.put(`${API_BASE_URL}/admin/podcasts/${id}`, data, {
+    headers,
+  });
   return res.data;
 };
 ///USER
@@ -103,4 +114,4 @@ export const getFeaturedPodcasts = async () => {
 export const getPodcastById = async (id) => {
   const res = await axios.get(`${API_BASE_URL}/user/podcasts/${id}`);
   return res.data || null;
-}
+};

@@ -1,5 +1,14 @@
 import React, { useEffect } from "react";
-import { Layout, Menu, Input, Button, Avatar, Dropdown, Typography, message } from "antd";
+import {
+  Layout,
+  Menu,
+  Input,
+  Button,
+  Avatar,
+  Dropdown,
+  Typography,
+  message,
+} from "antd";
 import {
   UserOutlined,
   BookOutlined,
@@ -25,7 +34,9 @@ const AppHeader = () => {
         const decoded = jwtDecode(token);
         const now = Date.now() / 1000; // tính bằng giây
         if (decoded.exp && decoded.exp < now) {
-          message.warning("Phiên đăng nhập đã hết hạn, vui lòng đăng nhập lại!");
+          message.warning(
+            "Phiên đăng nhập đã hết hạn, vui lòng đăng nhập lại!"
+          );
           localStorage.removeItem("token");
           localStorage.removeItem("user");
           navigate("/auth/login", { replace: true });
@@ -98,7 +109,10 @@ const AppHeader = () => {
         }}
       >
         <div style={{ display: "flex", alignItems: "center" }}>
-          <div style={{ marginRight: 40, cursor: "pointer" }} onClick={() => navigate("/")}>
+          <div
+            style={{ marginRight: 40, cursor: "pointer" }}
+            onClick={() => navigate("/")}
+          >
             <Title level={3} style={{ color: "#1890ff", margin: 0 }}>
               E-Podcast
             </Title>

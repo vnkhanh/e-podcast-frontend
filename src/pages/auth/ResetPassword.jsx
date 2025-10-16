@@ -8,7 +8,9 @@ const { Title, Text, Link } = Typography;
 
 // Hàm format giây -> MM:SS
 const formatTime = (seconds) => {
-  const m = Math.floor(seconds / 60).toString().padStart(2, "0");
+  const m = Math.floor(seconds / 60)
+    .toString()
+    .padStart(2, "0");
   const s = (seconds % 60).toString().padStart(2, "0");
   return `${m}:${s}`;
 };
@@ -31,7 +33,9 @@ const ResetPassword = () => {
       const decoded = jwtDecode(token);
       const now = Date.now() / 1000;
       if (decoded.exp && decoded.exp < now) {
-        message.error("Token đã hết hạn, vui lòng gửi yêu cầu quên mật khẩu mới.");
+        message.error(
+          "Token đã hết hạn, vui lòng gửi yêu cầu quên mật khẩu mới."
+        );
         navigate("/auth/forgot-password");
         return;
       }
@@ -42,7 +46,9 @@ const ResetPassword = () => {
         setTimeLeft((prev) => {
           if (prev <= 1) {
             clearInterval(interval);
-            message.error("Token đã hết hạn, vui lòng gửi yêu cầu quên mật khẩu mới.");
+            message.error(
+              "Token đã hết hạn, vui lòng gửi yêu cầu quên mật khẩu mới."
+            );
             navigate("/auth/forgot-password");
             return 0;
           }
@@ -82,17 +88,23 @@ const ResetPassword = () => {
     <div style={{ maxWidth: 400, margin: "40px auto" }}>
       <div style={{ textAlign: "center", marginBottom: 24 }}>
         <Title level={3}>Đặt lại mật khẩu</Title>
-        <Text type="secondary">
-          Nhập mật khẩu mới cho tài khoản của bạn.
-        </Text>
+        <Text type="secondary">Nhập mật khẩu mới cho tài khoản của bạn.</Text>
         {timeLeft !== null && timeLeft > 0 && (
-          <Text type="warning" style={{ display: "block", marginTop: 8, fontWeight: 500 }}>
+          <Text
+            type="warning"
+            style={{ display: "block", marginTop: 8, fontWeight: 500 }}
+          >
             Token còn hiệu lực: {formatTime(timeLeft)}
           </Text>
         )}
       </div>
 
-      <Form name="reset-password" layout="vertical" onFinish={onFinish} autoComplete="off">
+      <Form
+        name="reset-password"
+        layout="vertical"
+        onFinish={onFinish}
+        autoComplete="off"
+      >
         <Form.Item
           label="Mật khẩu mới"
           name="newPassword"
@@ -101,7 +113,10 @@ const ResetPassword = () => {
             { min: 6, message: "Mật khẩu phải từ 6 ký tự trở lên" },
           ]}
         >
-          <Input.Password placeholder="Nhập mật khẩu mới" disabled={timeLeft === 0} />
+          <Input.Password
+            placeholder="Nhập mật khẩu mới"
+            disabled={timeLeft === 0}
+          />
         </Form.Item>
 
         <Form.Item
@@ -109,17 +124,28 @@ const ResetPassword = () => {
           name="confirmPassword"
           rules={[{ required: true, message: "Vui lòng xác nhận mật khẩu!" }]}
         >
-          <Input.Password placeholder="Xác nhận mật khẩu" disabled={timeLeft === 0} />
+          <Input.Password
+            placeholder="Xác nhận mật khẩu"
+            disabled={timeLeft === 0}
+          />
         </Form.Item>
 
         <Form.Item>
-          <Button type="primary" htmlType="submit" block loading={loading} disabled={timeLeft === 0}>
+          <Button
+            type="primary"
+            htmlType="submit"
+            block
+            loading={loading}
+            disabled={timeLeft === 0}
+          >
             Đổi mật khẩu
           </Button>
         </Form.Item>
 
         <div style={{ textAlign: "center" }}>
-          <Link onClick={() => navigate("/auth/login")}>Quay lại đăng nhập</Link>
+          <Link onClick={() => navigate("/auth/login")}>
+            Quay lại đăng nhập
+          </Link>
         </div>
       </Form>
     </div>

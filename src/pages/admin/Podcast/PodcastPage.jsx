@@ -7,7 +7,9 @@ import {
   Input,
   Space,
   message,
-  Tag, Tooltip, Select,
+  Tag,
+  Tooltip,
+  Select,
   Spin,
   Typography,
   Pagination,
@@ -41,10 +43,20 @@ const PodcastPage = () => {
   });
 
   // Lấy danh sách podcast
-  const fetchData = async (page = 1, limit = 12, searchText = "", statusValue = status) => {
+  const fetchData = async (
+    page = 1,
+    limit = 12,
+    searchText = "",
+    statusValue = status
+  ) => {
     setLoading(true);
     try {
-      const res = await listPodcasts({ page, limit, search: searchText, status: statusValue });
+      const res = await listPodcasts({
+        page,
+        limit,
+        search: searchText,
+        status: statusValue,
+      });
       setPodcasts(res.data);
       setPagination({
         current: res.page,
@@ -70,7 +82,6 @@ const PodcastPage = () => {
     fetchData(1, pagination.pageSize, value, status);
   };
 
-
   // Xóa podcast
   const handleDelete = async (id) => {
     try {
@@ -95,20 +106,20 @@ const PodcastPage = () => {
         <Title level={2} style={{ margin: 0 }}>
           Quản lý Podcast
         </Title>
-        <Text type="secondary">
-          Tạo và quản lý các podcast của bạn
-        </Text>
+        <Text type="secondary">Tạo và quản lý các podcast của bạn</Text>
       </div>
 
       {/* Thanh công cụ */}
-      <div style={{ 
-        display: 'flex', 
-        justifyContent: 'space-between', 
-        alignItems: 'center',
-        marginBottom: 24,
-        flexWrap: 'wrap',
-        gap: 10
-      }}>
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+          marginBottom: 24,
+          flexWrap: "wrap",
+          gap: 10,
+        }}
+      >
         <div>
           <Search
             placeholder="Tìm kiếm podcast..."
@@ -129,7 +140,7 @@ const PodcastPage = () => {
             }}
             style={{ width: 160 }}
           >
-            <Option value="published">Công khai</Option>
+            <Option value="published">Đã xuất bản</Option>
             <Option value="draft">Bản nháp</Option>
           </Select>
         </div>
@@ -148,42 +159,35 @@ const PodcastPage = () => {
       <Spin spinning={loading}>
         <Row gutter={[16, 16]}>
           {podcasts.map((podcast) => (
-            <Col
-              key={podcast.id}
-              xs={24}
-              sm={12}
-              md={8}
-              lg={6}
-              xl={6}
-            >
+            <Col key={podcast.id} xs={24} sm={12} md={8} lg={6} xl={6}>
               <Card
                 hoverable
                 style={{
-                  height: '100%',
+                  height: "100%",
                   borderRadius: 12,
-                  overflow: 'hidden',
-                  boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
-                  transition: 'all 0.3s ease',
+                  overflow: "hidden",
+                  boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
+                  transition: "all 0.3s ease",
                 }}
                 bodyStyle={{ padding: 16 }}
                 cover={
-                  <div style={{ position: 'relative' }}>
+                  <div style={{ position: "relative" }}>
                     {podcast.cover_image ? (
-                      <div style={{ height: 160, overflow: 'hidden' }}>
+                      <div style={{ height: 160, overflow: "hidden" }}>
                         <img
                           alt={podcast.title}
                           src={podcast.cover_image}
                           style={{
-                            height: '100%',
-                            width: '100%',
-                            objectFit: 'cover',
-                            transition: 'transform 0.3s ease',
+                            height: "100%",
+                            width: "100%",
+                            objectFit: "cover",
+                            transition: "transform 0.3s ease",
                           }}
                           onMouseEnter={(e) => {
-                            e.target.style.transform = 'scale(1.05)';
+                            e.target.style.transform = "scale(1.05)";
                           }}
                           onMouseLeave={(e) => {
-                            e.target.style.transform = 'scale(1)';
+                            e.target.style.transform = "scale(1)";
                           }}
                         />
                       </div>
@@ -191,23 +195,26 @@ const PodcastPage = () => {
                       <div
                         style={{
                           height: 160,
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                          background: 'linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%)',
-                          color: '#666',
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          background:
+                            "linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%)",
+                          color: "#666",
                         }}
                       >
                         <Text type="secondary">Không có ảnh bìa</Text>
                       </div>
                     )}
-                    
+
                     {/* Tag status ở góc trên bên phải ảnh */}
-                    <div style={{
-                      position: 'absolute',
-                      top: 8,
-                      right: 8,
-                    }}>
+                    <div
+                      style={{
+                        position: "absolute",
+                        top: 8,
+                        right: 8,
+                      }}
+                    >
                       <Tag
                         color={
                           podcast.status === "published"
@@ -219,14 +226,14 @@ const PodcastPage = () => {
                         style={{
                           margin: 0,
                           fontWeight: 600,
-                          fontSize: '12px',
-                          border: 'none',
-                          borderRadius: '12px',
-                          padding: '2px 8px',
+                          fontSize: "12px",
+                          border: "none",
+                          borderRadius: "12px",
+                          padding: "2px 8px",
                         }}
                       >
                         {podcast.status === "published"
-                          ? "Công khai"
+                          ? "Đã xuất bản"
                           : podcast.status === "draft"
                           ? "Bản nháp"
                           : "—"}
@@ -238,17 +245,19 @@ const PodcastPage = () => {
                   <Tooltip title="Xem chi tiết">
                     <Button
                       type="text"
-                      icon={<EyeOutlined style={{ fontSize: 18 }}/>}
+                      icon={<EyeOutlined style={{ fontSize: 18 }} />}
                       onClick={() => navigate(`/teacher/podcast/${podcast.id}`)}
-                      style={{ color: '#1890ff' }}
+                      style={{ color: "#1890ff" }}
                     />
                   </Tooltip>,
                   <Tooltip title="Chỉnh sửa">
                     <Button
                       type="text"
-                      icon={<EditOutlined style={{ fontSize: 18 }}/>}
-                      onClick={() => navigate(`/teacher/podcast/${podcast.id}/edit`)}
-                      style={{ color: '#52c41a' }}
+                      icon={<EditOutlined style={{ fontSize: 18 }} />}
+                      onClick={() =>
+                        navigate(`/teacher/podcast/${podcast.id}/edit`)
+                      }
+                      style={{ color: "#52c41a" }}
                     />
                   </Tooltip>,
 
@@ -256,10 +265,10 @@ const PodcastPage = () => {
                     <Button
                       type="text"
                       danger
-                      icon={<DeleteOutlined style={{ fontSize: 18 }}/>}
+                      icon={<DeleteOutlined style={{ fontSize: 18 }} />}
                       onClick={() => handleDelete(podcast.id)}
                     />
-                  </Tooltip>
+                  </Tooltip>,
                 ]}
               >
                 {/* Tiêu đề podcast */}
@@ -267,9 +276,9 @@ const PodcastPage = () => {
                   <Paragraph
                     strong
                     ellipsis={{
-                      rows: 1,       // Giới hạn 2 dòng
+                      rows: 1, // Giới hạn 2 dòng
                       expandable: false,
-                      tooltip: podcast.title,  // Hiện tooltip tự động
+                      tooltip: podcast.title, // Hiện tooltip tự động
                     }}
                     style={{ marginBottom: 0 }}
                   >
@@ -278,20 +287,32 @@ const PodcastPage = () => {
                 </div>
 
                 {/* Thống kê */}
-                <div style={{ 
-                  display: 'flex', 
-                  alignItems: 'center', 
-                  gap: 16,
-                }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-                    <EyeFilled style={{ color: '#1890ff', fontSize: 14 }} />
-                    <Text type="secondary" style={{ fontSize: 13, fontWeight: 500 }}>
+                <div
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 16,
+                  }}
+                >
+                  <div
+                    style={{ display: "flex", alignItems: "center", gap: 4 }}
+                  >
+                    <EyeFilled style={{ color: "#1890ff", fontSize: 14 }} />
+                    <Text
+                      type="secondary"
+                      style={{ fontSize: 13, fontWeight: 500 }}
+                    >
                       {podcast.view_count || 0}
                     </Text>
                   </div>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-                    <HeartFilled style={{ color: '#ff4d4f', fontSize: 14 }} />
-                    <Text type="secondary" style={{ fontSize: 13, fontWeight: 500 }}>
+                  <div
+                    style={{ display: "flex", alignItems: "center", gap: 4 }}
+                  >
+                    <HeartFilled style={{ color: "#ff4d4f", fontSize: 14 }} />
+                    <Text
+                      type="secondary"
+                      style={{ fontSize: 13, fontWeight: 500 }}
+                    >
                       {podcast.like_count || 0}
                     </Text>
                   </div>
@@ -303,20 +324,24 @@ const PodcastPage = () => {
           {/* Empty state */}
           {!loading && podcasts.length === 0 && (
             <Col span={24}>
-              <div style={{ 
-                textAlign: 'center', 
-                padding: 60,
-                background: '#fafafa',
-                borderRadius: 8,
-                border: '1px dashed #d9d9d9'
-              }}>
+              <div
+                style={{
+                  textAlign: "center",
+                  padding: 60,
+                  background: "#fafafa",
+                  borderRadius: 8,
+                  border: "1px dashed #d9d9d9",
+                }}
+              >
                 <Text type="secondary" style={{ fontSize: 16 }}>
-                  {search ? 'Không tìm thấy podcast nào' : 'Chưa có podcast nào'}
+                  {search
+                    ? "Không tìm thấy podcast nào"
+                    : "Chưa có podcast nào"}
                 </Text>
                 <br />
                 {!search && (
-                  <Button 
-                    type="primary" 
+                  <Button
+                    type="primary"
                     icon={<PlusOutlined />}
                     onClick={() => navigate("/teacher/podcast/create")}
                     style={{ marginTop: 16 }}
@@ -332,12 +357,14 @@ const PodcastPage = () => {
 
       {/* Phân trang */}
       {podcasts.length > 0 && (
-        <div style={{ 
-          marginTop: 32, 
-          display: 'flex', 
-          justifyContent: 'center',
-          padding: '16px 0'
-        }}>
+        <div
+          style={{
+            marginTop: 32,
+            display: "flex",
+            justifyContent: "center",
+            padding: "16px 0",
+          }}
+        >
           <Pagination
             current={pagination.current}
             pageSize={pagination.pageSize}
@@ -345,7 +372,7 @@ const PodcastPage = () => {
             onChange={handlePageChange}
             showSizeChanger={false}
             showQuickJumper
-            showTotal={(total, range) => 
+            showTotal={(total, range) =>
               `${range[0]}-${range[1]} của ${total} podcast`
             }
           />

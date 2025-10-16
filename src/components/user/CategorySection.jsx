@@ -1,5 +1,5 @@
-import React, { useEffect, useState } from 'react';
-import { Row, Col, Card, Typography, Spin, message } from 'antd';
+import React, { useEffect, useState } from "react";
+import { Row, Col, Card, Typography, Spin, message } from "antd";
 import {
   BookOutlined,
   CodeOutlined,
@@ -8,9 +8,9 @@ import {
   LineChartOutlined,
   HeartOutlined,
   TagOutlined,
-} from '@ant-design/icons';
-import { listCategoriesUser } from '../../services/api_category';
-import { useNavigate } from 'react-router-dom';
+} from "@ant-design/icons";
+import { listCategoriesUser } from "../../services/api_category";
+import { useNavigate } from "react-router-dom";
 
 const { Title } = Typography;
 
@@ -35,8 +35,8 @@ const CategorySection = () => {
         const data = await listCategoriesUser();
         setCategories(data);
       } catch (err) {
-        message.error('Không thể tải danh mục');
-        console.error('Lỗi tải danh mục:', err);
+        message.error("Không thể tải danh mục");
+        console.error("Lỗi tải danh mục:", err);
       } finally {
         setLoading(false);
       }
@@ -44,9 +44,10 @@ const CategorySection = () => {
     fetchCategories();
   }, []);
 
-
   return (
-    <div style={{ padding: '60px 40px', background: '#fff', textAlign: 'center' }}>
+    <div
+      style={{ padding: "60px 40px", background: "#fff", textAlign: "center" }}
+    >
       <Title level={2} style={{ marginBottom: 40 }}>
         Danh mục nổi bật
       </Title>
@@ -63,28 +64,32 @@ const CategorySection = () => {
                 onClick={() => navigate(`/categories/${category.slug}`)}
                 style={{
                   borderRadius: 12,
-                  boxShadow: '0 4px 16px rgba(0,0,0,0.08)',
-                  transition: 'all 0.3s ease',
+                  boxShadow: "0 4px 16px rgba(0,0,0,0.08)",
+                  transition: "all 0.3s ease",
                 }}
                 cover={
                   <div
                     style={{
-                      display: 'flex',
-                      justifyContent: 'center',
-                      alignItems: 'center',
+                      display: "flex",
+                      justifyContent: "center",
+                      alignItems: "center",
                       height: 100,
                     }}
                   >
                     {React.cloneElement(iconList[index % iconList.length], {
-                      style: { fontSize: 36, color: '#1677ff' },
+                      style: { fontSize: 36, color: "#1677ff" },
                     })}
                   </div>
                 }
               >
                 <Card.Meta
-                  title={<span style={{ fontWeight: 600, fontSize: '1rem' }}>{category.name}</span>}
+                  title={
+                    <span style={{ fontWeight: 600, fontSize: "1rem" }}>
+                      {category.name}
+                    </span>
+                  }
                   description={
-                    <span style={{ color: '#888', fontSize: '0.9rem' }}>
+                    <span style={{ color: "#888", fontSize: "0.9rem" }}>
                       {category.podcast_count} podcast
                     </span>
                   }

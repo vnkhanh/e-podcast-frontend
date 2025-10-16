@@ -18,5 +18,4 @@ const SubjectForm = ({ form, onFinish, loading }) => (
   </Form>
 );
 
-
 export default SubjectForm;

@@ -1,6 +1,23 @@
 import React, { useState, useEffect } from "react";
-import { Table, Input, Select, Button, Space, message, Modal, Form, Switch, Popconfirm, Tag } from "antd";
-import { listUsers, createLecturer, ToggleUserStatus, deleteUser } from "../../../services/api_user";
+import {
+  Table,
+  Input,
+  Select,
+  Button,
+  Space,
+  message,
+  Modal,
+  Form,
+  Switch,
+  Popconfirm,
+  Tag,
+} from "antd";
+import {
+  listUsers,
+  createLecturer,
+  ToggleUserStatus,
+  deleteUser,
+} from "../../../services/api_user";
 import dayjs from "dayjs";
 
 const { Search } = Input;
@@ -9,7 +26,11 @@ const { Option } = Select;
 const UserList = () => {
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(false);
-  const [pagination, setPagination] = useState({ page: 1, limit: 10, total: 0 });
+  const [pagination, setPagination] = useState({
+    page: 1,
+    limit: 10,
+    total: 0,
+  });
   const [filters, setFilters] = useState({ name: "", role: "" });
 
   const [modalVisible, setModalVisible] = useState(false);
@@ -23,7 +44,9 @@ const UserList = () => {
       setPagination(res.pagination);
     } catch (err) {
       console.error(err);
-      message.error(err.response?.data?.error || "Lỗi khi lấy danh sách người dùng");
+      message.error(
+        err.response?.data?.error || "Lỗi khi lấy danh sách người dùng"
+      );
     } finally {
       setLoading(false);
     }
@@ -56,14 +79,23 @@ const UserList = () => {
       key: "status",
       render: (status, record) => (
         <Popconfirm
-          title={`Bạn có chắc muốn ${status ? "vô hiệu hóa" : "kích hoạt"} người dùng này không?`}
+          title={`Bạn có chắc muốn ${
+            status ? "vô hiệu hóa" : "kích hoạt"
+          } người dùng này không?`}
           onConfirm={async () => {
             try {
               await ToggleUserStatus(record.id); // Gọi PATCH /toggle-status
               message.success("Cập nhật trạng thái thành công");
-              fetchUsers(pagination.page, pagination.limit, filters.name, filters.role);
+              fetchUsers(
+                pagination.page,
+                pagination.limit,
+                filters.name,
+                filters.role
+              );
             } catch (err) {
-              message.error(err.response?.data?.error || "Lỗi khi cập nhật trạng thái");
+              message.error(
+                err.response?.data?.error || "Lỗi khi cập nhật trạng thái"
+              );
             }
           }}
         >
@@ -75,11 +107,11 @@ const UserList = () => {
         </Popconfirm>
       ),
     },
-    { 
-      title: "Ngày tạo", 
-      dataIndex: "created_at", 
-      key: "created_at", 
-      render: (text) => dayjs(text).format("DD/MM/YYYY HH:mm") 
+    {
+      title: "Ngày tạo",
+      dataIndex: "created_at",
+      key: "created_at",
+      render: (text) => dayjs(text).format("DD/MM/YYYY HH:mm"),
     },
     {
       title: "Hành động",
@@ -93,7 +125,12 @@ const UserList = () => {
               try {
                 await deleteUser(record.id);
                 message.success("Xoá user thành công");
-                fetchUsers(pagination.page, pagination.limit, filters.name, filters.role);
+                fetchUsers(
+                  pagination.page,
+                  pagination.limit,
+                  filters.name,
+                  filters.role
+                );
               } catch (err) {
                 message.error(err.response?.data?.error || "Lỗi khi xoá user");
               }
@@ -106,10 +143,14 @@ const UserList = () => {
     },
   ];
 
-
   // Pagination change
   const handleTableChange = (paginationTable) => {
-    fetchUsers(paginationTable.current, paginationTable.pageSize, filters.name, filters.role);
+    fetchUsers(
+      paginationTable.current,
+      paginationTable.pageSize,
+      filters.name,
+      filters.role
+    );
   };
 
   // Filter
@@ -193,14 +234,18 @@ const UserList = () => {
           <Form.Item
             name="email"
             label="Email"
-            rules={[{ required: true, type: "email", message: "Email không hợp lệ" }]}
+            rules={[
+              { required: true, type: "email", message: "Email không hợp lệ" },
+            ]}
           >
             <Input />
           </Form.Item>
           <Form.Item
             name="password"
             label="Mật khẩu"
-            rules={[{ required: true, min: 6, message: "Mật khẩu tối thiểu 6 ký tự" }]}
+            rules={[
+              { required: true, min: 6, message: "Mật khẩu tối thiểu 6 ký tự" },
+            ]}
           >
             <Input.Password />
           </Form.Item>

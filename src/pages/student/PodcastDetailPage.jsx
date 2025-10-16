@@ -18,7 +18,8 @@ import {
   FileTextOutlined,
   ClockCircleOutlined,
   ReadOutlined,
-  BulbOutlined, HistoryOutlined
+  BulbOutlined,
+  HistoryOutlined,
 } from "@ant-design/icons";
 
 import FlashcardStudySection from "./FlashcardStudySection";
@@ -88,7 +89,6 @@ const PodcastDetailPageUser = () => {
     }
   };
 
-
   // === Xem flashcards có sẵn ===
   const handleViewFlashcards = async () => {
     await fetchFlashcards(id);
@@ -99,7 +99,6 @@ const PodcastDetailPageUser = () => {
       setShowListModal(true);
     }
   };
-
 
   if (loading)
     return (
@@ -115,14 +114,25 @@ const PodcastDetailPageUser = () => {
       </div>
     );
 
-  const { title, description, audio_url, created_at, cover_image, categories, topics, Document } =
-    podcast;
+  const {
+    title,
+    description,
+    audio_url,
+    created_at,
+    cover_image,
+    categories,
+    topics,
+    Document,
+  } = podcast;
 
   return (
     <Row gutter={[24, 24]} justify="center" style={{ padding: "24px" }}>
       {/* Nội dung chính */}
       <Col xs={24} lg={16}>
-        <Card bordered={false} style={{ borderRadius: 16, boxShadow: "0 6px 20px rgba(0,0,0,0.08)" }}>
+        <Card
+          bordered={false}
+          style={{ borderRadius: 16, boxShadow: "0 6px 20px rgba(0,0,0,0.08)" }}
+        >
           {cover_image && (
             <img
               src={cover_image}
@@ -167,7 +177,8 @@ const PodcastDetailPageUser = () => {
               onClick={() =>
                 Modal.confirm({
                   title: "Chọn hành động",
-                  content: "Bạn muốn tạo flashcards mới hay xem lại các flashcards đã tạo?",
+                  content:
+                    "Bạn muốn tạo flashcards mới hay xem lại các flashcards đã tạo?",
                   okText: "Tạo mới",
                   cancelText: "Xem lại",
                   onOk: () => setShowCreateModal(true),
@@ -185,14 +196,16 @@ const PodcastDetailPageUser = () => {
             >
               Trắc nghiệm
             </Button>
-
           </Space>
         </Card>
       </Col>
 
       {/* Sidebar */}
       <Col xs={24} lg={8}>
-        <Card bordered={false} style={{ borderRadius: 16, boxShadow: "0 6px 20px rgba(0,0,0,0.08)" }}>
+        <Card
+          bordered={false}
+          style={{ borderRadius: 16, boxShadow: "0 6px 20px rgba(0,0,0,0.08)" }}
+        >
           <Title level={4}>Thông tin podcast</Title>
           <Divider />
           {Document && (
@@ -205,7 +218,8 @@ const PodcastDetailPageUser = () => {
           )}
           <br />
           <Text>
-            <ClockCircleOutlined /> Ngày tạo: {new Date(created_at).toLocaleString("vi-VN")}
+            <ClockCircleOutlined /> Ngày tạo:{" "}
+            {new Date(created_at).toLocaleString("vi-VN")}
           </Text>
 
           {categories?.length > 0 && (
@@ -259,15 +273,14 @@ const PodcastDetailPageUser = () => {
         title="Flashcards của bạn"
       >
         {flashcards.length > 0 ? (
-          <FlashcardStudySection 
-            flashcards={flashcards} 
-            docId={podcast.Document?.id} 
+          <FlashcardStudySection
+            flashcards={flashcards}
+            docId={podcast.Document?.id}
           />
         ) : (
           <Text type="secondary">Chưa có flashcard nào.</Text>
         )}
       </Modal>
-
     </Row>
   );
 };
