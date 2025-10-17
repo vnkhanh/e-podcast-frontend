@@ -42,7 +42,6 @@ const FeaturedPodcasts = () => {
     <div
       style={{
         padding: "60px 40px",
-        background: "#f9f9f9",
       }}
     >
       <Title
@@ -89,7 +88,6 @@ const FeaturedPodcasts = () => {
                       left: 0,
                       right: 0,
                       bottom: 0,
-                      background: "rgba(0,0,0,0.4)",
                       opacity: 0,
                       display: "flex",
                       alignItems: "center",

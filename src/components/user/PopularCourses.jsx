@@ -48,7 +48,7 @@ const PopularCourses = () => {
   ];
 
   return (
-    <div style={{ padding: "80px 24px", background: "#fff" }}>
+    <div style={{ padding: "80px 24px" }}>
       <div style={{ maxWidth: 1200, margin: "0 auto" }}>
         <Title level={2} style={{ textAlign: "center", marginBottom: 60 }}>
           Khóa học phổ biến

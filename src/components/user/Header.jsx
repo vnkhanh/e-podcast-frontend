@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useContext } from "react";
 import {
   Layout,
   Menu,
@@ -14,25 +14,29 @@ import {
   BookOutlined,
   SearchOutlined,
   LogoutOutlined,
+  BulbOutlined,
+  MoonOutlined,
 } from "@ant-design/icons";
 import { useNavigate } from "react-router-dom";
-import { jwtDecode } from "jwt-decode"; // 👈 thêm dòng này
+import { ThemeContext } from "../../utils/useTheme";
+import { jwtDecode } from "jwt-decode";
 
 const { Header } = Layout;
 const { Title } = Typography;
 const { Search } = Input;
 
 const AppHeader = () => {
+  const { isDarkMode, toggleTheme } = useContext(ThemeContext);
   const token = localStorage.getItem("token");
   const user = token ? JSON.parse(localStorage.getItem("user")) : null;
   const navigate = useNavigate();
 
-  // ✅ Kiểm tra token hết hạn hay chưa
+  // ===================== JWT CHECK =====================
   useEffect(() => {
     if (token) {
       try {
         const decoded = jwtDecode(token);
-        const now = Date.now() / 1000; // tính bằng giây
+        const now = Date.now() / 1000;
         if (decoded.exp && decoded.exp < now) {
           message.warning(
             "Phiên đăng nhập đã hết hạn, vui lòng đăng nhập lại!"
@@ -51,6 +55,7 @@ const AppHeader = () => {
     }
   }, [token, navigate]);
 
+  // ===================== MENU =====================
   const menuItems = [
     { key: "home", label: "Trang chủ" },
     { key: "courses", label: "Khóa học" },
@@ -71,27 +76,34 @@ const AppHeader = () => {
       label: "Khóa học của tôi",
     },
     {
+      key: "theme",
+      icon: isDarkMode ? <BulbOutlined /> : <MoonOutlined />,
+      label: isDarkMode ? "Chế độ sáng" : "Chế độ tối",
+    },
+    {
       key: "logout",
       icon: <LogoutOutlined />,
       label: "Đăng xuất",
-      onClick: () => {
-        localStorage.removeItem("token");
-        localStorage.removeItem("user");
-        message.success("Đã đăng xuất!");
-        navigate("/auth/login", { replace: true });
-      },
     },
   ];
 
-  const handleMenuClick = ({ key }) => {
+  const handleUserMenuClick = ({ key }) => {
     if (key === "profile") navigate("/profile");
     else if (key === "my-courses") navigate("/my-courses");
+    else if (key === "theme") toggleTheme();
+    else if (key === "logout") {
+      localStorage.removeItem("token");
+      localStorage.removeItem("user");
+      message.success("Đã đăng xuất!");
+      navigate("/auth/login", { replace: true });
+    }
   };
 
   return (
     <Header
       style={{
-        background: "#fff",
+        background: isDarkMode ? "#1f1f1f" : "#fff",
+        color: isDarkMode ? "#fff" : "#000",
         boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
         position: "sticky",
         top: 0,
@@ -113,7 +125,10 @@ const AppHeader = () => {
             style={{ marginRight: 40, cursor: "pointer" }}
             onClick={() => navigate("/")}
           >
-            <Title level={3} style={{ color: "#1890ff", margin: 0 }}>
+            <Title
+              level={3}
+              style={{ color: "#1890ff", margin: 0, cursor: "pointer" }}
+            >
               E-Podcast
             </Title>
           </div>
@@ -122,6 +137,7 @@ const AppHeader = () => {
             mode="horizontal"
             defaultSelectedKeys={["home"]}
             items={menuItems}
+            theme={isDarkMode ? "dark" : "light"} // 🌟 đổi theme menu
             style={{ border: "none", background: "transparent" }}
           />
         </div>
@@ -138,7 +154,8 @@ const AppHeader = () => {
             <Dropdown
               menu={{
                 items: userMenuItems,
-                onClick: handleMenuClick,
+                onClick: handleUserMenuClick,
+                theme: isDarkMode ? "dark" : "light", // 🌟 dropdown theme
               }}
               placement="bottomRight"
               trigger={["click"]}

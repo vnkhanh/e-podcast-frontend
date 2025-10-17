@@ -67,12 +67,15 @@ const FlashcardStudySection = ({ flashcards }) => {
               alignItems: "center",
               justifyContent: "center",
               backgroundColor: "#fdcacaff",
+              color: "black",
             }}
           >
             <h4 style={{ margin: 0, position: "absolute", top: 16, left: 16 }}>
               Câu hỏi:
             </h4>
-            <Text style={{ fontSize: 18, whiteSpace: "pre-line" }}>
+            <Text
+              style={{ fontSize: 18, whiteSpace: "pre-line", color: "black" }}
+            >
               {currentCard.front_text || currentCard.frontText}
             </Text>
           </Card>
@@ -93,12 +96,22 @@ const FlashcardStudySection = ({ flashcards }) => {
               transform: "rotateY(180deg)",
               background: "#b2f5deff",
               boxShadow: "inset 0 0 10px rgba(0,0,0,0.05)",
+              color: "#000",
             }}
           >
-            <h4 style={{ margin: 0, position: "absolute", top: 16, left: 16 }}>
+            <h4
+              style={{
+                margin: 0,
+                position: "absolute",
+                top: 16,
+                left: 16,
+              }}
+            >
               Đáp án:
             </h4>
-            <Text style={{ fontSize: 18, whiteSpace: "pre-line" }}>
+            <Text
+              style={{ fontSize: 18, whiteSpace: "pre-line", color: "black" }}
+            >
               {currentCard.back_text || currentCard.backText}
             </Text>
           </Card>
@@ -119,11 +132,7 @@ const FlashcardStudySection = ({ flashcards }) => {
         <Button onClick={handlePrev} disabled={currentIndex === 0}>
           <LeftOutlined /> Trước
         </Button>
-        <Button
-          type="primary"
-          onClick={handleNext}
-          disabled={currentIndex === total - 1}
-        >
+        <Button onClick={handleNext} disabled={currentIndex === total - 1}>
           Tiếp
           <RightOutlined />
         </Button>

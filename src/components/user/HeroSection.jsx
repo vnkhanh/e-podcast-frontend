@@ -8,7 +8,6 @@ const HeroSection = () => {
   return (
     <div
       style={{
-        background: "linear-gradient(90deg, #f0f5ff 0%, #ffffff 100%)",
         padding: "80px 40px",
       }}
     >
@@ -56,7 +55,6 @@ const HeroSection = () => {
                   bordered={false}
                   style={{
                     textAlign: "center",
-                    background: "#fafafa",
                     borderRadius: 12,
                   }}
                 >
@@ -72,7 +70,6 @@ const HeroSection = () => {
                   bordered={false}
                   style={{
                     textAlign: "center",
-                    background: "#fafafa",
                     borderRadius: 12,
                   }}
                 >
@@ -88,7 +85,6 @@ const HeroSection = () => {
                   bordered={false}
                   style={{
                     textAlign: "center",
-                    background: "#fafafa",
                     borderRadius: 12,
                   }}
                 >
@@ -131,8 +127,6 @@ const HeroSection = () => {
                 bottom: 16,
                 left: 16,
                 right: 16,
-                background: "rgba(0,0,0,0.65)",
-                color: "#fff",
                 borderRadius: 12,
                 padding: "12px 16px",
                 display: "flex",

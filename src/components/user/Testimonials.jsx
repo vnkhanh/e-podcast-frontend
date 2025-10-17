@@ -28,7 +28,7 @@ const Testimonials = () => {
   ];
 
   return (
-    <div style={{ padding: "80px 24px", background: "#f9f9f9" }}>
+    <div style={{ padding: "80px 24px" }}>
       <div style={{ maxWidth: 1200, margin: "0 auto" }}>
         <Title level={2} style={{ textAlign: "center", marginBottom: 60 }}>
           Học viên nói gì về chúng tôi

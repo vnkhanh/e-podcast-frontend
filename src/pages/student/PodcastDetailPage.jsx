@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useContext } from "react";
 import { useParams } from "react-router-dom";
 import {
   Typography,
@@ -34,7 +34,7 @@ import {
   getFlashcardsByPodcast,
 } from "../../services/api_flashcards";
 import { useNavigate } from "react-router-dom";
-
+import { ThemeContext } from "../../utils/useTheme";
 const { Title, Paragraph, Text } = Typography;
 const { Panel } = Collapse;
 
@@ -49,6 +49,11 @@ const PodcastDetailPageUser = () => {
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [showListModal, setShowListModal] = useState(false);
   const [generating, setGenerating] = useState(false);
+  const { isDarkMode } = useContext(ThemeContext);
+
+  const overlayGradient = isDarkMode
+    ? "linear-gradient(to bottom, rgba(0,0,0,0.6), rgba(0,0,0,0.9))"
+    : "linear-gradient(to bottom, rgba(255,255,255,0.6), #fafafa)";
 
   const fetchFlashcards = async (podcastId) => {
     try {
@@ -145,7 +150,6 @@ const PodcastDetailPageUser = () => {
   return (
     <div
       style={{
-        background: "#fafafa",
         minHeight: "100vh",
         color: "#222",
       }}
@@ -154,7 +158,7 @@ const PodcastDetailPageUser = () => {
       <div
         style={{
           height: 280,
-          backgroundImage: `linear-gradient(to bottom, rgba(255,255,255,0.8), #fafafa), url(${podcast.cover_image})`,
+          backgroundImage: `${overlayGradient}, url(${podcast.cover_image})`,
           backgroundSize: "cover",
           backgroundPosition: "center",
           display: "flex",
@@ -211,7 +215,6 @@ const PodcastDetailPageUser = () => {
             bordered={false}
             style={{
               borderRadius: 16,
-              background: "#fff",
               boxShadow: "0 2px 8px rgba(0,0,0,0.08)",
             }}
           >
@@ -301,10 +304,9 @@ const PodcastDetailPageUser = () => {
           {podcast.Document && (
             <Card
               title="Tài liệu học"
-              bordered={false}
+              variant={false}
               style={{
                 borderRadius: 16,
-                background: "#fff",
                 boxShadow: "0 2px 8px rgba(0,0,0,0.06)",
               }}
             >
@@ -323,10 +325,9 @@ const PodcastDetailPageUser = () => {
           {/* Quiz */}
           <Card
             title="Ôn tập"
-            bordered={false}
+            variant={false}
             style={{
               borderRadius: 16,
-              background: "#fff",
               boxShadow: "0 2px 8px rgba(0,0,0,0.06)",
             }}
           >
@@ -366,10 +367,9 @@ const PodcastDetailPageUser = () => {
           {/* Podcast liên quan */}
           <Card
             title="Gợi ý khác"
-            bordered={false}
+            variant={false}
             style={{
               borderRadius: 16,
-              background: "#fff",
               boxShadow: "0 2px 8px rgba(0,0,0,0.06)",
             }}
           >

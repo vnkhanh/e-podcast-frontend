@@ -45,9 +45,7 @@ const CategorySection = () => {
   }, []);
 
   return (
-    <div
-      style={{ padding: "60px 40px", background: "#fff", textAlign: "center" }}
-    >
+    <div style={{ padding: "60px 40px", textAlign: "center" }}>
       <Title level={2} style={{ marginBottom: 40 }}>
         Danh mục nổi bật
       </Title>

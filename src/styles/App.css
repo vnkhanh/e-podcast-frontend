@@ -1,18 +1,15 @@
-.layout {
-  min-height: 100vh;
-}
-
+.layout,
 .home-page {
-  padding: 0;
+  min-height: 100vh;
+  background-color: inherit; /* 🌟 thừa hưởng background từ body / ThemeProvider */
 }
 
 .section-title {
   text-align: center;
   margin-bottom: 40px !important;
-  color: #1f1f1f;
+  color: inherit; /* 🌟 thừa hưởng màu từ body / ThemeProvider */
 }
 
-/* Responsive design */
 @media (max-width: 768px) {
   .section-title {
     margin-bottom: 24px !important;

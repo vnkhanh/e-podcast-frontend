@@ -156,10 +156,10 @@ const CustomAudioPlayer = ({ src, style, size = "default" }) => {
         ref={progressBarRef}
         style={{
           height: 6,
-          background: "#f0f0f0",
           borderRadius: 3,
           cursor: "pointer",
           position: "relative",
+          backgroundColor: "#e7e7e7ff",
           marginBottom: 4,
         }}
         onClick={handleProgressClick}
@@ -217,7 +217,6 @@ const CustomAudioPlayer = ({ src, style, size = "default" }) => {
       style={{
         width: 24,
         height: 80,
-        background: "#fafafa",
         borderRadius: 12,
         padding: "8px 4px",
         border: "1px solid #d9d9d9",
@@ -235,7 +234,6 @@ const CustomAudioPlayer = ({ src, style, size = "default" }) => {
           transform: "translateX(-50%)",
           width: 4,
           height: `calc(100% - 16px)`,
-          background: "#f0f0f0",
           borderRadius: 2,
         }}
       >
@@ -261,7 +259,6 @@ const CustomAudioPlayer = ({ src, style, size = "default" }) => {
             height: 12,
             background: volume === 0 ? "#ff4d4f" : "#52c41a",
             borderRadius: "50%",
-            border: "2px solid #fff",
             boxShadow: "0 2px 4px rgba(0,0,0,0.2)",
           }}
         />
@@ -298,11 +295,9 @@ const CustomAudioPlayer = ({ src, style, size = "default" }) => {
   return (
     <div
       style={{
-        background: "#fff",
         borderRadius: 12,
         padding: spacing,
         boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
-        border: "1px solid #f0f0f0",
         ...style,
       }}
     >
