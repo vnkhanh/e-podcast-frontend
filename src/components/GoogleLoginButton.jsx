@@ -19,8 +19,10 @@ function GoogleLoginButton() {
         // Redirect sau khi login
         if (data.user.vai_tro === "admin") {
           navigate("/admin");
+        } else if (data.user.vai_tro === "teacher") {
+          navigate("/teacher"); // sửa lại
         } else {
-          navigate("/");
+          navigate("/"); // student
         }
       } catch (error) {
         console.error("Lỗi login Google:", error.response?.data || error);

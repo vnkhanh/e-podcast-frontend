@@ -126,9 +126,15 @@ const CreatePodcastUpload = () => {
     }
 
     // Giọng đọc và tốc độ
-    if (values.voice) console.log("Giọng đọc:", values.voice);
-    formData.append("voice", values.voice || "");
-    formData.append("speaking_rate", values.speaking_rate || 1.0);
+    const voice = values.voice || "vi-VN-Chirp3-HD-Puck";
+    const speakingRate = values.speaking_rate ?? 1.0;
+    const pitch = values.pitch ?? 0.0;
+
+    console.log("Giọng đọc:", voice, "Tốc độ:", speakingRate, "Cao độ:", pitch);
+
+    formData.append("voice", voice);
+    formData.append("speaking_rate", speakingRate.toString());
+    formData.append("pitch", pitch.toString());
 
     // Danh mục
     (values.category_ids || []).forEach((id) =>
@@ -301,7 +307,7 @@ const CreatePodcastUpload = () => {
 
           {/* File tài liệu */}
           <Form.Item
-            label="Tài liệu (PDF, DOCX, TXT)"
+            label="Tài liệu (PDF, DOCX, TXT) nhỏ hơn 10MB"
             rules={[{ required: true, message: "Chọn file tài liệu" }]}
           >
             <Upload
@@ -332,18 +338,22 @@ const CreatePodcastUpload = () => {
           <Form.Item
             name="voice"
             label="Giọng đọc"
-            initialValue="vi-VN-Chirp3-HD-Puck"
+            initialValue="vi-VN-Standard-A"
           >
             <Select>
-              <Option value="vi-VN-Chirp3-HD-Puck">Puck (Nam)</Option>
-              <Option value="vi-VN-Chirp3-HD-Luna">Luna (Nữ)</Option>
-              <Option value="vi-VN-Chirp3-HD-Lam">Lam (Nam, trẻ)</Option>
+              {/* <Option value="vi-VN-Chirp3-HD-Puck">Nam</Option> */}
+              <Option value="vi-VN-Standard-A">Nữ</Option>
+              <Option value="vi-VN-Standard-B">Nam</Option>
             </Select>
           </Form.Item>
 
           {/* Tốc độ đọc */}
           <Form.Item name="speaking_rate" label="Tốc độ đọc" initialValue={1.0}>
             <Slider min={0.5} max={2.0} step={0.1} />
+          </Form.Item>
+          {/* Pitch*/}
+          <Form.Item name="pitch" label="Cao độ giọng nói" initialValue={0.0}>
+            <Slider min={-10} max={10} step={1} />
           </Form.Item>
 
           {/* Danh mục */}

@@ -25,7 +25,7 @@ const Login = () => {
         } else if (role === "teacher") {
           navigate("/teacher"); // sửa lại
         } else {
-          navigate("/dashboard"); // student
+          navigate("/"); // student
         }
       } else {
         message.error(data?.message || "Đăng nhập thất bại!");

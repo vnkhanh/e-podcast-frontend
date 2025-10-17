@@ -25,16 +25,16 @@ import {
   EyeOutlined,
   HeartOutlined,
 } from "@ant-design/icons";
-import CustomAudioPlayer from "../../components/AudioPlayer";
+import CustomAudioPlayer from "../../../components/AudioPlayer";
 import FlashcardStudySection from "./FlashcardStudySection";
-
+import CollapsibleSummary from "./CollapsibleSummary";
 import {
   getPodcastDetail,
   createFlashcards,
   getFlashcardsByPodcast,
-} from "../../services/api_flashcards";
+} from "../../../services/api_flashcards";
 import { useNavigate } from "react-router-dom";
-import { ThemeContext } from "../../utils/useTheme";
+import { ThemeContext } from "../../../utils/useTheme";
 const { Title, Paragraph, Text } = Typography;
 const { Panel } = Collapse;
 
@@ -49,6 +49,7 @@ const PodcastDetailPageUser = () => {
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [showListModal, setShowListModal] = useState(false);
   const [generating, setGenerating] = useState(false);
+
   const { isDarkMode } = useContext(ThemeContext);
 
   const overlayGradient = isDarkMode
@@ -202,11 +203,11 @@ const PodcastDetailPageUser = () => {
       <div
         style={{
           maxWidth: 1200,
-          margin: "40px auto",
+          margin: "20px auto",
           display: "grid",
           gridTemplateColumns: "2fr 1fr",
-          gap: 32,
-          padding: "0 24px",
+          gap: 16,
+          padding: "0 5px",
         }}
       >
         {/* LEFT SIDE */}
@@ -218,6 +219,9 @@ const PodcastDetailPageUser = () => {
               boxShadow: "0 2px 8px rgba(0,0,0,0.08)",
             }}
           >
+            <Title level={4}>Tóm tắt</Title>
+            <CollapsibleSummary text={podcast.summary} />
+
             <Title level={4}>Bắt đầu học</Title>
 
             <CustomAudioPlayer

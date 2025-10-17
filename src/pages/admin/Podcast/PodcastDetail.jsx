@@ -244,6 +244,14 @@ export default function PodcastDetailPage() {
                   {dayjs(podcast.published_at).format("DD/MM/YYYY HH:mm")}
                 </Descriptions.Item>
               )}
+
+              {podcast.updated_at && (
+                <Descriptions.Item label="Ngày cập nhật mới nhất">
+                  <CalendarOutlined />{" "}
+                  {dayjs(podcast.updated_at).format("DD/MM/YYYY HH:mm")}
+                </Descriptions.Item>
+              )}
+
               <Descriptions.Item label="Môn học">
                 {podcast.chapter?.subject?.name || "Không có"}
               </Descriptions.Item>
