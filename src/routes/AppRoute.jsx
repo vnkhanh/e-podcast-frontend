@@ -12,7 +12,7 @@ import Home from "../pages/Home";
 import UserLayout from "../layouts/UserLayout/UserLayout";
 import UserDashboard from "../pages/student/UserDashboard";
 import CategoryPodcastsPage from "../pages/student/CategoryPodcastsPage";
-import PodcastDetailPageUser from "../pages/student/PodcastDetailPage";
+import PodcastDetailPageUser from "../pages/student/PodcastDetail/PodcastDetailPage";
 import DocumentDetail from "../pages/student/DocumentDetail";
 import QuizPage from "../pages/student/QuizPage";
 
