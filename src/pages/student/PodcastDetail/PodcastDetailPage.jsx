@@ -226,6 +226,7 @@ const PodcastDetailPageUser = () => {
 
             <CustomAudioPlayer
               src={podcast.audio_url}
+              podcastId={podcast.id}
               size="default" // 'small' | 'default' | 'large'
               style={{ marginTop: 16 }}
             />

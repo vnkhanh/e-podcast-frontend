@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect } from "react";
+import axios from "axios";
 import { Button, Space, Typography, Popover, Dropdown, Menu } from "antd";
 import {
   PlayCircleFilled,
@@ -12,10 +13,11 @@ import {
 
 const { Text } = Typography;
 
-const CustomAudioPlayer = ({ src, style, size = "default" }) => {
+const CustomAudioPlayer = ({ src, style, size = "default", podcastId }) => {
   const audioRef = useRef(null);
   const volumeSliderRef = useRef(null);
   const progressBarRef = useRef(null);
+
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
@@ -23,6 +25,9 @@ const CustomAudioPlayer = ({ src, style, size = "default" }) => {
   const [isMuted, setIsMuted] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
   const [playbackRate, setPlaybackRate] = useState(1.0);
+  const [hasCounted, setHasCounted] = useState(false);
+
+  const API_BASE = "http://localhost:8080/api"; // đổi sang domain thật nếu cần
 
   const handleRateChange = (value) => {
     setPlaybackRate(value);
@@ -30,7 +35,7 @@ const CustomAudioPlayer = ({ src, style, size = "default" }) => {
       audioRef.current.playbackRate = value;
     }
   };
-  // Kích thước
+
   const sizes = {
     small: { icon: 20, spacing: 8 },
     default: { icon: 24, spacing: 12 },
@@ -61,7 +66,34 @@ const CustomAudioPlayer = ({ src, style, size = "default" }) => {
     };
   }, [isDragging]);
 
-  // Progress Bar Handlers
+  // Khi nghe đủ 30s thì gửi API tăng lượt nghe
+  useEffect(() => {
+    if (currentTime >= 30 && !hasCounted && podcastId) {
+      increaseListenCount();
+      setHasCounted(true);
+    }
+  }, [currentTime]);
+
+  const increaseListenCount = async () => {
+    try {
+      const token = localStorage.getItem("token");
+      const seconds = Math.floor(audioRef.current?.currentTime || 0);
+
+      await axios.post(
+        `${API_BASE}/user/podcasts/${podcastId}/listen`,
+        {}, // body rỗng
+        {
+          params: { listened_seconds: seconds }, // 👈 Gửi số giây đã nghe ở đây
+          headers: token ? { Authorization: `Bearer ${token}` } : {},
+        }
+      );
+
+      console.log(`✅ Đã gửi API tăng lượt nghe (${seconds}s):`, podcastId);
+    } catch (error) {
+      console.error("❌ Lỗi khi tăng lượt nghe:", error);
+    }
+  };
+
   const handleProgressClick = (e) => {
     const progressBar = progressBarRef.current;
     const rect = progressBar.getBoundingClientRect();
@@ -76,10 +108,7 @@ const CustomAudioPlayer = ({ src, style, size = "default" }) => {
     setIsDragging(true);
     handleProgressClick(e);
 
-    const handleMouseMove = (moveEvent) => {
-      handleProgressClick(moveEvent);
-    };
-
+    const handleMouseMove = (moveEvent) => handleProgressClick(moveEvent);
     const handleMouseUp = () => {
       setIsDragging(false);
       document.removeEventListener("mousemove", handleMouseMove);
@@ -90,7 +119,6 @@ const CustomAudioPlayer = ({ src, style, size = "default" }) => {
     document.addEventListener("mouseup", handleMouseUp);
   };
 
-  // Volume Slider Handlers
   const handleVolumeClick = (e) => {
     const volumeSlider = volumeSliderRef.current;
     const rect = volumeSlider.getBoundingClientRect();
@@ -104,16 +132,11 @@ const CustomAudioPlayer = ({ src, style, size = "default" }) => {
 
   const handleVolumeMouseDown = (e) => {
     handleVolumeClick(e);
-
-    const handleMouseMove = (moveEvent) => {
-      handleVolumeClick(moveEvent);
-    };
-
+    const handleMouseMove = (moveEvent) => handleVolumeClick(moveEvent);
     const handleMouseUp = () => {
       document.removeEventListener("mousemove", handleMouseMove);
       document.removeEventListener("mouseup", handleMouseUp);
     };
-
     document.addEventListener("mousemove", handleMouseMove);
     document.addEventListener("mouseup", handleMouseUp);
   };
@@ -149,7 +172,6 @@ const CustomAudioPlayer = ({ src, style, size = "default" }) => {
     }
   };
 
-  // Custom Progress Bar Component
   const ProgressBar = () => (
     <div style={{ marginBottom: spacing }}>
       <div
@@ -191,7 +213,6 @@ const CustomAudioPlayer = ({ src, style, size = "default" }) => {
         />
       </div>
 
-      {/* Thời gian */}
       <div
         style={{
           display: "flex",
@@ -210,7 +231,6 @@ const CustomAudioPlayer = ({ src, style, size = "default" }) => {
     </div>
   );
 
-  // Custom Volume Slider Component
   const VolumeSlider = () => (
     <div
       ref={volumeSliderRef}
@@ -266,7 +286,6 @@ const CustomAudioPlayer = ({ src, style, size = "default" }) => {
     </div>
   );
 
-  // Nội dung popover âm lượng
   const volumeContent = (
     <div style={{ padding: "4px 0" }}>
       <VolumeSlider />
@@ -301,13 +320,9 @@ const CustomAudioPlayer = ({ src, style, size = "default" }) => {
         ...style,
       }}
     >
-      {/* Audio element ẩn */}
       <audio ref={audioRef} src={src} preload="metadata" />
-
-      {/* Progress Bar custom */}
       <ProgressBar />
 
-      {/* Controls */}
       <div
         style={{
           display: "flex",
@@ -315,7 +330,6 @@ const CustomAudioPlayer = ({ src, style, size = "default" }) => {
           alignItems: "center",
         }}
       >
-        {/* Nhóm điều khiển chính */}
         <Space size={spacing / 2}>
           <Button
             type="text"
@@ -369,7 +383,6 @@ const CustomAudioPlayer = ({ src, style, size = "default" }) => {
           </Button>
         </Dropdown>
 
-        {/* Âm lượng với Popover */}
         <Popover
           content={volumeContent}
           trigger="click"
