@@ -83,14 +83,14 @@ const CustomAudioPlayer = ({ src, style, size = "default", podcastId }) => {
         `${API_BASE}/user/podcasts/${podcastId}/listen`,
         {}, // body rỗng
         {
-          params: { listened_seconds: seconds }, // 👈 Gửi số giây đã nghe ở đây
+          params: { listened_seconds: seconds }, // Gửi số giây đã nghe ở đây
           headers: token ? { Authorization: `Bearer ${token}` } : {},
         }
       );
 
-      console.log(`✅ Đã gửi API tăng lượt nghe (${seconds}s):`, podcastId);
+      console.log(`Đã gửi API tăng lượt nghe (${seconds}s):`, podcastId);
     } catch (error) {
-      console.error("❌ Lỗi khi tăng lượt nghe:", error);
+      console.error("Lỗi khi tăng lượt nghe:", error);
     }
   };
 
