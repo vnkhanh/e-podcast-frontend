@@ -115,3 +115,46 @@ export const getPodcastById = async (id) => {
   const res = await axios.get(`${API_BASE_URL}/user/podcasts/${id}`);
   return res.data || null;
 };
+
+export const getCategoryPodcasts = async ({
+  slug,
+  page = 1,
+  limit = 8,
+  sort = "latest",
+  search = "",
+}) => {
+  try {
+    const token = localStorage.getItem("token");
+    const res = await axios.get(
+      `${API_BASE_URL}/user/categories/${slug}/podcasts`,
+      {
+        params: { page, limit, sort, search },
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
+      }
+    );
+    return res.data;
+  } catch (error) {
+    console.error("Lỗi khi tải danh sách podcast:", error);
+    throw error;
+  }
+};
+//lượt nghe
+export const increaseListenCount = async (podcastId, currentTime) => {
+  try {
+    const token = localStorage.getItem("token");
+    const seconds = Math.floor(currentTime || 0);
+
+    await axios.post(
+      `${API_BASE_URL}/user/podcasts/${podcastId}/listen`,
+      {}, // body rỗng
+      {
+        params: { listened_seconds: seconds },
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
+      }
+    );
+
+    console.log(`Đã gửi API tăng lượt nghe (${seconds}s):`, podcastId);
+  } catch (error) {
+    console.error("Lỗi khi tăng lượt nghe:", error);
+  }
+};

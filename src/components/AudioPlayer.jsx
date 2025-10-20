@@ -1,5 +1,4 @@
 import React, { useState, useRef, useEffect } from "react";
-import axios from "axios";
 import { Button, Space, Typography, Popover, Dropdown, Menu } from "antd";
 import {
   PlayCircleFilled,
@@ -10,6 +9,7 @@ import {
   ThunderboltOutlined,
   ReloadOutlined,
 } from "@ant-design/icons";
+import { increaseListenCount } from "../services/api_podcast";
 
 const { Text } = Typography;
 
@@ -26,8 +26,6 @@ const CustomAudioPlayer = ({ src, style, size = "default", podcastId }) => {
   const [isDragging, setIsDragging] = useState(false);
   const [playbackRate, setPlaybackRate] = useState(1.0);
   const [hasCounted, setHasCounted] = useState(false);
-
-  const API_BASE = "http://localhost:8080/api"; // đổi sang domain thật nếu cần
 
   const handleRateChange = (value) => {
     setPlaybackRate(value);
@@ -69,30 +67,10 @@ const CustomAudioPlayer = ({ src, style, size = "default", podcastId }) => {
   // Khi nghe đủ 30s thì gửi API tăng lượt nghe
   useEffect(() => {
     if (currentTime >= 30 && !hasCounted && podcastId) {
-      increaseListenCount();
+      increaseListenCount(podcastId, audioRef.current?.currentTime);
       setHasCounted(true);
     }
   }, [currentTime]);
-
-  const increaseListenCount = async () => {
-    try {
-      const token = localStorage.getItem("token");
-      const seconds = Math.floor(audioRef.current?.currentTime || 0);
-
-      await axios.post(
-        `${API_BASE}/user/podcasts/${podcastId}/listen`,
-        {}, // body rỗng
-        {
-          params: { listened_seconds: seconds }, // Gửi số giây đã nghe ở đây
-          headers: token ? { Authorization: `Bearer ${token}` } : {},
-        }
-      );
-
-      console.log(`Đã gửi API tăng lượt nghe (${seconds}s):`, podcastId);
-    } catch (error) {
-      console.error("Lỗi khi tăng lượt nghe:", error);
-    }
-  };
 
   const handleProgressClick = (e) => {
     const progressBar = progressBarRef.current;

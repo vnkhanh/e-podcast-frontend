@@ -16,7 +16,6 @@ import {
   Button,
   Empty,
 } from "antd";
-import axios from "axios";
 import {
   ClockCircleOutlined,
   FireOutlined,
@@ -26,6 +25,7 @@ import {
   PlayCircleOutlined,
 } from "@ant-design/icons";
 import { useNavigate } from "react-router-dom";
+import { getCategoryPodcasts } from "../../services/api_podcast";
 const { Title, Paragraph, Text } = Typography;
 const { Search } = Input;
 const { Option } = Select;
@@ -46,28 +46,26 @@ const CategoryPodcastsPage = () => {
     const fetchPodcasts = async () => {
       setLoading(true);
       try {
-        const res = await axios.get(
-          `http://localhost:8080/api/user/categories/${slug}/podcasts`,
-          {
-            params: { page, limit, sort, search },
-            headers: {
-              Authorization: `Bearer ${localStorage.getItem("token")}`,
-            },
-          }
-        );
-        setCategory(res.data.category);
-        setPodcasts(res.data.podcasts);
-        setTotal(res.data.pagination.total); // ✅ lấy tổng số podcast
+        const data = await getCategoryPodcasts({
+          slug,
+          page,
+          limit,
+          sort,
+          search,
+        });
+        setCategory(data.category);
+        setPodcasts(data.podcasts);
+        setTotal(data.pagination.total);
       } catch (err) {
-        console.error(err);
         message.error("Không thể tải danh sách podcast");
+        console.log(err);
       } finally {
         setLoading(false);
       }
     };
 
     fetchPodcasts();
-  }, [slug, page, sort, search, limit]); // ✅ page thay đổi → fetch dữ liệu mới
+  }, [slug, page, sort, search, limit]);
 
   const formatDuration = (seconds) => {
     if (!seconds || isNaN(seconds)) return "0 giây";
