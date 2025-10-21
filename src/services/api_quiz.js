@@ -1,6 +1,7 @@
 import axios from "axios";
 
-const API_BASE_URL = "http://localhost:8080/api/user";
+const API_BASE_URL =
+  import.meta.env.VITE_API_BASE_URL || "http://localhost:8080/api";
 
 // === Tạo trắc nghiệm từ tài liệu (document) ===
 // POST /documents/:id/quizzes

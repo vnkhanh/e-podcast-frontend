@@ -34,8 +34,7 @@ function GoogleLoginButton() {
   useEffect(() => {
     /* global google */
     google.accounts.id.initialize({
-      client_id:
-        "121001821565-au2kd6go5fuo8dtvtt0d042tvng5sqe0.apps.googleusercontent.com",
+      client_id: import.meta.env.VITE_GOOGLE_CLIENT_ID,
       callback: handleCredentialResponse,
     });
 
