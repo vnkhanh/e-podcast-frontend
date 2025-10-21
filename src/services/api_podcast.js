@@ -108,8 +108,13 @@ export const updatePodcast = async (id, data, isMultipart = false) => {
 };
 ///USER
 export const getFeaturedPodcasts = async () => {
-  const res = await axios.get(`${API_BASE_URL}/user/podcasts/featured`);
-  return res.data.podcasts || [];
+  try {
+    const res = await axios.get(`${API_BASE_URL}/user/podcasts/featured`);
+    return res.data.podcasts; // vì backend trả về { message, podcasts }
+  } catch (error) {
+    console.error("Lỗi khi lấy podcast nổi bật:", error);
+    throw error;
+  }
 };
 
 export const getPodcastById = async (id) => {

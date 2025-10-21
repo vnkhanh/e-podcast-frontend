@@ -265,7 +265,6 @@ const CustomAudioPlayer = ({
       style={{
         borderRadius: 12,
         padding: spacing,
-        boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
         ...style,
       }}
     >

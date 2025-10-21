@@ -1,0 +1,27 @@
+/* src/components/HomePage/components/HeroSection/HeroSection.css */
+.hero-section {
+  padding: 80px 24px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.hero-section h1 {
+  margin-bottom: 16px !important;
+}
+
+.hero-description {
+  font-size: 16px;
+  max-width: 500px;
+}
+
+.hero-carousel {
+  border-radius: 16px;
+  overflow: hidden;
+}
+
+@media (max-width: 768px) {
+  .hero-section {
+    padding: 40px 16px;
+    text-align: center;
+  }
+}

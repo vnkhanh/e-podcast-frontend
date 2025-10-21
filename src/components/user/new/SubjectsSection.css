@@ -1,0 +1,30 @@
+/* src/components/HomePage/components/SubjectsSection/SubjectsSection.css */
+.subject-card {
+  border-radius: 12px;
+  overflow: hidden;
+  border: 1px solid #f0f0f0;
+  transition: all 0.3s ease;
+  height: 100%;
+}
+
+.subject-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+}
+
+.subject-cover {
+  position: relative;
+  height: 120px;
+  overflow: hidden;
+}
+
+.subject-cover img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.3s ease;
+}
+
+.subject-card:hover .subject-cover img {
+  transform: scale(1.05);
+}

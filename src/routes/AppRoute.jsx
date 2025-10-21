@@ -6,7 +6,7 @@ import Register from "../pages/auth/Register";
 import ForgotPassword from "../pages/auth/ForgotPassword";
 import ResetPassword from "../pages/auth/ResetPassword";
 // Trang chủ
-import Home from "../pages/Home";
+import HomePage from "../pages/Home";
 
 // Sinh viên
 import UserLayout from "../layouts/UserLayout/UserLayout";
@@ -49,10 +49,10 @@ const AppRoute = () => {
             ) : user.role === "admin" ? (
               <Navigate to="/admin" replace />
             ) : (
-              <Home />
+              <HomePage />
             )
           ) : (
-            <Home />
+            <HomePage />
           )
         }
       />
@@ -73,6 +73,7 @@ const AppRoute = () => {
         <Route path="documents/:id" element={<DocumentDetail />} />
         <Route path="quiz/:id" element={<QuizPage />} />
         <Route path="profile" element={<UserProfile />} />
+        <Route path="mockup" element={<HomePage />} />
       </Route>
 
       {/* Teacher & Admin dùng chung layout */}
