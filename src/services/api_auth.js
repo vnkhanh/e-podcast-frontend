@@ -82,3 +82,10 @@ export async function resetPassword(token, newPassword) {
     throw err.response?.data || err;
   }
 }
+
+export const getUserProfile = async (token) => {
+  const res = await axios.get(`${API_BASE_URL}/user/account/me`, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  return res.data;
+};

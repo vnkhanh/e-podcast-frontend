@@ -156,7 +156,7 @@ const CategoryPodcastsPage = () => {
             <Col key={p.id} xs={24} sm={12} md={8} lg={6}>
               <Card
                 hoverable
-                bordered={false}
+                variant="borderless"
                 style={{
                   borderRadius: 14,
                   overflow: "hidden",

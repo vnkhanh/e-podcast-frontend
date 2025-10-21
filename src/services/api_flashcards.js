@@ -9,14 +9,14 @@ const authHeader = () => ({
 
 // === Lấy chi tiết podcast ===
 export const getPodcastDetail = async (id) => {
-  const res = await axios.get(`${API_BASE_URL}/podcasts/${id}`);
+  const res = await axios.get(`${API_BASE_URL}/user/podcasts/${id}`);
   return res.data.data;
 };
 
 // === Tạo flashcards tự động từ document ===
 export const createFlashcards = async (documentId) => {
   const res = await axios.post(
-    `${API_BASE_URL}/documents/${documentId}/flashcards`,
+    `${API_BASE_URL}/user/documents/${documentId}/flashcards`,
     {},
     { headers: authHeader() }
   );
@@ -26,7 +26,7 @@ export const createFlashcards = async (documentId) => {
 // === Lấy flashcards theo podcast ===
 export async function getFlashcardsByPodcast(podcastId) {
   const res = await axios.get(
-    `${API_BASE_URL}/podcasts/${podcastId}/flashcards`,
+    `${API_BASE_URL}/user/podcasts/${podcastId}/flashcards`,
     {
       headers: authHeader(),
     }

@@ -52,7 +52,7 @@ const HeroSection = () => {
             <Row gutter={[16, 16]} style={{ marginTop: 40 }}>
               <Col span={8}>
                 <Card
-                  bordered={false}
+                  variant="borderless"
                   style={{
                     textAlign: "center",
                     borderRadius: 12,
@@ -67,7 +67,7 @@ const HeroSection = () => {
 
               <Col span={8}>
                 <Card
-                  bordered={false}
+                  variant="borderless"
                   style={{
                     textAlign: "center",
                     borderRadius: 12,
@@ -82,7 +82,7 @@ const HeroSection = () => {
 
               <Col span={8}>
                 <Card
-                  bordered={false}
+                  variant="borderless"
                   style={{
                     textAlign: "center",
                     borderRadius: 12,
@@ -102,7 +102,7 @@ const HeroSection = () => {
         <Col xs={24} md={12}>
           <Card
             hoverable
-            bordered={false}
+            variant="borderless"
             style={{
               borderRadius: 16,
               overflow: "hidden",

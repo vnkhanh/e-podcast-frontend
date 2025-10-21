@@ -10,10 +10,17 @@ import {
   ReloadOutlined,
 } from "@ant-design/icons";
 import { increaseListenCount } from "../services/api_podcast";
+import { saveListeningHistory } from "../services/api_history";
 
 const { Text } = Typography;
 
-const CustomAudioPlayer = ({ src, style, size = "default", podcastId }) => {
+const CustomAudioPlayer = ({
+  src,
+  style,
+  size = "default",
+  podcastId,
+  userToken,
+}) => {
   const audioRef = useRef(null);
   const volumeSliderRef = useRef(null);
   const progressBarRef = useRef(null);
@@ -27,13 +34,6 @@ const CustomAudioPlayer = ({ src, style, size = "default", podcastId }) => {
   const [playbackRate, setPlaybackRate] = useState(1.0);
   const [hasCounted, setHasCounted] = useState(false);
 
-  const handleRateChange = (value) => {
-    setPlaybackRate(value);
-    if (audioRef.current) {
-      audioRef.current.playbackRate = value;
-    }
-  };
-
   const sizes = {
     small: { icon: 20, spacing: 8 },
     default: { icon: 24, spacing: 12 },
@@ -42,42 +42,62 @@ const CustomAudioPlayer = ({ src, style, size = "default", podcastId }) => {
 
   const { icon: iconSize, spacing } = sizes[size];
 
+  // --- Update time & duration ---
   useEffect(() => {
     const audio = audioRef.current;
-
-    const updateTime = () => {
-      if (!isDragging) {
-        setCurrentTime(audio.currentTime);
+    const updateTime = () => !isDragging && setCurrentTime(audio.currentTime);
+    const updateDuration = () => setDuration(audio.duration);
+    const handleEnd = () => {
+      setIsPlaying(false);
+      if (podcastId && userToken) {
+        // Khi nghe xong -> đánh dấu completed
+        saveListeningHistory(podcastId, audio.duration, true, userToken);
       }
     };
-    const updateDuration = () => setDuration(audio.duration);
-    const handleEnd = () => setIsPlaying(false);
 
     audio.addEventListener("timeupdate", updateTime);
     audio.addEventListener("loadedmetadata", updateDuration);
     audio.addEventListener("ended", handleEnd);
-
     return () => {
       audio.removeEventListener("timeupdate", updateTime);
       audio.removeEventListener("loadedmetadata", updateDuration);
       audio.removeEventListener("ended", handleEnd);
     };
-  }, [isDragging]);
+  }, [isDragging, podcastId, userToken]);
 
-  // Khi nghe đủ 30s thì gửi API tăng lượt nghe
+  // --- Khi nghe đủ 30s -> tăng lượt nghe ---
   useEffect(() => {
     if (currentTime >= 30 && !hasCounted && podcastId) {
       increaseListenCount(podcastId, audioRef.current?.currentTime);
       setHasCounted(true);
     }
-  }, [currentTime]);
+  }, [currentTime, podcastId, hasCounted]);
+
+  // --- Cập nhật lịch sử nghe realtime mỗi 15 giây ---
+  useEffect(() => {
+    if (!podcastId || !userToken) return;
+
+    const interval = setInterval(() => {
+      if (isPlaying && audioRef.current && duration > 0) {
+        const pos = Math.floor(audioRef.current.currentTime);
+        saveListeningHistory(podcastId, pos, false, userToken);
+        console.log("Đã lưu lịch sử nghe:", pos);
+      }
+    }, 5000); // 5s/lần
+
+    return () => clearInterval(interval);
+  }, [isPlaying, duration, podcastId, userToken]);
+
+  // --- Giao diện điều khiển ---
+  const handleRateChange = (value) => {
+    setPlaybackRate(value);
+    if (audioRef.current) audioRef.current.playbackRate = value;
+  };
 
   const handleProgressClick = (e) => {
-    const progressBar = progressBarRef.current;
-    const rect = progressBar.getBoundingClientRect();
+    const rect = progressBarRef.current.getBoundingClientRect();
     const percent = (e.clientX - rect.left) / rect.width;
     const newTime = percent * duration;
-
     audioRef.current.currentTime = newTime;
     setCurrentTime(newTime);
   };
@@ -85,24 +105,20 @@ const CustomAudioPlayer = ({ src, style, size = "default", podcastId }) => {
   const handleProgressMouseDown = (e) => {
     setIsDragging(true);
     handleProgressClick(e);
-
-    const handleMouseMove = (moveEvent) => handleProgressClick(moveEvent);
-    const handleMouseUp = () => {
+    const handleMove = (ev) => handleProgressClick(ev);
+    const handleUp = () => {
       setIsDragging(false);
-      document.removeEventListener("mousemove", handleMouseMove);
-      document.removeEventListener("mouseup", handleMouseUp);
+      document.removeEventListener("mousemove", handleMove);
+      document.removeEventListener("mouseup", handleUp);
     };
-
-    document.addEventListener("mousemove", handleMouseMove);
-    document.addEventListener("mouseup", handleMouseUp);
+    document.addEventListener("mousemove", handleMove);
+    document.addEventListener("mouseup", handleUp);
   };
 
   const handleVolumeClick = (e) => {
-    const volumeSlider = volumeSliderRef.current;
-    const rect = volumeSlider.getBoundingClientRect();
+    const rect = volumeSliderRef.current.getBoundingClientRect();
     const percent = (rect.bottom - e.clientY) / rect.height;
     const newVolume = Math.max(0, Math.min(1, percent));
-
     setVolume(newVolume);
     audioRef.current.volume = newVolume;
     setIsMuted(newVolume === 0);
@@ -110,46 +126,43 @@ const CustomAudioPlayer = ({ src, style, size = "default", podcastId }) => {
 
   const handleVolumeMouseDown = (e) => {
     handleVolumeClick(e);
-    const handleMouseMove = (moveEvent) => handleVolumeClick(moveEvent);
-    const handleMouseUp = () => {
-      document.removeEventListener("mousemove", handleMouseMove);
-      document.removeEventListener("mouseup", handleMouseUp);
+    const handleMove = (ev) => handleVolumeClick(ev);
+    const handleUp = () => {
+      document.removeEventListener("mousemove", handleMove);
+      document.removeEventListener("mouseup", handleUp);
     };
-    document.addEventListener("mousemove", handleMouseMove);
-    document.addEventListener("mouseup", handleMouseUp);
+    document.addEventListener("mousemove", handleMove);
+    document.addEventListener("mouseup", handleUp);
   };
 
   const togglePlay = () => {
-    if (isPlaying) {
-      audioRef.current.pause();
-    } else {
-      audioRef.current.play();
-    }
+    const audio = audioRef.current;
+    if (isPlaying) audio.pause();
+    else audio.play();
     setIsPlaying(!isPlaying);
   };
 
   const skip = (seconds) => {
-    audioRef.current.currentTime += seconds;
-    setCurrentTime(audioRef.current.currentTime);
+    const audio = audioRef.current;
+    audio.currentTime += seconds;
+    setCurrentTime(audio.currentTime);
   };
 
   const formatTime = (time) => {
     if (!time || isNaN(time)) return "00:00";
-    const minutes = Math.floor(time / 60);
-    const seconds = Math.floor(time % 60);
-    return `${minutes.toString().padStart(2, "0")}:${seconds
-      .toString()
-      .padStart(2, "0")}`;
+    const m = Math.floor(time / 60);
+    const s = Math.floor(time % 60);
+    return `${m.toString().padStart(2, "0")}:${s.toString().padStart(2, "0")}`;
   };
 
   const reset = () => {
-    audioRef.current.currentTime = 0;
+    const audio = audioRef.current;
+    audio.currentTime = 0;
     setCurrentTime(0);
-    if (isPlaying) {
-      audioRef.current.play();
-    }
+    if (isPlaying) audio.play();
   };
 
+  // --- Giao diện ProgressBar + Volume ---
   const ProgressBar = () => (
     <div style={{ marginBottom: spacing }}>
       <div
@@ -174,28 +187,12 @@ const CustomAudioPlayer = ({ src, style, size = "default", podcastId }) => {
             transition: isDragging ? "none" : "width 0.1s ease",
           }}
         />
-        <div
-          style={{
-            position: "absolute",
-            top: "50%",
-            left: `${(currentTime / duration) * 100}%`,
-            transform: "translate(-50%, -50%)",
-            width: 12,
-            height: 12,
-            background: "#1890ff",
-            borderRadius: "50%",
-            border: "2px solid #fff",
-            boxShadow: "0 2px 4px rgba(0,0,0,0.2)",
-            cursor: "pointer",
-          }}
-        />
       </div>
 
       <div
         style={{
           display: "flex",
           justifyContent: "space-between",
-          alignItems: "center",
           marginTop: spacing / 2,
         }}
       >
@@ -244,33 +241,8 @@ const CustomAudioPlayer = ({ src, style, size = "default", podcastId }) => {
             height: `${volume * 100}%`,
             background: volume === 0 ? "#ff4d4f" : "#52c41a",
             borderRadius: 2,
-            transition: "height 0.1s ease",
           }}
         />
-        <div
-          style={{
-            position: "absolute",
-            bottom: `${volume * 100}%`,
-            left: "50%",
-            transform: "translate(-50%, 50%)",
-            width: 12,
-            height: 12,
-            background: volume === 0 ? "#ff4d4f" : "#52c41a",
-            borderRadius: "50%",
-            boxShadow: "0 2px 4px rgba(0,0,0,0.2)",
-          }}
-        />
-      </div>
-    </div>
-  );
-
-  const volumeContent = (
-    <div style={{ padding: "4px 0" }}>
-      <VolumeSlider />
-      <div style={{ textAlign: "center", marginTop: 8 }}>
-        <Text type="secondary" style={{ fontSize: 12 }}>
-          {Math.round(volume * 100)}%
-        </Text>
       </div>
     </div>
   );
@@ -279,7 +251,6 @@ const CustomAudioPlayer = ({ src, style, size = "default", podcastId }) => {
     <Menu
       onClick={({ key }) => handleRateChange(parseFloat(key))}
       items={[
-        { label: "0.5x", key: "0.5" },
         { label: "0.75x", key: "0.75" },
         { label: "1.0x", key: "1.0" },
         { label: "1.25x", key: "1.25" },
@@ -311,11 +282,9 @@ const CustomAudioPlayer = ({ src, style, size = "default", podcastId }) => {
         <Space size={spacing / 2}>
           <Button
             type="text"
-            icon={<StepBackwardFilled style={{ fontSize: iconSize - 4 }} />}
+            icon={<StepBackwardFilled />}
             onClick={() => skip(-10)}
-            style={{ color: "#666" }}
           />
-
           <Button
             type="text"
             icon={
@@ -331,23 +300,15 @@ const CustomAudioPlayer = ({ src, style, size = "default", podcastId }) => {
             }
             onClick={togglePlay}
           />
-
           <Button
             type="text"
-            icon={<StepForwardFilled style={{ fontSize: iconSize - 4 }} />}
+            icon={<StepForwardFilled />}
             onClick={() => skip(10)}
-            style={{ color: "#666" }}
           />
-
-          <Button
-            type="text"
-            icon={<ReloadOutlined style={{ fontSize: iconSize - 4 }} />}
-            onClick={reset}
-            style={{ color: "#666" }}
-          />
+          <Button type="text" icon={<ReloadOutlined />} onClick={reset} />
         </Space>
 
-        <Dropdown overlay={speedMenu} placement="topCenter" trigger={["click"]}>
+        <Dropdown overlay={speedMenu} trigger={["click"]}>
           <Button
             type="text"
             icon={
@@ -355,18 +316,12 @@ const CustomAudioPlayer = ({ src, style, size = "default", podcastId }) => {
                 style={{ fontSize: iconSize - 6, color: "#666" }}
               />
             }
-            style={{ fontWeight: 500 }}
           >
             {playbackRate}x
           </Button>
         </Dropdown>
 
-        <Popover
-          content={volumeContent}
-          trigger="click"
-          placement="top"
-          overlayStyle={{ padding: 0 }}
-        >
+        <Popover content={<VolumeSlider />} trigger="click" placement="top">
           <Button
             type="text"
             icon={

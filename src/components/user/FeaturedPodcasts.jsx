@@ -59,7 +59,7 @@ const FeaturedPodcasts = () => {
           <Col xs={24} sm={12} lg={6} key={podcast.id}>
             <Card
               hoverable
-              bordered={false}
+              variant="borderless"
               style={{
                 borderRadius: 16,
                 overflow: "hidden",
@@ -95,6 +95,7 @@ const FeaturedPodcasts = () => {
                       transition: "opacity 0.3s ease",
                     }}
                     className="play-overlay"
+                    onClick={() => navigate(`/podcast/${podcast.id}`)}
                   >
                     <PlayCircleOutlined
                       style={{
@@ -120,14 +121,18 @@ const FeaturedPodcasts = () => {
               }}
             >
               <div style={{ padding: "8px 0" }}>
-                <Title level={4} style={{ marginBottom: 4 }}>
+                <Title
+                  level={4}
+                  style={{
+                    marginBottom: 4,
+                    whiteSpace: "nowrap",
+                    overflow: "hidden",
+                    textOverflow: "ellipsis",
+                  }}
+                >
                   {podcast.title}
                 </Title>
-                <Text type="secondary">
-                  {podcast.chapter?.name
-                    ? `Chương: ${podcast.chapter.name}`
-                    : "Podcast"}
-                </Text>
+
                 <div
                   style={{
                     marginTop: 8,

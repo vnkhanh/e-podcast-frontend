@@ -213,7 +213,7 @@ const PodcastDetailPageUser = () => {
         {/* LEFT SIDE */}
         <div>
           <Card
-            bordered={false}
+            variant="borderless"
             style={{
               borderRadius: 16,
               boxShadow: "0 2px 8px rgba(0,0,0,0.08)",
@@ -229,6 +229,7 @@ const PodcastDetailPageUser = () => {
               podcastId={podcast.id}
               size="default" // 'small' | 'default' | 'large'
               style={{ marginTop: 16 }}
+              userToken={localStorage.getItem("token")} // hoặc context của bạn
             />
 
             <Progress

@@ -32,8 +32,8 @@ const CategorySection = () => {
   useEffect(() => {
     const fetchCategories = async () => {
       try {
-        const data = await listCategoriesUser();
-        setCategories(data);
+        const res = await listCategoriesUser();
+        setCategories(res);
       } catch (err) {
         message.error("Không thể tải danh mục");
         console.error("Lỗi tải danh mục:", err);
