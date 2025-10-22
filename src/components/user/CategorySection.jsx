@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { Row, Col, Card, Typography, Divider, Spin, Empty } from "antd";
-import { listCategoriesUser } from "../../../services/api_category";
+import { listCategoriesUser } from "../../services/api_category";
 
 const { Title, Text } = Typography;
 

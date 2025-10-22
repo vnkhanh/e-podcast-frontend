@@ -11,8 +11,7 @@ import {
 } from "antd";
 import { PlayCircleOutlined } from "@ant-design/icons";
 import FeaturedPodcastCard from "./FeaturedPodcasts";
-import { getFeaturedPodcasts } from "../../../services/api_podcast";
-import "./HeroSection.css";
+import { getFeaturedPodcasts } from "../../services/api_podcast";
 
 const { Title, Paragraph, Text } = Typography;
 
@@ -27,6 +26,7 @@ const HeroSection = ({ playerState }) => {
         setFeaturedPodcasts(data);
       } catch (error) {
         message.error("Không thể tải podcast nổi bật.");
+        console.error("Lỗi: ", error);
       } finally {
         setLoading(false);
       }
@@ -34,9 +34,18 @@ const HeroSection = ({ playerState }) => {
     fetchFeatured();
   }, []);
 
+  const isMobile = window.innerWidth <= 768;
+
   if (loading) {
     return (
-      <div className="hero-section loading">
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          height: "60vh",
+        }}
+      >
         <Spin size="large" tip="Đang tải podcast nổi bật..." />
       </div>
     );
@@ -44,7 +53,12 @@ const HeroSection = ({ playerState }) => {
 
   if (featuredPodcasts.length === 0) {
     return (
-      <div className="hero-section empty">
+      <div
+        style={{
+          textAlign: "center",
+          padding: "80px 0",
+        }}
+      >
         <Title level={3}>
           Chưa có podcast nổi bật nào trong 7 ngày gần đây
         </Title>
@@ -53,21 +67,43 @@ const HeroSection = ({ playerState }) => {
   }
 
   return (
-    <div className="hero-section">
+    <div
+      style={{
+        padding: isMobile ? "40px 16px" : "80px 24px",
+        textAlign: isMobile ? "center" : "left",
+        maxWidth: "1200px",
+        margin: "0 auto",
+      }}
+    >
       <Row gutter={[24, 24]} align="middle">
         {/* Phần mô tả bên trái */}
         <Col xs={24} lg={12}>
           <Space direction="vertical" size="large">
-            <Title level={1}>
+            <Title
+              level={1}
+              style={{
+                marginBottom: 16,
+              }}
+            >
               Học tập qua Podcast
               <br />
               <Text type="secondary">Kết hợp kiến thức và giải trí</Text>
             </Title>
-            <Paragraph className="hero-description">
+            <Paragraph
+              style={{
+                fontSize: 16,
+                maxWidth: 500,
+                margin: isMobile ? "0 auto" : 0,
+              }}
+            >
               Khám phá podcast nổi bật nhất trong tuần này — học mọi lúc, mọi
               nơi cùng các chuyên gia hàng đầu.
             </Paragraph>
-            <Space>
+            <Space
+              style={{
+                justifyContent: isMobile ? "center" : "flex-start",
+              }}
+            >
               <Button type="primary" size="large" icon={<PlayCircleOutlined />}>
                 Bắt đầu nghe
               </Button>
@@ -78,16 +114,24 @@ const HeroSection = ({ playerState }) => {
 
         {/* Phần carousel bên phải */}
         <Col xs={24} lg={12}>
-          <Carousel autoplay className="hero-carousel">
-            {featuredPodcasts.map((podcast) => (
-              <div key={podcast.id}>
-                <FeaturedPodcastCard
-                  podcast={podcast}
-                  playerState={playerState}
-                />
-              </div>
-            ))}
-          </Carousel>
+          <div
+            style={{
+              borderRadius: 16,
+              overflow: "hidden",
+              boxShadow: "0 8px 24px rgba(0, 0, 0, 0.08)",
+            }}
+          >
+            <Carousel arrows autoplay infinite={false}>
+              {featuredPodcasts.map((podcast) => (
+                <div key={podcast.id}>
+                  <FeaturedPodcastCard
+                    podcast={podcast}
+                    playerState={playerState}
+                  />
+                </div>
+              ))}
+            </Carousel>
+          </div>
         </Col>
       </Row>
     </div>

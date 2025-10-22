@@ -1,18 +1,18 @@
 // src/components/HomePage/HomePage.js
 import React, { useState } from "react";
 import { Layout } from "antd";
-import HeroSection from "../../components/user/new/HeroSection";
-import NowPlayingBar from "../../components/user/new/NowPlayingBar";
-import CategoriesSection from "../../components/user/new/CategorySection";
-import SubjectsSection from "../../components/user/new/SubjectsSection";
-import PodcastList from "../../components/user/new/PodcastList";
-import PopularPodcasts from "../../components/user/new/PopularPodcasts";
+import HeroSection from "../../components/user/HeroSection";
+import NowPlayingBar from "../../components/user/NowPlayingBar";
+import CategoriesSection from "../../components/user/CategorySection";
+import SubjectsSection from "../../components/user/SubjectsSection";
+import PodcastList from "../../components/user/PodcastList";
+import PopularPodcasts from "../../components/user/PopularPodcasts";
 import { mockPodcasts } from "../../utils/mockData";
 import "../HomePage.css";
 
 const { Content } = Layout;
 
-const UserDashboard = () => {
+const HomePage = () => {
   const [currentPodcast, setCurrentPodcast] = useState(null);
   const [isPlaying, setIsPlaying] = useState(false);
   const [progress, setProgress] = useState(0);
@@ -69,4 +69,4 @@ const UserDashboard = () => {
   );
 };
 
-export default UserDashboard;
+export default HomePage;

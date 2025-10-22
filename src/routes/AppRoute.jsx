@@ -6,11 +6,10 @@ import Register from "../pages/auth/Register";
 import ForgotPassword from "../pages/auth/ForgotPassword";
 import ResetPassword from "../pages/auth/ResetPassword";
 // Trang chủ
-import HomePage from "../pages/Home";
+import HomePage from "../pages/student/HomePage";
 
 // Sinh viên
 import UserLayout from "../layouts/UserLayout/UserLayout";
-import UserDashboard from "../pages/student/UserDashboard";
 import CategoryPodcastsPage from "../pages/student/CategoryPodcastsPage";
 import PodcastDetailPageUser from "../pages/student/PodcastDetail/PodcastDetailPage";
 import DocumentDetail from "../pages/student/DocumentDetail";
@@ -67,13 +66,12 @@ const AppRoute = () => {
 
       {/* Sinh viên */}
       <Route path="/" element={<UserLayout />}>
-        <Route index element={<UserDashboard />} />
+        <Route index element={<HomePage />} />
         <Route path="categories/:slug" element={<CategoryPodcastsPage />} />
         <Route path="podcast/:id" element={<PodcastDetailPageUser />} />
         <Route path="documents/:id" element={<DocumentDetail />} />
         <Route path="quiz/:id" element={<QuizPage />} />
         <Route path="profile" element={<UserProfile />} />
-        <Route path="mockup" element={<HomePage />} />
       </Route>
 
       {/* Teacher & Admin dùng chung layout */}
