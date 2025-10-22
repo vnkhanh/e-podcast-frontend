@@ -6,7 +6,7 @@ import Register from "../pages/auth/Register";
 import ForgotPassword from "../pages/auth/ForgotPassword";
 import ResetPassword from "../pages/auth/ResetPassword";
 // Trang chủ
-import HomePage from "../pages/student/HomePage";
+import HomePage from "../pages/HomePage";
 
 // Sinh viên
 import UserLayout from "../layouts/UserLayout/UserLayout";

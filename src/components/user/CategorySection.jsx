@@ -1,23 +1,28 @@
-import React, { useEffect, useState } from "react";
-import { Row, Col, Card, Typography, Divider, Spin, Empty } from "antd";
+import React, { useEffect, useState, useRef } from "react";
+import { Card, Typography, Spin, Empty, Button, Divider } from "antd";
+import { LeftOutlined, RightOutlined } from "@ant-design/icons";
 import { listCategoriesUser } from "../../services/api_category";
+import { useNavigate } from "react-router-dom";
 
 const { Title, Text } = Typography;
 
 const pastelColors = [
-  "#E3F2FD", // Xanh nhạt
-  "#FCE4EC", // Hồng pastel
-  "#FFF3E0", // Cam nhạt
-  "#E8F5E9", // Xanh lá nhạt
-  "#F3E5F5", // Tím nhạt
-  "#E0F7FA", // Xanh ngọc
-  "#FFFDE7", // Vàng nhạt
-  "#F1F8E9", // Xanh lime nhẹ
+  "#E3F2FD",
+  "#FCE4EC",
+  "#FFF3E0",
+  "#E8F5E9",
+  "#F3E5F5",
+  "#E0F7FA",
+  "#FFFDE7",
+  "#F1F8E9",
 ];
 
 const CategoriesSection = () => {
   const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(true);
+  const scrollRef = useRef(null);
+  const autoScrollRef = useRef(null);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchCategories = async () => {
@@ -35,6 +40,56 @@ const CategoriesSection = () => {
 
   const getRandomColor = (index) => pastelColors[index % pastelColors.length];
 
+  // Nhân đôi/triple danh mục để tạo hiệu ứng vòng lặp vô hạn
+  const duplicatedCategories = [...categories, ...categories, ...categories];
+
+  useEffect(() => {
+    const container = scrollRef.current;
+    if (!container || categories.length === 0) return;
+
+    const scrollWidth = container.scrollWidth / 3; // tổng chiều rộng của 1 vòng danh mục
+    container.scrollLeft = scrollWidth; // bắt đầu ở giữa
+
+    const handleScroll = () => {
+      if (container.scrollLeft >= scrollWidth * 2) {
+        container.scrollLeft = scrollWidth; // reset giữa
+      } else if (container.scrollLeft <= 0) {
+        container.scrollLeft = scrollWidth;
+      }
+    };
+
+    container.addEventListener("scroll", handleScroll);
+    return () => container.removeEventListener("scroll", handleScroll);
+  }, [categories]);
+
+  const handleScroll = (direction) => {
+    const container = scrollRef.current;
+    if (!container) return;
+    const scrollAmount = container.clientWidth / 2;
+    container.scrollBy({
+      left: direction === "right" ? scrollAmount : -scrollAmount,
+      behavior: "smooth",
+    });
+  };
+
+  // Auto scroll mượt mỗi 3 giây
+  useEffect(() => {
+    const container = scrollRef.current;
+    if (!container || categories.length === 0) return;
+
+    autoScrollRef.current = setInterval(() => {
+      handleScroll("right");
+    }, 3000);
+
+    return () => clearInterval(autoScrollRef.current);
+  }, [categories]);
+
+  // Dừng auto-scroll khi hover, chạy lại khi rời chuột
+  const handleMouseEnter = () => clearInterval(autoScrollRef.current);
+  const handleMouseLeave = () => {
+    autoScrollRef.current = setInterval(() => handleScroll("right"), 3000);
+  };
+
   if (loading) {
     return (
       <div style={{ textAlign: "center", padding: "40px 0" }}>
@@ -44,7 +99,15 @@ const CategoriesSection = () => {
   }
 
   return (
-    <section style={{ padding: "40px 20px", maxWidth: 1200, margin: "0 auto" }}>
+    <section
+      style={{
+        padding: "40px 20px",
+        maxWidth: 1200,
+        margin: "0 auto",
+        position: "relative",
+      }}
+    >
+      {/* Tiêu đề */}
       <div style={{ textAlign: "center", marginBottom: 36 }}>
         <Title level={2} style={{ marginBottom: 4, fontWeight: 700 }}>
           Danh mục nổi bật
@@ -57,16 +120,49 @@ const CategoriesSection = () => {
       {categories.length === 0 ? (
         <Empty description="Chưa có danh mục nào" />
       ) : (
-        <Row gutter={[16, 16]} justify="center">
-          {categories.map((category, index) => (
-            <Col xs={12} sm={8} md={6} lg={5} key={category.id}>
+        <div
+          style={{ position: "relative" }}
+          onMouseEnter={handleMouseEnter}
+          onMouseLeave={handleMouseLeave}
+        >
+          {/* Nút trái */}
+          <Button
+            shape="circle"
+            icon={<LeftOutlined />}
+            onClick={() => handleScroll("left")}
+            style={{
+              position: "absolute",
+              left: -10,
+              top: "40%",
+              zIndex: 5,
+              boxShadow: "0 2px 10px rgba(0,0,0,0.25)",
+            }}
+          />
+
+          {/* Container danh mục */}
+          <div
+            ref={scrollRef}
+            style={{
+              display: "flex",
+              overflowX: "auto",
+              scrollBehavior: "smooth",
+              gap: 16,
+              padding: "10px 0",
+              scrollbarWidth: "none",
+            }}
+          >
+            {duplicatedCategories.map((category, index) => (
               <Card
+                key={`${category.id}-${index}`}
                 hoverable
+                onClick={() => navigate(`/categories/${category.slug}`)}
                 style={{
+                  minWidth: 250,
                   borderRadius: 12,
                   textAlign: "center",
-                  overflow: "hidden",
+                  flex: "0 0 auto",
                   transition: "all 0.3s ease",
+                  cursor: "pointer",
                 }}
                 onMouseEnter={(e) => {
                   e.currentTarget.style.transform = "translateY(-5px)";
@@ -99,14 +195,28 @@ const CategoriesSection = () => {
                   </Text>
                   <div style={{ marginTop: 6 }}>
                     <Text type="secondary" style={{ fontSize: 13 }}>
-                      {category.podcast_count} podcast
+                      {category.count} podcast
                     </Text>
                   </div>
                 </div>
               </Card>
-            </Col>
-          ))}
-        </Row>
+            ))}
+          </div>
+
+          {/* Nút phải */}
+          <Button
+            shape="circle"
+            icon={<RightOutlined />}
+            onClick={() => handleScroll("right")}
+            style={{
+              position: "absolute",
+              right: -10,
+              top: "40%",
+              zIndex: 5,
+              boxShadow: "0 2px 10px rgba(0,0,0,0.25)",
+            }}
+          />
+        </div>
       )}
 
       <Divider />

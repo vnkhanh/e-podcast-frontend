@@ -1,5 +1,15 @@
-import React, { useState } from "react";
-import { List, Avatar, Button, Space, Tag, Typography, Divider } from "antd";
+import React, { useState, useEffect } from "react";
+import {
+  List,
+  Avatar,
+  Button,
+  Space,
+  Tag,
+  Typography,
+  Divider,
+  Spin,
+  message,
+} from "antd";
 import {
   PlayCircleOutlined,
   PauseCircleOutlined,
@@ -12,13 +22,35 @@ import {
   ClockCircleOutlined,
 } from "@ant-design/icons";
 import { formatTime } from "../../utils/helpers";
+import axios from "axios";
 
 const { Text, Paragraph, Title } = Typography;
 
-const PodcastList = ({ podcasts, playerState, title = "Podcast" }) => {
+const PodcastList = ({ playerState, title = "Podcast Mới Nhất" }) => {
   const { currentPodcast, isPlaying, likedPodcasts, handlePlay, handleLike } =
     playerState;
   const [hoveredIndex, setHoveredIndex] = useState(null);
+  const [podcasts, setPodcasts] = useState([]);
+  const [loading, setLoading] = useState(false);
+
+  const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
+  const fetchLatestPodcasts = async () => {
+    setLoading(true);
+    try {
+      const res = await axios.get(`${API_BASE_URL}/user/podcasts/latest`);
+      setPodcasts(res.data.podcasts || []);
+      console.log("Giây", res.data.podcasts.duration_sec);
+    } catch (err) {
+      console.error(err);
+      message.error("Không thể tải podcast mới nhất");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchLatestPodcasts();
+  }, []);
 
   const isMobile = window.innerWidth <= 768;
 
@@ -69,13 +101,7 @@ const PodcastList = ({ podcasts, playerState, title = "Podcast" }) => {
         <List.Item.Meta
           avatar={
             <Space>
-              <Text
-                type="secondary"
-                style={{
-                  width: 20,
-                  textAlign: "center",
-                }}
-              >
+              <Text type="secondary" style={{ width: 20, textAlign: "center" }}>
                 {index + 1}
               </Text>
               <Avatar
@@ -91,7 +117,7 @@ const PodcastList = ({ podcasts, playerState, title = "Podcast" }) => {
             <Space direction="vertical" size="small" style={{ width: "100%" }}>
               <Text strong>{podcast.title}</Text>
               <Text type="secondary" style={{ fontSize: 12 }}>
-                {podcast.chapter.subject.name} • {podcast.chapter.title}
+                {podcast.subject} • {podcast.chapter}
               </Text>
             </Space>
           }
@@ -101,7 +127,7 @@ const PodcastList = ({ podcasts, playerState, title = "Podcast" }) => {
                 ellipsis={{ rows: 2 }}
                 style={{ margin: 0, fontSize: 12 }}
               >
-                {podcast.description}
+                {podcast.summary}
               </Paragraph>
               <Space size="small" wrap>
                 <Tag icon={<EyeOutlined />} color="default">
@@ -114,8 +140,8 @@ const PodcastList = ({ podcasts, playerState, title = "Podcast" }) => {
                   {formatTime(podcast.duration_sec)}
                 </Tag>
                 {podcast.categories.map((category) => (
-                  <Tag key={category.id} color="blue">
-                    {category.name}
+                  <Tag key={category} color="blue">
+                    {category}
                   </Tag>
                 ))}
               </Space>
@@ -126,14 +152,10 @@ const PodcastList = ({ podcasts, playerState, title = "Podcast" }) => {
     );
   };
 
+  if (loading) return <Spin style={{ margin: 32 }} />;
+
   return (
-    <section
-      style={{
-        width: "100%",
-        marginTop: 32,
-        marginBottom: 32,
-      }}
-    >
+    <section style={{ width: "100%", marginTop: 32, marginBottom: 32 }}>
       <Title level={2} style={{ marginBottom: 16 }}>
         {title}
       </Title>
