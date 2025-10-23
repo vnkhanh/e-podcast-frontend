@@ -7,6 +7,7 @@ import {
   message,
   Popconfirm,
   Switch,
+  DatePicker,
   Input,
   Descriptions,
   Typography,
@@ -32,6 +33,7 @@ import SubjectFormEdit from "./SubjectFormEdit";
 
 const { Option } = Select;
 const { Title, Text } = Typography;
+const { RangePicker } = DatePicker;
 
 const SubjectPage = () => {
   const [form] = Form.useForm();
@@ -50,6 +52,7 @@ const SubjectPage = () => {
   // search + filter
   const [searchText, setSearchText] = useState("");
   const [statusFilter, setStatusFilter] = useState();
+  const [dateRange, setDateRange] = useState([null, null]);
 
   // pagination
   const [page, setPage] = useState(1);
@@ -68,6 +71,8 @@ const SubjectPage = () => {
       const res = await listSubjects({
         search: searchText,
         status: statusFilter,
+        from_date: dateRange[0]?.format("YYYY-MM-DD"),
+        to_date: dateRange[1]?.format("YYYY-MM-DD"),
         page,
         limit,
       });
@@ -78,7 +83,11 @@ const SubjectPage = () => {
       message.error("Không thể tải danh sách môn học");
     }
     setLoading(false);
-  }, [searchText, statusFilter, page, limit]);
+  }, [searchText, statusFilter, dateRange, page, limit]);
+
+  useEffect(() => {
+    setPage(1); // reset page về 1 khi filter/search thay đổi
+  }, [searchText, statusFilter, dateRange]);
 
   useEffect(() => {
     loadSubjects();
@@ -136,30 +145,34 @@ const SubjectPage = () => {
       setDetailLoading(false);
     }
   };
+  const handleEdit = async (record) => {
+    try {
+      setUpdating(true);
+      const data = await getSubjectDetail(record.id); // gọi API chi tiết
+      setEditingSubject(data); // có cả chapters
+    } catch (err) {
+      message.error("Không thể tải chi tiết môn học");
+      console.error(err);
+    } finally {
+      setUpdating(false);
+    }
+  };
 
   // update
   const handleUpdate = async (values) => {
     try {
       setUpdating(true);
-      await updateSubject(editingSubject.id, values.name);
+      await updateSubject(editingSubject.id, values);
       message.success("Cập nhật môn học thành công");
       setEditingSubject(null);
       loadSubjects();
-      form.resetFields();
     } catch (err) {
       const msg = err.response?.data?.error;
       if (msg?.includes("tồn tại")) {
-        // Hiển thị lỗi trực tiếp dưới input
-        form.setFields([
-          {
-            name: "name",
-            errors: [msg],
-          },
-        ]);
+        form.setFields([{ name: "name", errors: [msg] }]);
       } else {
         message.error(msg || "Lỗi khi cập nhật môn học");
       }
-      console.error(err);
     } finally {
       setUpdating(false);
     }
@@ -219,10 +232,7 @@ const SubjectPage = () => {
             <Button danger icon={<DeleteOutlined />} />
           </Popconfirm>
 
-          <Button
-            icon={<EditOutlined />}
-            onClick={() => setEditingSubject(record)}
-          />
+          <Button icon={<EditOutlined />} onClick={() => handleEdit(record)} />
 
           <Button
             icon={<EyeOutlined />}
@@ -248,11 +258,25 @@ const SubjectPage = () => {
           placeholder="Tìm kiếm môn học"
           enterButton
           allowClear
-          onSearch={setSearchText}
+          value={searchText}
           onChange={(e) => setSearchText(e.target.value)}
+          onSearch={() => loadSubjects()}
           style={{ width: 250 }}
         />
-
+        <RangePicker
+          style={{ width: 250 }}
+          value={dateRange}
+          onChange={(dates) => {
+            setDateRange(dates || [null, null]);
+            setPage(1);
+            loadSubjects({
+              from_date: dates?.[0]?.format("YYYY-MM-DD"),
+              to_date: dates?.[1]?.format("YYYY-MM-DD"),
+            });
+          }}
+          format="YYYY-MM-DD"
+          allowClear
+        />
         <Select
           placeholder="Lọc theo trạng thái"
           allowClear
@@ -304,7 +328,7 @@ const SubjectPage = () => {
         title="Thêm môn học"
         onCancel={() => setModalVisible(false)}
         footer={null}
-        destroyOnClose
+        destroyOnHidden
       >
         <SubjectForm form={form} onFinish={handleCreate} loading={creating} />
       </Modal>

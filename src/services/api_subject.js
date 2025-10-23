@@ -31,9 +31,16 @@ export async function getSubjectDetail(id) {
 }
 
 // Danh sách môn học (có search, filter, pagination)
-export async function listSubjects({ status, search, page, limit } = {}) {
+export async function listSubjects({
+  status,
+  search,
+  page,
+  limit,
+  from_date,
+  to_date,
+} = {}) {
   const res = await api.get("/admin/subjects", {
-    params: { status, search, page, limit },
+    params: { status, search, page, limit, from_date, to_date },
   });
   return res.data; // { data: [...], page, limit, total }
 }
@@ -45,11 +52,26 @@ export async function deleteSubject(id) {
 }
 
 // Cập nhật môn học
-export async function updateSubject(id, name) {
-  const res = await api.put(`/admin/subjects/${id}`, { name });
-  return res.data; // { message, subject }
-}
-
+export const updateSubject = async (id, data) => {
+  const res = await api.put(`${API_BASE_URL}/admin/subjects/${id}`, data);
+  return res.data;
+};
+/**
+ * Kiểm tra xem chương có thể xóa được hay không
+ * @param {string} chapterId
+ * @returns {Promise<{can_delete: boolean, message?: string}>}
+ */
+export const checkChapterDeletable = async (chapterId) => {
+  try {
+    const res = await api.get(
+      `${API_BASE_URL}/admin/subjects/chapters/${chapterId}/check-deletable`
+    );
+    return res.data;
+  } catch (err) {
+    console.error("Lỗi checkChapterDeletable:", err);
+    throw err;
+  }
+};
 // Toggle trạng thái môn học
 export async function toggleSubjectStatus(id) {
   const res = await api.patch(`/admin/subjects/${id}/toggle-status`);
