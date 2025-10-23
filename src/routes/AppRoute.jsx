@@ -27,7 +27,7 @@ import CreatePodcastUpload from "../pages/admin/Podcast/AddPodcast";
 import PodcastDetailPage from "../pages/admin/Podcast/PodcastDetail";
 import EditPodcast from "../pages/admin/Podcast/EditPodcast";
 import UserPage from "../pages/admin/User/UserPage";
-
+import VoiceSelector from "../pages/admin/VoiceSelector";
 import ProtectedRoute from "./ProtectedRoute";
 
 const AppRoute = () => {
@@ -92,6 +92,7 @@ const AppRoute = () => {
         <Route path="podcast/create" element={<CreatePodcastUpload />} />
         <Route path="podcast/:id" element={<PodcastDetailPage />} />
         <Route path="podcast/:id/edit" element={<EditPodcast />} />
+        <Route path="voice" element={<VoiceSelector />} />
       </Route>
 
       <Route

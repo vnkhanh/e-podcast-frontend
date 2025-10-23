@@ -183,7 +183,7 @@ const DocumentPage = () => {
           case "Hoàn thành":
             color = "green";
             break;
-          case "Lỗi":
+          case ("Lỗi tạo audio", "Lỗi trích xuất", "Lỗi"):
             color = "red";
             break;
           case "Đã tải lên":
@@ -225,14 +225,16 @@ const DocumentPage = () => {
             type="primary"
             onClick={() => fetchDocumentDetail(record.id)}
           />
-          <Popconfirm
-            title="Xoá tài liệu?"
-            onConfirm={() => handleDelete(record.id)}
-            okText="Xoá"
-            cancelText="Hủy"
-          >
-            <Button danger icon={<DeleteOutlined />} />
-          </Popconfirm>
+          {record.status !== "Hoàn thành" && (
+            <Popconfirm
+              title="Xoá tài liệu?"
+              onConfirm={() => handleDelete(record.id)}
+              okText="Xoá"
+              cancelText="Hủy"
+            >
+              <Button danger icon={<DeleteOutlined />} />
+            </Popconfirm>
+          )}
         </Space>
       ),
     },

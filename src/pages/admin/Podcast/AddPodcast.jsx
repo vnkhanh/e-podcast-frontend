@@ -128,13 +128,11 @@ const CreatePodcastUpload = () => {
     // Giọng đọc và tốc độ
     const voice = values.voice || "vi-VN-Chirp3-HD-Puck";
     const speakingRate = values.speaking_rate ?? 1.0;
-    const pitch = values.pitch ?? 0.0;
 
-    console.log("Giọng đọc:", voice, "Tốc độ:", speakingRate, "Cao độ:", pitch);
+    console.log("Giọng đọc:", voice, "Tốc độ:", speakingRate);
 
     formData.append("voice", voice);
     formData.append("speaking_rate", speakingRate.toString());
-    formData.append("pitch", pitch.toString());
 
     // Danh mục
     (values.category_ids || []).forEach((id) =>
@@ -335,25 +333,21 @@ const CreatePodcastUpload = () => {
           </Form.Item>
 
           {/* Giọng đọc */}
-          <Form.Item
-            name="voice"
-            label="Giọng đọc"
-            initialValue="vi-VN-Standard-A"
-          >
+          <Form.Item name="voice" label="Giọng đọc">
             <Select>
               {/* <Option value="vi-VN-Chirp3-HD-Puck">Nam</Option> */}
-              <Option value="vi-VN-Standard-A">Nữ</Option>
-              <Option value="vi-VN-Standard-B">Nam</Option>
+              <Option value="vi-VN-Standard-A">Nữ (Standard A)</Option>
+              <Option value="vi-VN-Standard-B">Nam (Standard B)</Option>
+              <Option value="vi-VN-Standard-C">Nữ (Standard C)</Option>
+              <Option value="vi-VN-Standard-D">Nam (Standard D)</Option>
+              <Option value="vi-VN-Chirp3-HD-Iapetus">Nam (Iapetus)</Option>
+              <Option value="vi-VN-Chirp3-HD-Leda">Nữ (Leda)</Option>
             </Select>
           </Form.Item>
 
           {/* Tốc độ đọc */}
           <Form.Item name="speaking_rate" label="Tốc độ đọc" initialValue={1.0}>
             <Slider min={0.5} max={2.0} step={0.1} />
-          </Form.Item>
-          {/* Pitch*/}
-          <Form.Item name="pitch" label="Cao độ giọng nói" initialValue={0.0}>
-            <Slider min={-10} max={10} step={1} />
           </Form.Item>
 
           {/* Danh mục */}
