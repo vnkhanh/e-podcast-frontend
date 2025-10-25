@@ -69,59 +69,103 @@ const HeroSection = ({ playerState }) => {
   return (
     <div
       style={{
-        padding: isMobile ? "40px 16px" : "80px 24px",
+        padding: isMobile ? "40px 16px" : "100px 32px",
         textAlign: isMobile ? "center" : "left",
         maxWidth: "1200px",
         margin: "0 auto",
+        position: "relative",
       }}
     >
-      <Row gutter={[24, 24]} align="middle">
-        {/* Phần mô tả bên trái */}
+      {/* Background gradient với blur overlay */}
+      <div
+        style={{
+          position: "absolute",
+          top: 0,
+          left: 0,
+          width: "100%",
+          height: "100%",
+          background:
+            "linear-gradient(135deg, #667eea 0%, #764ba2 50%, #3b82f6 100%)",
+          filter: "blur(80px)",
+          opacity: 0.25,
+          zIndex: 0,
+        }}
+      />
+      <Row
+        gutter={[48, 48]}
+        align="middle"
+        style={{ position: "relative", zIndex: 1 }}
+      >
         <Col xs={24} lg={12}>
           <Space direction="vertical" size="large">
             <Title
               level={1}
               style={{
-                marginBottom: 16,
+                fontSize: isMobile ? 32 : 48,
+                fontWeight: 800,
+                lineHeight: 1.2,
+                color: "#1e293b",
               }}
             >
-              Học tập qua Podcast
-              <br />
-              <Text type="secondary">Kết hợp kiến thức và giải trí</Text>
+              Học tập qua{" "}
+              <span
+                style={{
+                  background: "linear-gradient(90deg, #6366f1, #60a5fa)",
+                  WebkitBackgroundClip: "text",
+                  WebkitTextFillColor: "transparent",
+                }}
+              >
+                Podcast
+              </span>
             </Title>
             <Paragraph
               style={{
-                fontSize: 16,
-                maxWidth: 500,
-                margin: isMobile ? "0 auto" : 0,
+                fontSize: 18,
+                color: "#475569",
+                maxWidth: 480,
               }}
             >
-              Khám phá podcast nổi bật nhất trong tuần này — học mọi lúc, mọi
-              nơi cùng các chuyên gia hàng đầu.
+              Khám phá nội dung học tập hấp dẫn từ các chuyên gia hàng đầu — học
+              mọi lúc, mọi nơi.
             </Paragraph>
-            <Space
-              style={{
-                justifyContent: isMobile ? "center" : "flex-start",
-              }}
-            >
-              <Button type="primary" size="large" icon={<PlayCircleOutlined />}>
+            <Space wrap>
+              <Button
+                type="primary"
+                size="large"
+                icon={<PlayCircleOutlined />}
+                style={{
+                  borderRadius: 30,
+                  padding: "0 28px",
+                  background: "linear-gradient(90deg, #3b82f6, #60a5fa)",
+                  boxShadow: "0 6px 20px rgba(59,130,246,0.3)",
+                }}
+              >
                 Bắt đầu nghe
               </Button>
-              <Button size="large">Khám phá thêm</Button>
+              <Button
+                size="large"
+                style={{
+                  borderRadius: 30,
+                  borderColor: "#64748b",
+                  color: "#334155",
+                }}
+              >
+                Khám phá thêm
+              </Button>
             </Space>
           </Space>
         </Col>
 
-        {/* Phần carousel bên phải */}
         <Col xs={24} lg={12}>
           <div
             style={{
-              borderRadius: 16,
+              borderRadius: 24,
               overflow: "hidden",
-              boxShadow: "0 8px 24px rgba(0, 0, 0, 0.08)",
+              boxShadow: "0 8px 32px rgba(0,0,0,0.1)",
+              background: "white",
             }}
           >
-            <Carousel arrows autoplay infinite={false}>
+            <Carousel autoplay arrows>
               {featuredPodcasts.map((podcast) => (
                 <div key={podcast.id}>
                   <FeaturedPodcastCard

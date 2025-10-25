@@ -8,6 +8,7 @@ import {
   Dropdown,
   Typography,
   message,
+  Space,
 } from "antd";
 import {
   UserOutlined,
@@ -31,7 +32,6 @@ const AppHeader = () => {
   const user = token ? JSON.parse(localStorage.getItem("user")) : null;
   const navigate = useNavigate();
 
-  // ===================== JWT CHECK =====================
   useEffect(() => {
     if (token) {
       try {
@@ -45,9 +45,8 @@ const AppHeader = () => {
           localStorage.removeItem("user");
           navigate("/auth/login", { replace: true });
         }
-      } catch (err) {
-        console.error("JWT decode error:", err);
-        message.error("Phiên đăng nhập không hợp lệ, vui lòng đăng nhập lại!");
+      } catch {
+        message.error("Phiên đăng nhập không hợp lệ!");
         localStorage.removeItem("token");
         localStorage.removeItem("user");
         navigate("/auth/login", { replace: true });
@@ -55,36 +54,23 @@ const AppHeader = () => {
     }
   }, [token, navigate]);
 
-  // ===================== MENU =====================
   const menuItems = [
     { key: "home", label: "Trang chủ" },
     { key: "courses", label: "Khóa học" },
-    { key: "podcasts", label: "Podcasts" },
+    { key: "podcasts", label: "Podcast" },
     { key: "blog", label: "Blog" },
     { key: "about", label: "Về chúng tôi" },
   ];
 
   const userMenuItems = [
-    {
-      key: "profile",
-      icon: <UserOutlined />,
-      label: "Hồ sơ",
-    },
-    {
-      key: "my-courses",
-      icon: <BookOutlined />,
-      label: "Khóa học của tôi",
-    },
+    { key: "profile", icon: <UserOutlined />, label: "Hồ sơ" },
+    { key: "my-courses", icon: <BookOutlined />, label: "Khóa học của tôi" },
     {
       key: "theme",
       icon: isDarkMode ? <BulbOutlined /> : <MoonOutlined />,
       label: isDarkMode ? "Chế độ sáng" : "Chế độ tối",
     },
-    {
-      key: "logout",
-      icon: <LogoutOutlined />,
-      label: "Đăng xuất",
-    },
+    { key: "logout", icon: <LogoutOutlined />, label: "Đăng xuất" },
   ];
 
   const handleUserMenuClick = ({ key }) => {
@@ -102,13 +88,19 @@ const AppHeader = () => {
   return (
     <Header
       style={{
-        background: isDarkMode ? "#1f1f1f" : "#fff",
-        color: isDarkMode ? "#fff" : "#000",
-        boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
+        backdropFilter: "blur(10px)",
+        background: isDarkMode
+          ? "rgba(24, 24, 27, 0.9)"
+          : "rgba(255, 255, 255, 0.8)",
+        boxShadow: "0 2px 10px rgba(0,0,0,0.1)",
         position: "sticky",
         top: 0,
         zIndex: 100,
-        padding: "0 24px",
+        padding: "0 32px",
+        transition: "all 0.3s ease",
+        height: 72,
+        display: "flex",
+        alignItems: "center",
       }}
     >
       <div
@@ -116,18 +108,33 @@ const AppHeader = () => {
           display: "flex",
           justifyContent: "space-between",
           alignItems: "center",
-          maxWidth: 1200,
+          maxWidth: 1300,
           margin: "0 auto",
+          width: "100%",
+          height: "100%",
         }}
       >
-        <div style={{ display: "flex", alignItems: "center" }}>
+        {/* Left Section */}
+        <Space size={40} align="center">
           <div
-            style={{ marginRight: 40, cursor: "pointer" }}
+            style={{
+              cursor: "pointer",
+              display: "flex",
+              alignItems: "center",
+              gap: 8,
+            }}
             onClick={() => navigate("/")}
           >
             <Title
               level={3}
-              style={{ color: "#1890ff", margin: 0, cursor: "pointer" }}
+              style={{
+                margin: 0,
+                background: "linear-gradient(90deg, #6366f1, #3b82f6)",
+                WebkitBackgroundClip: "text",
+                WebkitTextFillColor: "transparent",
+                fontWeight: 800,
+                letterSpacing: -0.5,
+              }}
             >
               E-Podcast
             </Title>
@@ -137,37 +144,76 @@ const AppHeader = () => {
             mode="horizontal"
             defaultSelectedKeys={["home"]}
             items={menuItems}
-            theme={isDarkMode ? "dark" : "light"} // 🌟 đổi theme menu
-            style={{ border: "none", background: "transparent" }}
+            theme={isDarkMode ? "dark" : "light"}
+            style={{
+              background: "transparent",
+              borderBottom: "none",
+              fontWeight: 500,
+              fontSize: 15,
+            }}
           />
-        </div>
+        </Space>
 
-        <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
-          <Search
-            placeholder="Tìm kiếm khóa học, podcast..."
-            enterButton={<SearchOutlined />}
-            size="large"
-            style={{ width: 300 }}
-          />
+        {/* Right Section */}
+        <Space align="center" size={20}>
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              height: 40,
+            }}
+          >
+            <Search
+              placeholder="Tìm kiếm khóa học, podcast..."
+              enterButton={<SearchOutlined />}
+              size="middle"
+              style={{
+                width: 280,
+                borderRadius: 20,
+                overflow: "hidden",
+              }}
+              className="search-bar"
+            />
+          </div>
 
           {token && user ? (
             <Dropdown
               menu={{
                 items: userMenuItems,
                 onClick: handleUserMenuClick,
-                theme: isDarkMode ? "dark" : "light", // 🌟 dropdown theme
               }}
               placement="bottomRight"
               trigger={["click"]}
+              arrow
             >
-              <Avatar size="large" icon={<UserOutlined />} />
+              <Avatar
+                size={40}
+                src={user?.avatar_url}
+                icon={<UserOutlined />}
+                style={{
+                  cursor: "pointer",
+                  border: isDarkMode
+                    ? "2px solid #3b82f6"
+                    : "2px solid #6366f1",
+                  transition: "all 0.3s ease",
+                }}
+              />
             </Dropdown>
           ) : (
-            <Button type="primary" onClick={() => navigate("/auth/login")}>
+            <Button
+              type="primary"
+              onClick={() => navigate("/auth/login")}
+              style={{
+                borderRadius: 20,
+                background: "linear-gradient(90deg, #6366f1, #3b82f6)",
+                fontWeight: 600,
+                height: 38,
+              }}
+            >
               Đăng nhập
             </Button>
           )}
-        </div>
+        </Space>
       </div>
     </Header>
   );

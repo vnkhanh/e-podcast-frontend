@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Card, Avatar, Space, Tag, Typography, Button, Progress } from "antd";
+import { Card, Space, Tag, Typography, Button, Progress } from "antd";
 import {
   PlayCircleOutlined,
   PauseCircleOutlined,
@@ -18,26 +18,23 @@ const FeaturedPodcastCard = ({ podcast, playerState }) => {
   const { currentPodcast, isPlaying, handlePlay, progress } = playerState;
   const isCurrentlyPlaying = currentPodcast?.id === podcast.id && isPlaying;
 
-  // State để xử lý hover hiệu ứng
   const [hovered, setHovered] = useState(false);
-
-  // Tính toán progress nếu đang phát
   const progressPercent = currentPodcast?.id === podcast.id ? progress : 0;
 
   return (
     <Card
       style={{
-        borderRadius: 16,
+        borderRadius: 20,
         overflow: "hidden",
         border: "none",
-        backgroundImage: `linear-gradient(rgba(146, 146, 146, 0.4), rgba(151, 151, 151, 0.8)), url(${podcast.cover_image})`,
+        backgroundImage: `url(${podcast.cover_image})`,
         backgroundSize: "cover",
         backgroundPosition: "center",
-        backgroundRepeat: "no-repeat",
+        transform: hovered ? "scale(1.02)" : "scale(1)",
+        transition: "all 0.4s ease",
         boxShadow: hovered
-          ? "0 12px 40px rgba(139, 139, 139, 0.4), 0 4px 12px rgba(0, 0, 0, 0.3)"
-          : "0 6px 20px rgba(0, 0, 0, 0.25)",
-        transition: "all 0.3s ease",
+          ? "0 12px 40px rgba(99,102,241,0.35)"
+          : "0 6px 20px rgba(0,0,0,0.25)",
         position: "relative",
         cursor: "pointer",
         height: 320,
@@ -45,18 +42,10 @@ const FeaturedPodcastCard = ({ podcast, playerState }) => {
         flexDirection: "column",
         justifyContent: "flex-end",
       }}
-      bodyStyle={{
-        padding: 0,
-        background: "transparent",
-        height: "100%",
-        display: "flex",
-        flexDirection: "column",
-        justifyContent: "flex-end",
-      }}
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
     >
-      {/* Progress Bar khi đang phát */}
+      {/* Progress bar */}
       {isCurrentlyPlaying && (
         <div
           style={{ position: "absolute", top: 0, left: 0, right: 0, zIndex: 2 }}
@@ -64,38 +53,51 @@ const FeaturedPodcastCard = ({ podcast, playerState }) => {
           <Progress
             percent={progressPercent}
             showInfo={false}
-            strokeColor={{
-              "0%": "#3b82f6",
-              "100%": "#60a5fa",
-            }}
+            strokeColor={{ "0%": "#60a5fa", "100%": "#6366f1" }}
             strokeWidth={3}
             trailColor="transparent"
           />
         </div>
       )}
 
-      {/* Gradient Overlay để chữ dễ đọc */}
+      {/* Overlay */}
       <div
         style={{
           position: "absolute",
-          top: 0,
-          left: 0,
-          right: 0,
-          bottom: 0,
+          inset: 0,
           background:
-            "linear-gradient(to bottom, transparent 0%, rgba(15, 28, 63, 0.1) 30%, rgba(15, 28, 63, 0.8) 100%)",
+            "linear-gradient(to bottom, rgba(0,0,0,0.1) 0%, rgba(17,24,39,0.9) 100%)",
           zIndex: 1,
         }}
       />
 
-      {/* Top Actions */}
+      {/* Featured Tag */}
+      <Tag
+        style={{
+          position: "absolute",
+          top: 16,
+          left: 16,
+          zIndex: 3,
+          border: "none",
+          background: "linear-gradient(135deg, #f59e0b 0%, #f97316 100%)",
+          color: "white",
+          fontWeight: 700,
+          borderRadius: 8,
+          fontSize: 11,
+          padding: "4px 10px",
+        }}
+      >
+        NỔI BẬT
+      </Tag>
+
+      {/* Top right icons */}
       <div
         style={{
           position: "absolute",
           top: 16,
           right: 16,
           zIndex: 3,
-          opacity: hovered ? 1 : 0.7,
+          opacity: hovered ? 1 : 0.6,
           transition: "opacity 0.3s ease",
         }}
       >
@@ -103,25 +105,25 @@ const FeaturedPodcastCard = ({ podcast, playerState }) => {
           <Button
             type="text"
             shape="circle"
-            icon={<HeartOutlined style={{ color: "#fff", fontSize: 16 }} />}
+            icon={<HeartOutlined style={{ color: "#fff" }} />}
             style={{
-              background: "rgba(0, 0, 0, 0.5)",
+              background: "rgba(0,0,0,0.4)",
               border: "none",
             }}
           />
           <Button
             type="text"
             shape="circle"
-            icon={<ShareAltOutlined style={{ color: "#fff", fontSize: 16 }} />}
+            icon={<ShareAltOutlined style={{ color: "#fff" }} />}
             style={{
-              background: "rgba(0, 0, 0, 0.5)",
+              background: "rgba(0,0,0,0.4)",
               border: "none",
             }}
           />
         </Space>
       </div>
 
-      {/* Play Button */}
+      {/* Play button */}
       <div
         style={{
           position: "absolute",
@@ -138,19 +140,19 @@ const FeaturedPodcastCard = ({ podcast, playerState }) => {
           shape="circle"
           size="large"
           style={{
-            width: 60,
-            height: 60,
+            width: 68,
+            height: 68,
             background: isCurrentlyPlaying
-              ? "rgba(255, 255, 255, 0.95)"
-              : "linear-gradient(135deg, #3b82f6 0%, #60a5fa 100%)",
+              ? "rgba(255,255,255,0.95)"
+              : "linear-gradient(135deg, #6366f1 0%, #3b82f6 100%)",
             border: "none",
-            boxShadow: "0 6px 20px rgba(0, 0, 0, 0.4)",
+            boxShadow: "0 0 25px rgba(99,102,241,0.6)",
           }}
           icon={
             isCurrentlyPlaying ? (
-              <PauseCircleOutlined style={{ fontSize: 28, color: "#1e40af" }} />
+              <PauseCircleOutlined style={{ fontSize: 30, color: "#1e40af" }} />
             ) : (
-              <PlayCircleOutlined style={{ fontSize: 28, color: "#fff" }} />
+              <PlayCircleOutlined style={{ fontSize: 30, color: "#fff" }} />
             )
           }
           onClick={(e) => {
@@ -160,32 +162,7 @@ const FeaturedPodcastCard = ({ podcast, playerState }) => {
         />
       </div>
 
-      {/* Featured Badge */}
-      <div
-        style={{
-          position: "absolute",
-          top: 16,
-          left: 16,
-          zIndex: 3,
-        }}
-      >
-        <Tag
-          color="#f59e0b"
-          style={{
-            border: "none",
-            background: "rgba(245, 158, 11, 0.9)",
-            color: "#fff",
-            fontWeight: 700,
-            borderRadius: 8,
-            fontSize: 11,
-            margin: 0,
-          }}
-        >
-          NỔI BẬT
-        </Tag>
-      </div>
-
-      {/* Content Section - Hiển thị ở dưới */}
+      {/* Content */}
       <div
         style={{
           padding: 20,
@@ -194,140 +171,86 @@ const FeaturedPodcastCard = ({ podcast, playerState }) => {
           background: "transparent",
         }}
       >
-        <Space direction="vertical" size={12} style={{ width: "100%" }}>
-          {/* Category Tag */}
-          <div>
-            <Tag
-              icon={<BookOutlined />}
-              style={{
-                border: "none",
-                background: "rgba(59, 130, 246, 0.3)",
-                color: "#93c5fd",
-                fontWeight: 600,
-                borderRadius: 10,
-                margin: 0,
-                fontSize: 11,
-                backdropFilter: "blur(10px)",
-              }}
-            >
-              {podcast.categories[0]?.name}
-            </Tag>
-          </div>
+        <Space direction="vertical" size={10} style={{ width: "100%" }}>
+          <Tag
+            icon={<BookOutlined />}
+            style={{
+              border: "none",
+              background: "rgba(96,165,250,0.25)",
+              color: "#bfdbfe",
+              fontWeight: 600,
+              borderRadius: 10,
+              margin: 0,
+              fontSize: 11,
+              backdropFilter: "blur(8px)",
+            }}
+          >
+            {podcast.categories[0]?.name || "Chủ đề"}
+          </Tag>
 
-          {/* Title */}
           <Title
             level={3}
             style={{
               margin: 0,
-              color: "#fff",
+              color: hovered ? "#93c5fd" : "#fff",
               fontSize: 20,
               fontWeight: 700,
               lineHeight: 1.3,
-              textShadow: "0 2px 4px rgba(0, 0, 0, 0.5)",
+              transition: "color 0.3s ease",
             }}
             ellipsis={{ rows: 1 }}
           >
             {podcast.title}
           </Title>
 
-          {/* Description */}
           <Paragraph
             ellipsis={{ rows: 2 }}
             style={{
               margin: 0,
               fontSize: 13,
-              lineHeight: 1.5,
               color: "#e2e8f0",
               fontWeight: 400,
-              textShadow: "0 1px 2px rgba(0, 0, 0, 0.5)",
             }}
           >
             {podcast.description}
           </Paragraph>
 
-          {/* Meta Info */}
           <Space
             size={16}
-            style={{ width: "100%", justifyContent: "space-between" }}
+            style={{
+              width: "100%",
+              justifyContent: "space-between",
+              marginTop: 4,
+            }}
           >
+            {/* Meta */}
             <Space size={12}>
-              {/* Instructor */}
               <Space size={6}>
                 <UserOutlined style={{ color: "#93c5fd", fontSize: 14 }} />
                 <Text
-                  style={{
-                    color: "#93c5fd",
-                    fontSize: 12,
-                    fontWeight: 600,
-                    textShadow: "0 1px 2px rgba(0, 0, 0, 0.5)",
-                  }}
+                  style={{ color: "#cbd5e1", fontSize: 12, fontWeight: 600 }}
                 >
                   {podcast.instructor || "Giảng viên"}
                 </Text>
               </Space>
-
-              {/* Duration */}
               <Space size={6}>
                 <ClockCircleOutlined
                   style={{ color: "#cbd5e1", fontSize: 12 }}
                 />
-                <Text
-                  style={{
-                    color: "#cbd5e1",
-                    fontSize: 12,
-                    fontWeight: 500,
-                    textShadow: "0 1px 2px rgba(0, 0, 0, 0.5)",
-                  }}
-                >
+                <Text style={{ color: "#cbd5e1", fontSize: 12 }}>
                   {formatTime(podcast.duration_sec)}
                 </Text>
               </Space>
             </Space>
 
             {/* Stats */}
-            <Space size={12}>
-              <Space size={4}>
-                <Text
-                  style={{
-                    color: "#f59e0b",
-                    fontSize: 12,
-                    textShadow: "0 1px 2px rgba(0, 0, 0, 0.5)",
-                  }}
-                >
-                  <EyeOutlined />
-                </Text>
-                <Text
-                  style={{
-                    color: "#fff",
-                    fontSize: 12,
-                    fontWeight: 600,
-                    textShadow: "0 1px 2px rgba(0, 0, 0, 0.5)",
-                  }}
-                >
-                  {podcast.view_count || "0"}
-                </Text>
-              </Space>
-              <Space size={4}>
-                <Text
-                  style={{
-                    color: "#60a5fa",
-                    fontSize: 12,
-                    textShadow: "0 1px 2px rgba(0, 0, 0, 0.5)",
-                  }}
-                >
-                  <HeartOutlined />
-                </Text>
-                <Text
-                  style={{
-                    color: "#fff",
-                    fontSize: 12,
-                    fontWeight: 600,
-                    textShadow: "0 1px 2px rgba(0, 0, 0, 0.5)",
-                  }}
-                >
-                  {podcast.like_count || "0"}
-                </Text>
-              </Space>
+            <Space size={10}>
+              <Text style={{ color: "#facc15", fontSize: 12 }}>
+                <EyeOutlined /> {podcast.view_count || 0}
+              </Text>
+              <Text style={{ color: "#60a5fa", fontSize: 12 }}>
+                <HeartOutlined /> {podcast.like_count || 0}
+              </Text>
             </Space>
           </Space>
         </Space>
