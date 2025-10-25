@@ -13,8 +13,11 @@ import UserLayout from "../layouts/UserLayout/UserLayout";
 import CategoryPodcastsPage from "../pages/student/CategoryPodcastsPage";
 import PodcastDetailPageUser from "../pages/student/PodcastDetail/PodcastDetailPage";
 import DocumentDetail from "../pages/student/DocumentDetail";
-import QuizPage from "../pages/student/QuizPage";
 import UserProfile from "../pages/student/UserProfile";
+import QuizSetsListPage from "../pages/student/Quiz/QuizSetsListPage";
+import QuizTakePage from "../pages/student/Quiz/QuizTakePage";
+import QuizHistoryPage from "../pages/student/Quiz/QuizHistoryPage";
+import QuizAttemptDetailPage from "../pages/student/Quiz/QuizAttemptDetailPage";
 // Admin & Teacher dùng chung layout
 import AdminLayout from "../layouts/AdminLayout";
 import AdminDashboard from "../pages/admin/AdminDashboard";
@@ -69,8 +72,14 @@ const AppRoute = () => {
         <Route path="categories/:slug" element={<CategoryPodcastsPage />} />
         <Route path="podcast/:id" element={<PodcastDetailPageUser />} />
         <Route path="documents/:id" element={<DocumentDetail />} />
-        <Route path="quiz/:id" element={<QuizPage />} />
         <Route path="profile" element={<UserProfile />} />
+        <Route path="podcast/:id/quiz-sets" element={<QuizSetsListPage />} />
+        <Route path="quiz-sets/:id/take" element={<QuizTakePage />} />
+        <Route path="/quiz-sets/:id/history" element={<QuizHistoryPage />} />
+        <Route
+          path="/quiz-attempts/:attemptId"
+          element={<QuizAttemptDetailPage />}
+        />
       </Route>
 
       {/* Teacher & Admin dùng chung layout */}

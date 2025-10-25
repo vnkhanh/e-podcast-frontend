@@ -217,7 +217,7 @@ const CategoryPodcastsPage = () => {
 
                 <Paragraph
                   type="secondary"
-                  ellipsis={{ rows: 2 }}
+                  ellipsis={{ rows: 1 }}
                   style={{ fontSize: 13, marginBottom: 12 }}
                 >
                   {p.description || "Không có mô tả."}

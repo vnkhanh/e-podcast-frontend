@@ -362,7 +362,7 @@ const PodcastDetailPageUser = () => {
 
               <Button
                 icon={<HistoryOutlined />}
-                onClick={() => navigate(`/quiz/${podcast.id}`)}
+                onClick={() => navigate(`/podcast/${podcast.id}/quiz-sets`)}
                 type="primary"
               >
                 Trắc nghiệm
