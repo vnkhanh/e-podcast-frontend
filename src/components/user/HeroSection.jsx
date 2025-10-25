@@ -104,7 +104,6 @@ const HeroSection = ({ playerState }) => {
                 fontSize: isMobile ? 32 : 48,
                 fontWeight: 800,
                 lineHeight: 1.2,
-                color: "#1e293b",
               }}
             >
               Học tập qua{" "}
@@ -121,7 +120,6 @@ const HeroSection = ({ playerState }) => {
             <Paragraph
               style={{
                 fontSize: 18,
-                color: "#475569",
                 maxWidth: 480,
               }}
             >
@@ -147,7 +145,6 @@ const HeroSection = ({ playerState }) => {
                 style={{
                   borderRadius: 30,
                   borderColor: "#64748b",
-                  color: "#334155",
                 }}
               >
                 Khám phá thêm

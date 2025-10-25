@@ -40,19 +40,18 @@ const CategoriesSection = () => {
 
   const getRandomColor = (index) => pastelColors[index % pastelColors.length];
 
-  // Nhân đôi/triple danh mục để tạo hiệu ứng vòng lặp vô hạn
   const duplicatedCategories = [...categories, ...categories, ...categories];
 
   useEffect(() => {
     const container = scrollRef.current;
     if (!container || categories.length === 0) return;
 
-    const scrollWidth = container.scrollWidth / 3; // tổng chiều rộng của 1 vòng danh mục
-    container.scrollLeft = scrollWidth; // bắt đầu ở giữa
+    const scrollWidth = container.scrollWidth / 3;
+    container.scrollLeft = scrollWidth;
 
     const handleScroll = () => {
       if (container.scrollLeft >= scrollWidth * 2) {
-        container.scrollLeft = scrollWidth; // reset giữa
+        container.scrollLeft = scrollWidth;
       } else if (container.scrollLeft <= 0) {
         container.scrollLeft = scrollWidth;
       }
@@ -72,7 +71,6 @@ const CategoriesSection = () => {
     });
   };
 
-  // Auto scroll mượt mỗi 3 giây
   useEffect(() => {
     const container = scrollRef.current;
     if (!container || categories.length === 0) return;
@@ -84,7 +82,6 @@ const CategoriesSection = () => {
     return () => clearInterval(autoScrollRef.current);
   }, [categories]);
 
-  // Dừng auto-scroll khi hover, chạy lại khi rời chuột
   const handleMouseEnter = () => clearInterval(autoScrollRef.current);
   const handleMouseLeave = () => {
     autoScrollRef.current = setInterval(() => handleScroll("right"), 3000);
@@ -92,8 +89,8 @@ const CategoriesSection = () => {
 
   if (loading) {
     return (
-      <div style={{ textAlign: "center", padding: "40px 0" }}>
-        <Spin size="large" />
+      <div style={{ textAlign: "center", padding: "60px 0" }}>
+        <Spin size="large" tip="Đang tải danh mục..." />
       </div>
     );
   }
@@ -101,19 +98,33 @@ const CategoriesSection = () => {
   return (
     <section
       style={{
-        padding: "40px 20px",
-        maxWidth: 1200,
+        padding: "60px 20px",
+        maxWidth: 1300,
         margin: "0 auto",
         position: "relative",
       }}
     >
       {/* Tiêu đề */}
-      <div style={{ textAlign: "center", marginBottom: 36 }}>
-        <Title level={2} style={{ marginBottom: 4, fontWeight: 700 }}>
+      <div style={{ textAlign: "center", marginBottom: 48 }}>
+        <Title
+          level={2}
+          style={{
+            marginBottom: 8,
+            fontWeight: 800,
+            background: "linear-gradient(90deg, #6366f1, #3b82f6)",
+            WebkitBackgroundClip: "text",
+            WebkitTextFillColor: "transparent",
+          }}
+        >
           Danh mục nổi bật
         </Title>
-        <Text type="secondary" style={{ fontSize: 15 }}>
-          Khám phá các danh mục podcast đa dạng
+        <Text
+          style={{
+            fontSize: 16,
+            color: "#6b7280",
+          }}
+        >
+          Khám phá các danh mục podcast đa dạng và phong phú
         </Text>
       </div>
 
@@ -126,17 +137,34 @@ const CategoriesSection = () => {
           onMouseLeave={handleMouseLeave}
         >
           {/* Nút trái */}
+          {/* Nút trái */}
           <Button
             shape="circle"
             icon={<LeftOutlined />}
             onClick={() => handleScroll("left")}
             style={{
               position: "absolute",
-              left: -10,
-              top: "40%",
-              zIndex: 5,
-              boxShadow: "0 2px 10px rgba(0,0,0,0.25)",
+              left: 8,
+              top: "50%",
+              transform: "translateY(-50%)",
+              zIndex: 10,
+              width: 44,
+              height: 44,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              background: "rgba(255, 255, 255, 0.9)",
+              border: "none",
+              boxShadow: "0 4px 16px rgba(0,0,0,0.2)",
+              backdropFilter: "blur(8px)",
+              transition: "all 0.3s ease",
             }}
+            onMouseEnter={(e) =>
+              (e.currentTarget.style.background = "rgba(255,255,255,1)")
+            }
+            onMouseLeave={(e) =>
+              (e.currentTarget.style.background = "rgba(255,255,255,0.9)")
+            }
           />
 
           {/* Container danh mục */}
@@ -146,9 +174,10 @@ const CategoriesSection = () => {
               display: "flex",
               overflowX: "auto",
               scrollBehavior: "smooth",
-              gap: 16,
-              padding: "10px 0",
+              gap: 24,
+              padding: "10px 0 20px",
               scrollbarWidth: "none",
+              msOverflowStyle: "none",
             }}
           >
             {duplicatedCategories.map((category, index) => (
@@ -157,52 +186,60 @@ const CategoriesSection = () => {
                 hoverable
                 onClick={() => navigate(`/categories/${category.slug}`)}
                 style={{
-                  minWidth: 250,
-                  borderRadius: 12,
+                  minWidth: 240,
+                  height: 200,
+                  borderRadius: 20,
                   textAlign: "center",
                   flex: "0 0 auto",
                   transition: "all 0.3s ease",
                   cursor: "pointer",
+                  background: getRandomColor(index),
+                  border: "none",
+                  position: "relative",
+                  boxShadow: "0 6px 20px rgba(0,0,0,0.08)",
                 }}
                 onMouseEnter={(e) => {
-                  e.currentTarget.style.transform = "translateY(-5px)";
+                  e.currentTarget.style.transform =
+                    "translateY(-8px) scale(1.03)";
                   e.currentTarget.style.boxShadow =
-                    "0 6px 18px rgba(0,0,0,0.1)";
+                    "0 10px 30px rgba(0,0,0,0.15)";
                 }}
                 onMouseLeave={(e) => {
-                  e.currentTarget.style.transform = "translateY(0)";
+                  e.currentTarget.style.transform = "translateY(0) scale(1)";
                   e.currentTarget.style.boxShadow =
-                    "0 2px 10px rgba(0,0,0,0.05)";
+                    "0 6px 20px rgba(0,0,0,0.08)";
                 }}
               >
                 <div
                   style={{
-                    height: 100,
-                    backgroundColor: getRandomColor(index),
+                    position: "absolute",
+                    inset: 0,
                     display: "flex",
-                    alignItems: "center",
+                    flexDirection: "column",
                     justifyContent: "center",
-                    fontWeight: 600,
-                    fontSize: 18,
-                    color: "#333",
+                    alignItems: "center",
+                    color: "#1f2937",
                   }}
                 >
-                  {category.name.charAt(0).toUpperCase()}
-                </div>
-                <div style={{ padding: "12px 8px" }}>
-                  <Text strong style={{ fontSize: 16 }}>
+                  <div
+                    style={{
+                      fontWeight: 800,
+                      fontSize: 20,
+                      textTransform: "capitalize",
+                      marginBottom: 6,
+                    }}
+                  >
                     {category.name}
-                  </Text>
-                  <div style={{ marginTop: 6 }}>
-                    <Text type="secondary" style={{ fontSize: 13 }}>
-                      {category.count} podcast
-                    </Text>
                   </div>
+                  <Text style={{ color: "#4b5563", fontSize: 14 }}>
+                    {category.count} podcast
+                  </Text>
                 </div>
               </Card>
             ))}
           </div>
 
+          {/* Nút phải */}
           {/* Nút phải */}
           <Button
             shape="circle"
@@ -210,16 +247,32 @@ const CategoriesSection = () => {
             onClick={() => handleScroll("right")}
             style={{
               position: "absolute",
-              right: -10,
-              top: "40%",
-              zIndex: 5,
-              boxShadow: "0 2px 10px rgba(0,0,0,0.25)",
+              right: 8,
+              top: "50%",
+              transform: "translateY(-50%)",
+              zIndex: 10,
+              width: 44,
+              height: 44,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              background: "rgba(255, 255, 255, 0.9)",
+              border: "none",
+              boxShadow: "0 4px 16px rgba(0,0,0,0.2)",
+              backdropFilter: "blur(8px)",
+              transition: "all 0.3s ease",
             }}
+            onMouseEnter={(e) =>
+              (e.currentTarget.style.background = "rgba(255,255,255,1)")
+            }
+            onMouseLeave={(e) =>
+              (e.currentTarget.style.background = "rgba(255,255,255,0.9)")
+            }
           />
         </div>
       )}
 
-      <Divider />
+      <Divider style={{ marginTop: 60 }} />
     </section>
   );
 };
