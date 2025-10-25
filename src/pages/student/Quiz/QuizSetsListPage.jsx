@@ -13,14 +13,22 @@ import {
   Row,
   Col,
   Modal,
+  Avatar,
+  Badge,
+  Statistic,
 } from "antd";
 import {
   ArrowLeftOutlined,
   FileTextOutlined,
   ClockCircleOutlined,
-  UserOutlined,
   PlayCircleOutlined,
   BulbOutlined,
+  RocketOutlined,
+  StarOutlined,
+  CrownOutlined,
+  BookOutlined,
+  UserOutlined,
+  HistoryOutlined,
 } from "@ant-design/icons";
 import {
   getQuizSetsByPodcast,
@@ -45,11 +53,9 @@ const QuizSetsListPage = () => {
   const fetchData = async () => {
     setLoading(true);
     try {
-      // Lấy thông tin podcast
       const podcastRes = await getPodcastById(id);
       setPodcast(podcastRes.data);
 
-      // Lấy danh sách quiz sets
       const quizData = await getQuizSetsByPodcast(id);
       setQuizSets(quizData.quiz_sets || []);
     } catch (err) {
@@ -60,18 +66,27 @@ const QuizSetsListPage = () => {
     }
   };
 
-  // === Tạo quiz set mới bằng AI ===
   const handleGenerateQuiz = () => {
     Modal.confirm({
-      title: "Tạo bộ trắc nghiệm bằng AI?",
-      content:
-        "Hệ thống sẽ sử dụng nội dung tài liệu của podcast này để sinh câu hỏi tự động.",
-      okText: "Tạo",
-      cancelText: "Hủy",
+      title: "Tạo bộ trắc nghiệm",
+      content: (
+        <div style={{ padding: "8px 0" }}>
+          <p>Hệ thống sử dụng AI để tạo bộ câu hỏi trắc nghiệm.</p>
+        </div>
+      ),
+      okText: "Bắt đầu tạo",
+      cancelText: "Hủy bỏ",
+      icon: <RocketOutlined style={{ color: "#1890ff" }} />,
+      okButtonProps: {
+        style: {
+          background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+          border: "none",
+          borderRadius: 8,
+        },
+      },
       async onOk() {
         setGenerating(true);
         try {
-          // Lấy document_id từ podcast
           const podcastRes = await getPodcastById(id);
           const documentId = podcastRes.data?.document_id;
 
@@ -80,12 +95,9 @@ const QuizSetsListPage = () => {
             return;
           }
 
-          // Gọi API sinh quiz bằng AI
-          const res = await createQuizFromDocument(documentId);
-          console.log("Quiz AI generated:", res);
-
+          await createQuizFromDocument(documentId);
           message.success("Tạo bộ trắc nghiệm thành công!");
-          fetchData(); // Reload lại danh sách quiz sets
+          fetchData();
         } catch (err) {
           console.error(err);
           message.error("Lỗi khi tạo bộ trắc nghiệm!");
@@ -100,148 +112,378 @@ const QuizSetsListPage = () => {
     navigate(`/quiz-sets/${quizSetId}/take`);
   };
 
+  const getDifficultyColor = (difficulty) => {
+    switch (difficulty) {
+      case "hard":
+        return "#ff4d4f";
+      case "medium":
+        return "#faad14";
+      case "easy":
+        return "#52c41a";
+      default:
+        return "#d9d9d9";
+    }
+  };
+
+  const calculateStats = () => {
+    if (quizSets.length === 0) return null;
+
+    const totalQuestions = quizSets.reduce(
+      (total, set) => total + (set.questions?.length || 0),
+      0
+    );
+    const latestQuiz = quizSets.reduce(
+      (latest, set) =>
+        new Date(set.created_at) > new Date(latest.created_at) ? set : latest,
+      quizSets[0]
+    );
+
+    return {
+      totalQuizSets: quizSets.length,
+      totalQuestions,
+      latestDate: latestQuiz.created_at,
+    };
+  };
+
   if (loading) {
     return (
-      <div style={{ textAlign: "center", padding: "100px 0" }}>
-        <Spin size="large" tip="Đang tải..." />
+      <div
+        style={{
+          textAlign: "center",
+          padding: "100px 0",
+          background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+          minHeight: "100vh",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+        }}
+      >
+        <Spin size="large" tip="Đang tải bộ trắc nghiệm..." />
       </div>
     );
   }
 
-  return (
-    <div style={{ padding: "24px", maxWidth: 1200, margin: "0 auto" }}>
-      {/* Header */}
-      <Space direction="vertical" size="large" style={{ width: "100%" }}>
-        <Button
-          icon={<ArrowLeftOutlined />}
-          onClick={() => navigate(`/podcast/${id}`)}
-        >
-          Quay lại Podcast
-        </Button>
+  const stats = calculateStats();
 
-        {podcast && (
-          <Card bordered={false}>
-            <Row gutter={16} align="middle">
-              <Col>
-                <img
-                  src={podcast.cover_image}
-                  alt={podcast.title}
+  return (
+    <div
+      style={{
+        background: "linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%)",
+        minHeight: "100vh",
+        padding: 24,
+      }}
+    >
+      <div style={{ maxWidth: 1200, margin: "0 auto" }}>
+        {/* HEADER */}
+        <Card
+          style={{
+            marginBottom: 24,
+            background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+            border: "none",
+            borderRadius: 16,
+            color: "white",
+          }}
+        >
+          <div style={{ padding: 24 }}>
+            <Button
+              icon={<ArrowLeftOutlined />}
+              onClick={() => navigate(-1)}
+              style={{
+                background: "rgba(255,255,255,0.2)",
+                border: "none",
+                color: "white",
+                marginBottom: 16,
+              }}
+            >
+              Quay lại
+            </Button>
+
+            <Row gutter={[24, 24]} align="middle">
+              <Col xs={24} md={16}>
+                <div
                   style={{
-                    width: 80,
-                    height: 80,
-                    borderRadius: 8,
-                    objectFit: "cover",
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 16,
+                    marginBottom: 8,
                   }}
-                />
+                >
+                  <Avatar
+                    size={64}
+                    src={podcast?.cover_image}
+                    icon={<UserOutlined />}
+                    style={{
+                      background: "rgba(255,255,255,0.2)",
+                      border: "2px solid rgba(255,255,255,0.4)",
+                    }}
+                  />
+                  <div>
+                    <Title level={2} style={{ color: "white", margin: 0 }}>
+                      {podcast?.title || "Podcast"}
+                    </Title>
+                    <Text style={{ color: "rgba(255,255,255,0.8)" }}>
+                      Danh sách bộ trắc nghiệm
+                    </Text>
+                  </div>
+                </div>
               </Col>
-              <Col flex={1}>
-                <Title level={3} style={{ margin: 0 }}>
-                  Bộ trắc nghiệm
-                </Title>
-                <Text type="secondary">{podcast.title}</Text>
-              </Col>
-              <Col>
+
+              <Col xs={24} md={8} style={{ textAlign: "center" }}>
                 <Button
-                  icon={<BulbOutlined />}
+                  icon={<RocketOutlined />}
                   type="primary"
+                  size="large"
                   loading={generating}
                   onClick={handleGenerateQuiz}
+                  style={{
+                    background:
+                      "linear-gradient(135deg, #ff6b6b 0%, #ee5a24 100%)",
+                    border: "none",
+                    borderRadius: 8,
+                    fontWeight: 600,
+                    height: 48,
+                    width: "100%",
+                  }}
                 >
-                  Tạo bộ trắc nghiệm bằng AI
+                  Tạo Quiz bằng AI
                 </Button>
               </Col>
             </Row>
-          </Card>
+          </div>
+        </Card>
+
+        {/* STATISTICS */}
+        {stats && (
+          <Row gutter={[16, 16]} style={{ marginBottom: 24 }} justify="center">
+            <Col xs={24} md={8}>
+              <Card
+                style={{
+                  textAlign: "center",
+                  borderRadius: 12,
+                  background:
+                    "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+                  border: "none",
+                  color: "white",
+                }}
+              >
+                <Statistic
+                  value={stats.totalQuizSets}
+                  prefix={<BookOutlined />}
+                  valueStyle={{ color: "white" }}
+                />
+                <Text style={{ color: "rgba(255,255,255,0.8)" }}>
+                  Tổng số bộ quiz
+                </Text>
+              </Card>
+            </Col>
+            <Col xs={24} md={8}>
+              <Card
+                style={{
+                  textAlign: "center",
+                  borderRadius: 12,
+                  background:
+                    "linear-gradient(135deg, #ff6b6b 0%, #ee5a24 100%)",
+                  border: "none",
+                  color: "white",
+                }}
+              >
+                <Statistic
+                  value={stats.totalQuestions}
+                  prefix={<FileTextOutlined />}
+                  valueStyle={{ color: "white" }}
+                />
+                <Text style={{ color: "rgba(255,255,255,0.8)" }}>
+                  Tổng câu hỏi
+                </Text>
+              </Card>
+            </Col>
+            <Col xs={24} md={8}>
+              <Card
+                style={{
+                  textAlign: "center",
+                  borderRadius: 12,
+                  background:
+                    "linear-gradient(135deg, #ffeaa7 0%, #fdcb6e 100%)",
+                  border: "none",
+                }}
+              >
+                <Statistic
+                  value={
+                    stats.latestDate
+                      ? new Date(stats.latestDate).toLocaleDateString("vi-VN")
+                      : "--"
+                  }
+                  prefix={<ClockCircleOutlined />}
+                  valueStyle={{ color: "#faad14" }}
+                />
+                <Text type="secondary">Cập nhật gần nhất</Text>
+              </Card>
+            </Col>
+          </Row>
         )}
 
-        {/* Quiz Sets List */}
+        {/* QUIZ LIST */}
         {quizSets.length === 0 ? (
-          <Card>
+          <Card style={{ borderRadius: 16, border: "none" }}>
             <Empty
               description="Chưa có bộ trắc nghiệm nào cho podcast này"
               image={Empty.PRESENTED_IMAGE_SIMPLE}
-            ></Empty>
+            >
+              <Button
+                type="primary"
+                icon={<RocketOutlined />}
+                size="large"
+                onClick={handleGenerateQuiz}
+                style={{
+                  background:
+                    "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+                  border: "none",
+                  borderRadius: 8,
+                }}
+              >
+                Tạo Quiz đầu tiên
+              </Button>
+            </Empty>
           </Card>
         ) : (
-          <List
-            grid={{
-              gutter: 16,
-              xs: 1,
-              sm: 1,
-              md: 2,
-              lg: 2,
-              xl: 3,
-              xxl: 3,
+          <div
+            style={{
+              background: "white",
+              borderRadius: 16,
+              overflow: "hidden",
             }}
-            dataSource={quizSets}
-            renderItem={(quizSet) => (
-              <List.Item>
-                <Card
-                  hoverable
-                  style={{ borderRadius: 12, height: "100%" }}
-                  actions={[
-                    <Button
-                      type="primary"
-                      icon={<PlayCircleOutlined />}
-                      onClick={() => handleStartQuiz(quizSet.id)}
-                      block
+          >
+            <List
+              itemLayout="horizontal"
+              dataSource={quizSets}
+              renderItem={(quizSet, index) => {
+                const questionCount = quizSet.questions?.length || 0;
+                return (
+                  <List.Item
+                    className="quiz-set-item"
+                    style={{
+                      padding: "16px 24px",
+                      borderBottom: "1px solid #f0f0f0",
+                      transition: "all 0.3s ease",
+                    }}
+                  >
+                    <Row
+                      gutter={[16, 16]}
+                      align="middle"
+                      style={{ width: "100%" }}
                     >
-                      Bắt đầu làm bài
-                    </Button>,
-                    <Button
-                      icon={<ClockCircleOutlined />}
-                      onClick={() =>
-                        navigate(`/quiz-sets/${quizSet.id}/history`)
-                      }
-                      block
-                    >
-                      Xem lịch sử làm bài
-                    </Button>,
-                  ]}
-                >
-                  <Card.Meta
-                    avatar={
-                      <FileTextOutlined
-                        style={{ fontSize: 32, color: "#1890ff" }}
-                      />
-                    }
-                    title={
-                      <Text strong ellipsis>
-                        {quizSet.title}
-                      </Text>
-                    }
-                    description={
-                      <Space
-                        direction="vertical"
-                        size="small"
-                        style={{ width: "100%" }}
-                      >
-                        <Paragraph
-                          ellipsis={{ rows: 2 }}
-                          style={{ margin: 0, color: "#666" }}
+                      <Col xs={2} style={{ textAlign: "center" }}>
+                        <div
+                          style={{
+                            width: 40,
+                            height: 40,
+                            borderRadius: "50%",
+                            background: "rgba(102, 126, 234, 0.2)",
+                            color: "#667eea",
+                            border: "2px solid #667eea",
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "center",
+                            fontWeight: 600,
+                            fontSize: 16,
+                          }}
                         >
-                          {quizSet.description}
-                        </Paragraph>
+                          {index + 1}
+                        </div>
+                      </Col>
 
-                        <Space wrap>
-                          <Tag icon={<FileTextOutlined />} color="blue">
-                            {quizSet.questions?.length || 0} câu hỏi
-                          </Tag>
-                          <Tag icon={<ClockCircleOutlined />} color="green">
-                            {new Date(quizSet.created_at).toLocaleDateString(
-                              "vi-VN"
+                      <Col xs={14} md={12}>
+                        <Space
+                          direction="vertical"
+                          size="small"
+                          style={{ width: "100%" }}
+                        >
+                          <div
+                            style={{
+                              display: "flex",
+                              alignItems: "center",
+                              gap: 8,
+                            }}
+                          >
+                            <FileTextOutlined style={{ color: "#1890ff" }} />
+                            <Text strong style={{ fontSize: 16 }}>
+                              {quizSet.title}
+                            </Text>
+                            {index === 0 && (
+                              <CrownOutlined style={{ color: "#faad14" }} />
                             )}
-                          </Tag>
+                          </div>
+
+                          <Paragraph
+                            ellipsis={{ rows: 2 }}
+                            style={{ margin: 0, color: "#666", fontSize: 14 }}
+                          >
+                            {quizSet.description ||
+                              "Bộ câu hỏi được tạo tự động từ nội dung podcast"}
+                          </Paragraph>
+
+                          <Space wrap>
+                            <Tag icon={<FileTextOutlined />} color="blue">
+                              {questionCount} câu hỏi
+                            </Tag>
+                            <Tag color={getDifficultyColor(quizSet.difficulty)}>
+                              {quizSet.difficulty || "medium"}
+                            </Tag>
+                            <Tag
+                              icon={<ClockCircleOutlined />}
+                              style={{ background: "#f0f0f0" }}
+                            >
+                              {new Date(quizSet.created_at).toLocaleDateString(
+                                "vi-VN"
+                              )}
+                            </Tag>
+                          </Space>
                         </Space>
-                      </Space>
-                    }
-                  />
-                </Card>
-              </List.Item>
-            )}
-          />
+                      </Col>
+
+                      <Col xs={8} md={10} style={{ textAlign: "right" }}>
+                        <Space.Compact block>
+                          <Button
+                            type="primary"
+                            icon={<PlayCircleOutlined />}
+                            onClick={() => handleStartQuiz(quizSet.id)}
+                            style={{
+                              background:
+                                "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+                              border: "none",
+                              borderRadius: "8px 0 0 8px",
+                            }}
+                          >
+                            Làm bài
+                          </Button>
+                          <Button
+                            icon={<HistoryOutlined />}
+                            onClick={() =>
+                              navigate(`/quiz-sets/${quizSet.id}/history`)
+                            }
+                            style={{
+                              borderRadius: "0 8px 8px 0",
+                            }}
+                          >
+                            Lịch sử
+                          </Button>
+                        </Space.Compact>
+                      </Col>
+                    </Row>
+                  </List.Item>
+                );
+              }}
+            />
+          </div>
         )}
-      </Space>
+
+        <style jsx>{`
+          .quiz-set-item:hover {
+            background: linear-gradient(135deg, #f8f9ff 0%, #e3f2fd 100%);
+            transform: translateX(4px);
+          }
+        `}</style>
+      </div>
     </div>
   );
 };
