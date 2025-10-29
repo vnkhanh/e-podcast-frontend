@@ -1,4 +1,3 @@
-// src/components/HomePage/utils/helpers.js
 export const formatTime = (time) => {
   if (!time || isNaN(time)) return "00:00:00";
   const h = Math.floor(time / 3600);
