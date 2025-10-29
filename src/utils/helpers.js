@@ -1,12 +1,13 @@
 // src/components/HomePage/utils/helpers.js
-export const formatTime = (seconds) => {
-  if (!seconds || isNaN(seconds)) return "0:00";
-
-  const mins = Math.floor(seconds / 60);
-  const secs = Math.floor(seconds % 60);
-  return `${mins}:${secs.toString().padStart(2, "0")}`;
+export const formatTime = (time) => {
+  if (!time || isNaN(time)) return "00:00:00";
+  const h = Math.floor(time / 3600);
+  const m = Math.floor((time % 3600) / 60);
+  const s = Math.floor(time % 60);
+  return `${h.toString().padStart(2, "0")}:${m.toString().padStart(2, "0")}:${s
+    .toString()
+    .padStart(2, "0")}`;
 };
-
 export const truncateText = (text, maxLength) => {
   if (!text) return "";
   if (text.length <= maxLength) return text;

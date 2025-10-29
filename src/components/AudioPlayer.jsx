@@ -11,7 +11,7 @@ import {
 } from "@ant-design/icons";
 import { increaseListenCount } from "../services/api_podcast";
 import { saveListeningHistory } from "../services/api_history";
-
+import { formatTime } from "../utils/helpers";
 const { Text } = Typography;
 
 const CustomAudioPlayer = ({
@@ -147,14 +147,6 @@ const CustomAudioPlayer = ({
     audio.currentTime += seconds;
     setCurrentTime(audio.currentTime);
   };
-
-  const formatTime = (time) => {
-    if (!time || isNaN(time)) return "00:00";
-    const m = Math.floor(time / 60);
-    const s = Math.floor(time % 60);
-    return `${m.toString().padStart(2, "0")}:${s.toString().padStart(2, "0")}`;
-  };
-
   const reset = () => {
     const audio = audioRef.current;
     audio.currentTime = 0;

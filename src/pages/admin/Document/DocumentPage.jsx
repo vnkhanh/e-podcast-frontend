@@ -175,19 +175,27 @@ const DocumentPage = () => {
         let color = "default";
         switch (status) {
           case "Đang trích xuất":
+            color = "purple";
+            break;
+          case "Đang làm sạch":
+            color = "geekblue";
+            break;
+          case "Đang tạo kịch bản":
             color = "blue";
             break;
+          case "Đang tóm tắt":
+            color = "cyan";
+            break;
           case "Đang tạo audio":
-            color = "purple";
+            color = "lime";
             break;
           case "Hoàn thành":
             color = "green";
             break;
-          case ("Lỗi tạo audio", "Lỗi trích xuất", "Lỗi"):
+          case "Lỗi tạo audio":
+          case "Lỗi trích xuất":
+          case "Lỗi lưu audio":
             color = "red";
-            break;
-          case "Đã tải lên":
-            color = "orange";
             break;
         }
 
@@ -196,6 +204,9 @@ const DocumentPage = () => {
             <Tag color={color}>{status}</Tag>
             {(status === "Đang trích xuất" ||
               status === "Đang tạo audio" ||
+              status === "Đang tạo tóm tắt" ||
+              status === "Đang tạo kịch bản" ||
+              status === "Đang làm sạch" ||
               status === "Đã trích xuất") && (
               <Progress
                 percent={progress}
@@ -225,7 +236,7 @@ const DocumentPage = () => {
             type="primary"
             onClick={() => fetchDocumentDetail(record.id)}
           />
-          {record.status !== "Hoàn thành" && (
+          {record.status == "Hoàn thành" && (
             <Popconfirm
               title="Xoá tài liệu?"
               onConfirm={() => handleDelete(record.id)}
