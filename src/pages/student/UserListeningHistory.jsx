@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import {
   Card,
   Typography,
@@ -28,14 +28,16 @@ import {
   clearAllHistory,
 } from "../../services/api_history";
 import { formatTime } from "../../utils/helpers";
+import { useNavigate } from "react-router-dom";
 const { Title, Text } = Typography;
 
 const UserListeningHistory = () => {
   const [histories, setHistories] = useState([]);
   const [loading, setLoading] = useState(false);
   const token = localStorage.getItem("token");
+  const navigate = useNavigate();
 
-  const fetchHistory = async () => {
+  const fetchHistory = useCallback(async () => {
     setLoading(true);
     try {
       const res = await getAllListeningHistory(token);
@@ -46,7 +48,7 @@ const UserListeningHistory = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [token]);
 
   const handleDelete = async (id) => {
     try {
@@ -73,7 +75,7 @@ const UserListeningHistory = () => {
 
   useEffect(() => {
     fetchHistory();
-  }, []);
+  }, [fetchHistory]);
 
   return (
     <Card
@@ -144,7 +146,9 @@ const UserListeningHistory = () => {
         boxShadow: "0 8px 24px rgba(0,0,0,0.08)",
         border: "none",
       }}
-      bodyStyle={{ padding: "16px 20px" }}
+      styles={{
+        body: { padding: "20px 16px" },
+      }}
     >
       <Spin spinning={loading} tip="Đang tải lịch sử..." size="small">
         {histories.length === 0 ? (
@@ -159,6 +163,11 @@ const UserListeningHistory = () => {
             dataSource={histories}
             renderItem={(item) => (
               <List.Item
+                onClick={() =>
+                  navigate(
+                    `/podcast/${item.podcast_id}?t=${item.last_position}`
+                  )
+                }
                 actions={[
                   <Popconfirm
                     title="Xóa lịch sử này?"

@@ -20,6 +20,7 @@ const CustomAudioPlayer = ({
   size = "default",
   podcastId,
   userToken,
+  startTime = 0,
 }) => {
   const audioRef = useRef(null);
   const volumeSliderRef = useRef(null);
@@ -87,6 +88,28 @@ const CustomAudioPlayer = ({
 
     return () => clearInterval(interval);
   }, [isPlaying, duration, podcastId, userToken]);
+
+  // --- Khi có startTime được truyền vào ---
+  useEffect(() => {
+    const audio = audioRef.current;
+    if (!audio || !startTime) return;
+
+    const seekToPosition = () => {
+      audio.currentTime = startTime;
+      console.log("Tua đến giây:", startTime);
+    };
+
+    // Nếu metadata chưa load thì chờ loadedmetadata
+    if (audio.readyState >= 1) {
+      seekToPosition();
+    } else {
+      audio.addEventListener("loadedmetadata", seekToPosition, { once: true });
+    }
+
+    return () => {
+      audio.removeEventListener("loadedmetadata", seekToPosition);
+    };
+  }, [startTime]);
 
   // --- Giao diện điều khiển ---
   const handleRateChange = (value) => {

@@ -36,6 +36,7 @@ import { useNavigate } from "react-router-dom";
 import { ThemeContext } from "../../../utils/useTheme";
 import { getPodcastById } from "../../../services/api_podcast";
 import { formatTime } from "../../../utils/helpers";
+import { useLocation } from "react-router-dom";
 const { Title, Paragraph, Text } = Typography;
 const { Panel } = Collapse;
 
@@ -51,7 +52,9 @@ const PodcastDetailPageUser = () => {
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [showListModal, setShowListModal] = useState(false);
   const [generating, setGenerating] = useState(false);
-
+  const location = useLocation();
+  const query = new URLSearchParams(location.search);
+  const startTime = parseFloat(query.get("t")) || 0; // vị trí bắt đầu
   const { isDarkMode } = useContext(ThemeContext);
 
   const overlayGradient = isDarkMode
@@ -231,7 +234,8 @@ const PodcastDetailPageUser = () => {
               podcastId={podcast.id}
               size="default" // 'small' | 'default' | 'large'
               style={{ marginTop: 16 }}
-              userToken={localStorage.getItem("token")} // hoặc context của bạn
+              userToken={localStorage.getItem("token")} // token
+              startTime={startTime}
             />
 
             <Progress

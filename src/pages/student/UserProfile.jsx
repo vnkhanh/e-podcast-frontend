@@ -245,7 +245,9 @@ export default function UserProfile() {
               boxShadow: "0 8px 24px rgba(0,0,0,0.08)",
               border: "none",
             }}
-            bodyStyle={{ padding: "20px 16px" }}
+            styles={{
+              body: { padding: "20px 16px" },
+            }}
           >
             <Row gutter={[12, 12]}>
               {stats.map((s, i) => (
