@@ -24,9 +24,9 @@ import {
   ClockCircleOutlined,
 } from "@ant-design/icons";
 import { formatTime } from "../../utils/helpers";
-import axios from "axios";
 import { ThemeContext } from "../../utils/useTheme";
 import { useNavigate } from "react-router-dom";
+import { getLatestPodcasts } from "../../services/api_podcast";
 const { Text, Paragraph, Title } = Typography;
 
 const PodcastList = ({ playerState, title = "Podcast Mới Nhất" }) => {
@@ -37,13 +37,12 @@ const PodcastList = ({ playerState, title = "Podcast Mới Nhất" }) => {
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
   const { isDarkMode } = useContext(ThemeContext); // lấy trạng thái theme
-  const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
   const fetchLatestPodcasts = async () => {
     setLoading(true);
     try {
-      const res = await axios.get(`${API_BASE_URL}/user/podcasts/latest`);
-      setPodcasts(res.data.podcasts || []);
+      const data = await await getLatestPodcasts();
+      setPodcasts(data);
     } catch (err) {
       console.error(err);
       message.error("Không thể tải podcast mới nhất");

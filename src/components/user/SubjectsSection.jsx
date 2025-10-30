@@ -1,12 +1,9 @@
 import React, { useEffect, useState, useRef } from "react";
 import { Card, Typography, Spin, Button, Divider, Empty, message } from "antd";
 import { LeftOutlined, RightOutlined } from "@ant-design/icons";
-import axios from "axios";
 import { useNavigate } from "react-router-dom";
-
+import { getPopularSubjects } from "../../services/api_subject";
 const { Title, Text } = Typography;
-const API_BASE_URL =
-  import.meta.env.VITE_API_BASE_URL || "http://localhost:8080/api";
 
 const pastelColors = [
   "#E3F2FD",
@@ -28,8 +25,7 @@ const SubjectsSection = () => {
 
   const fetchPopularSubjects = async () => {
     try {
-      const res = await axios.get(`${API_BASE_URL}/user/subjects/popular`);
-      const data = res.data?.data || [];
+      const data = await getPopularSubjects();
       setSubjects(data);
     } catch (err) {
       console.error("Lỗi khi tải môn học phổ biến:", err);

@@ -12,7 +12,6 @@ import HomePage from "../pages/HomePage";
 import UserLayout from "../layouts/UserLayout/UserLayout";
 import CategoryPodcastsPage from "../pages/student/CategoryPodcastsPage";
 import PodcastDetailPageUser from "../pages/student/PodcastDetail/PodcastDetailPage";
-import DocumentDetail from "../pages/student/DocumentDetail";
 import UserProfile from "../pages/student/UserProfile";
 import QuizSetsListPage from "../pages/student/Quiz/QuizSetsListPage";
 import QuizTakePage from "../pages/student/Quiz/QuizTakePage";
@@ -72,7 +71,6 @@ const AppRoute = () => {
         <Route index element={<HomePage />} />
         <Route path="categories/:slug" element={<CategoryPodcastsPage />} />
         <Route path="podcast/:id" element={<PodcastDetailPageUser />} />
-        <Route path="documents/:id" element={<DocumentDetail />} />
         <Route path="profile" element={<UserProfile />} />
         <Route path="podcast/:id/quiz-sets" element={<QuizSetsListPage />} />
         <Route path="quiz-sets/:id/take" element={<QuizTakePage />} />

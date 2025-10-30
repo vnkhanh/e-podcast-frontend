@@ -92,3 +92,13 @@ export const getSubjectDetailUser = async (slug) => {
   const res = await axios.get(`${API_BASE_URL}/user/subjects/${slug}`);
   return res.data?.data || null;
 };
+
+export const getPopularSubjects = async () => {
+  try {
+    const res = await axios.get(`${API_BASE_URL}/user/subjects/popular`);
+    return res.data?.data || [];
+  } catch (err) {
+    console.error("Lỗi khi tải môn học phổ biến:", err);
+    return [];
+  }
+};

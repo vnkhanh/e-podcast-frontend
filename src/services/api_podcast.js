@@ -116,7 +116,15 @@ export const getFeaturedPodcasts = async () => {
     throw error;
   }
 };
-
+export const getLatestPodcasts = async () => {
+  try {
+    const res = await axios.get(`${API_BASE_URL}/user/podcasts/latest`);
+    return res.data.podcasts || [];
+  } catch (err) {
+    console.error(err);
+    return [];
+  }
+};
 export const getPodcastById = async (id) => {
   const res = await axios.get(`${API_BASE_URL}/user/podcasts/${id}`);
   return res.data || null;
