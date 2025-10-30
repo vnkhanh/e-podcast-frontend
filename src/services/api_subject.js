@@ -86,3 +86,9 @@ export const getChaptersBySubject = async (subjectId) => {
   const res = await api.get(`/admin/chapters?subject_id=${subjectId}`);
   return res.data;
 };
+
+//User
+export const getSubjectDetailUser = async (slug) => {
+  const res = await axios.get(`${API_BASE_URL}/user/subjects/${slug}`);
+  return res.data?.data || null;
+};

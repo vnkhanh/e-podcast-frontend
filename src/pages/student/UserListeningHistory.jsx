@@ -27,7 +27,7 @@ import {
   deletePodcastHistory,
   clearAllHistory,
 } from "../../services/api_history";
-
+import { formatTime } from "../../utils/helpers";
 const { Title, Text } = Typography;
 
 const UserListeningHistory = () => {
@@ -68,12 +68,6 @@ const UserListeningHistory = () => {
     }
   };
 
-  const formatTime = (seconds) => {
-    const mins = Math.floor(seconds / 60);
-    const secs = seconds % 60;
-    return `${mins}:${secs.toString().padStart(2, "0")}`;
-  };
-
   const getProgressPercentage = (current, total = 300) =>
     Math.min((current / total) * 100, 100);
 
@@ -84,25 +78,31 @@ const UserListeningHistory = () => {
   return (
     <Card
       title={
-        <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-          <div
+        <Space align="center">
+          <PlayCircleOutlined
             style={{
-              padding: "6px 10px",
+              fontSize: 20,
+              color: "#667eea",
+              background: "rgba(102,126,234,0.1)",
+              padding: 8,
+              borderRadius: 8,
+            }}
+          />
+          <Title level={4} style={{ margin: 0 }}>
+            Lịch sử nghe Podcast
+          </Title>
+          <Tag
+            color="purple"
+            style={{
+              fontSize: 11,
               borderRadius: 6,
-              display: "flex",
-              alignItems: "center",
-              gap: 6,
+              padding: "2px 6px",
+              background: "rgba(102,126,234,0.1)",
             }}
           >
-            <PlayCircleOutlined style={{ fontSize: 16 }} />
-            <Title level={5} style={{ margin: 0 }}>
-              Lịch sử nghe podcast
-            </Title>
-          </div>
-          <Tag color="blue" style={{ fontSize: 11, padding: "2px 6px" }}>
-            {histories.length} bài nghe
+            {histories.length} bài
           </Tag>
-        </div>
+        </Space>
       }
       extra={
         <Space>
@@ -110,10 +110,12 @@ const UserListeningHistory = () => {
             <Button
               icon={<ReloadOutlined />}
               onClick={fetchHistory}
-              type="primary"
-              ghost
               shape="circle"
               size="small"
+              style={{
+                color: "#667eea",
+                borderColor: "#667eea",
+              }}
             />
           </Tooltip>
           <Popconfirm
@@ -124,24 +126,32 @@ const UserListeningHistory = () => {
             cancelText="Hủy"
             okButtonProps={{ danger: true }}
           >
-            <Button danger icon={<DeleteOutlined />} size="small">
+            <Button
+              danger
+              icon={<DeleteOutlined />}
+              size="small"
+              style={{
+                borderRadius: 6,
+              }}
+            >
               Xóa tất cả
             </Button>
           </Popconfirm>
         </Space>
       }
       style={{
-        borderRadius: 12,
-        boxShadow: "0 4px 12px rgba(0,0,0,0.05)",
-        border: "1px solid #f0f0f0",
+        borderRadius: 16,
+        boxShadow: "0 8px 24px rgba(0,0,0,0.08)",
+        border: "none",
       }}
+      bodyStyle={{ padding: "16px 20px" }}
     >
-      <Spin spinning={loading} size="small">
+      <Spin spinning={loading} tip="Đang tải lịch sử..." size="small">
         {histories.length === 0 ? (
           <Empty
             description="Chưa có lịch sử nghe"
             image={Empty.PRESENTED_IMAGE_SIMPLE}
-            style={{ padding: "20px 0" }}
+            style={{ padding: "30px 0" }}
           />
         ) : (
           <List
@@ -161,27 +171,33 @@ const UserListeningHistory = () => {
                       danger
                       size="small"
                       icon={<DeleteOutlined />}
-                      style={{ borderRadius: 4 }}
+                      style={{ borderRadius: 6 }}
                     />
                   </Popconfirm>,
                 ]}
                 style={{
-                  padding: "12px 0",
+                  padding: "14px 0",
                   borderBottom: "1px solid #f0f0f0",
+                  transition: "background 0.3s, transform 0.3s",
                 }}
+                onMouseEnter={(e) =>
+                  (e.currentTarget.style.background =
+                    "linear-gradient(135deg, rgba(102,126,234,0.05), rgba(118,75,162,0.05))")
+                }
+                onMouseLeave={(e) =>
+                  (e.currentTarget.style.background = "transparent")
+                }
               >
                 <List.Item.Meta
                   avatar={
                     <div
                       style={{
                         position: "relative",
-                        width: 100,
-                        height: 100,
+                        width: 80,
+                        height: 80,
                         borderRadius: 16,
                         overflow: "hidden",
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "center",
+                        boxShadow: "0 4px 12px rgba(0,0,0,0.08)",
                       }}
                     >
                       <img
@@ -193,12 +209,23 @@ const UserListeningHistory = () => {
                           objectFit: "cover",
                         }}
                       />
+                      <div
+                        style={{
+                          position: "absolute",
+                          inset: 0,
+                          background:
+                            "linear-gradient(to top, rgba(0,0,0,0.4), transparent)",
+                        }}
+                      ></div>
                       <PlayCircleOutlined
                         style={{
                           position: "absolute",
+                          bottom: 8,
+                          right: 8,
                           fontSize: 20,
                           color: "white",
                           opacity: 0.9,
+                          filter: "drop-shadow(0 2px 6px rgba(0,0,0,0.5))",
                         }}
                       />
                     </div>
@@ -207,12 +234,11 @@ const UserListeningHistory = () => {
                     <Text
                       strong
                       style={{
-                        fontSize: 14,
+                        fontSize: 15,
+                        maxWidth: 240,
                         whiteSpace: "nowrap",
                         overflow: "hidden",
                         textOverflow: "ellipsis",
-                        display: "block",
-                        maxWidth: 220,
                       }}
                     >
                       {item.podcast?.title || "Podcast không tồn tại"}
@@ -227,7 +253,6 @@ const UserListeningHistory = () => {
                       <Row gutter={[12, 4]} align="middle">
                         <Col>
                           <Tag
-                            color={item.completed ? "green" : "orange"}
                             icon={
                               item.completed ? (
                                 <CheckCircleOutlined />
@@ -235,19 +260,27 @@ const UserListeningHistory = () => {
                                 <ClockCircleOutlined />
                               )
                             }
-                            style={{ fontSize: 11, padding: "1px 6px" }}
+                            color={item.completed ? "success" : "warning"}
+                            style={{
+                              fontSize: 11,
+                              borderRadius: 6,
+                              padding: "2px 6px",
+                            }}
                           >
-                            {item.completed ? "Đã hoàn thành" : "Đang nghe"}
+                            {item.completed ? "Hoàn thành" : "Đang nghe"}
                           </Tag>
                         </Col>
                         <Col>
                           <Text type="secondary" style={{ fontSize: 12 }}>
-                            <ClockCircleOutlined style={{ marginRight: 4 }} />
-                            Vị trí: {formatTime(item.last_position)}
+                            <ClockCircleOutlined
+                              style={{ marginRight: 4, color: "#667eea" }}
+                            />
+                            {formatTime(item.last_position)}
                           </Text>
                         </Col>
                       </Row>
 
+                      {/* Tiến độ */}
                       <div style={{ marginTop: 4 }}>
                         <div
                           style={{
@@ -270,11 +303,15 @@ const UserListeningHistory = () => {
                           percent={getProgressPercentage(item.last_position)}
                           size="small"
                           strokeColor={{
-                            "0%": "#36d1dc",
-                            "100%": "#5b86e5",
+                            "0%": "#667eea",
+                            "100%": "#764ba2",
                           }}
                           showInfo={false}
-                          style={{ margin: 0 }}
+                          style={{
+                            margin: 0,
+                            height: 6,
+                            borderRadius: 6,
+                          }}
                         />
                       </div>
                     </Space>

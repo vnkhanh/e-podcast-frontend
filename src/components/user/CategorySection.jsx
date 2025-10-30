@@ -137,7 +137,6 @@ const CategoriesSection = () => {
           onMouseLeave={handleMouseLeave}
         >
           {/* Nút trái */}
-          {/* Nút trái */}
           <Button
             shape="circle"
             icon={<LeftOutlined />}
@@ -239,7 +238,6 @@ const CategoriesSection = () => {
             ))}
           </div>
 
-          {/* Nút phải */}
           {/* Nút phải */}
           <Button
             shape="circle"

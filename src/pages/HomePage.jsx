@@ -57,11 +57,7 @@ const HomePage = () => {
         <div className="main-content">
           <CategoriesSection />
           <SubjectsSection />
-          <PodcastList
-            podcasts={mockPodcasts}
-            playerState={playerState}
-            title="Podcast mới nhất"
-          />
+          <PodcastList playerState={playerState} title="Podcast mới nhất" />
           <PopularPodcasts podcasts={mockPodcasts} playerState={playerState} />
         </div>
       </Content>

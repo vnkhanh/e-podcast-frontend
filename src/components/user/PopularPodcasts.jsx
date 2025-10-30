@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useRef } from "react";
-import { Card, Button, Typography, Spin, Empty, Space, Tag } from "antd";
+import { Card, Button, Typography, Spin, Empty, Tooltip } from "antd";
 import {
   PlayCircleOutlined,
   PauseCircleOutlined,
@@ -7,28 +7,27 @@ import {
   RightOutlined,
   EyeOutlined,
   HeartOutlined,
+  SoundOutlined,
 } from "@ant-design/icons";
-import { formatTime } from "../../utils/helpers";
-import { getFeaturedPodcasts } from "../../services/api_podcast";
-import TagScroller from "./TagScroller";
 import { useNavigate } from "react-router-dom";
+import { getFeaturedPodcasts } from "../../services/api_podcast";
+import { formatTime } from "../../utils/helpers";
+import TagScroller from "./TagScroller";
+
 const { Title, Text, Paragraph } = Typography;
-const { Meta } = Card;
 
 const PopularPodcasts = ({ playerState }) => {
   const { currentPodcast, isPlaying, handlePlay } = playerState;
   const [podcasts, setPodcasts] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [startIndex, setStartIndex] = useState(0);
   const scrollRef = useRef(null);
   const navigate = useNavigate();
-  const VISIBLE_COUNT = 4;
 
   useEffect(() => {
     const fetchPodcasts = async () => {
       try {
         const data = await getFeaturedPodcasts();
-        setPodcasts(data);
+        setPodcasts(data || []);
       } catch (err) {
         console.error("Lỗi khi tải podcast nổi bật:", err);
       } finally {
@@ -38,24 +37,21 @@ const PopularPodcasts = ({ playerState }) => {
     fetchPodcasts();
   }, []);
 
-  const next = () => {
-    setStartIndex((prev) => (prev + 1) % podcasts.length);
-  };
-
-  const prev = () => {
-    setStartIndex((prev) => (prev - 1 + podcasts.length) % podcasts.length);
-  };
-
-  const getVisiblePodcasts = () => {
-    if (podcasts.length <= VISIBLE_COUNT) return podcasts;
-    const extended = [...podcasts, ...podcasts]; // nhân đôi để cuộn mượt
-    return extended.slice(startIndex, startIndex + VISIBLE_COUNT);
+  const scroll = (direction) => {
+    if (scrollRef.current) {
+      const { scrollLeft, clientWidth } = scrollRef.current;
+      const newPos =
+        direction === "left"
+          ? scrollLeft - clientWidth * 0.8
+          : scrollLeft + clientWidth * 0.8;
+      scrollRef.current.scrollTo({ left: newPos, behavior: "smooth" });
+    }
   };
 
   if (loading)
     return (
-      <div style={{ textAlign: "center", padding: "80px 0" }}>
-        <Spin size="large" />
+      <div style={{ textAlign: "center", padding: "100px 0" }}>
+        <Spin size="large" tip="Đang tải podcast nổi bật..." />
       </div>
     );
 
@@ -63,8 +59,8 @@ const PopularPodcasts = ({ playerState }) => {
     return (
       <Empty
         description="Chưa có podcast nổi bật nào"
-        imageStyle={{ height: 120 }}
-        style={{ margin: "60px 0" }}
+        image={Empty.PRESENTED_IMAGE_SIMPLE}
+        style={{ margin: "80px 0" }}
       />
     );
 
@@ -75,298 +71,261 @@ const PopularPodcasts = ({ playerState }) => {
         position: "relative",
       }}
     >
-      {/* Header */}
-      <div style={{ textAlign: "center", marginBottom: 36 }}>
-        <Title level={2} style={{ marginBottom: 4, fontWeight: 700 }}>
-          Podcast nổi bật
-        </Title>
-        <Text type="secondary" style={{ fontSize: 15 }}>
-          Khám phá những podcast được yêu thích nhất
-        </Text>
-      </div>
+      <div style={{ maxWidth: 1200, margin: "0 auto", position: "relative" }}>
+        {/* Header */}
+        <div style={{ textAlign: "center", marginBottom: 48 }}>
+          <Title
+            level={2}
+            style={{
+              marginBottom: 8,
+              fontWeight: 800,
+              background: "linear-gradient(90deg, #6366f1, #3b82f6)",
+              WebkitBackgroundClip: "text",
+              WebkitTextFillColor: "transparent",
+            }}
+          >
+            Podcast nổi bật
+          </Title>
+          <Text
+            style={{
+              fontSize: 16,
+              color: "#6b7280",
+            }}
+          >
+            Khám phá những podcast được yêu thích nhất trong tuần
+          </Text>
+        </div>
 
-      {/* Arrow buttons */}
-      <Button
-        shape="circle"
-        icon={<LeftOutlined />}
-        onClick={prev}
-        style={{
-          position: "absolute",
-          top: "50%",
-          left: 10,
-          transform: "translateY(-50%)",
-          zIndex: 10,
-          boxShadow: "0 4px 12px rgba(0,0,0,0.2)",
-          border: "none",
-          width: 40,
-          height: 40,
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-        }}
-      />
-      <Button
-        shape="circle"
-        icon={<RightOutlined />}
-        onClick={next}
-        style={{
-          position: "absolute",
-          top: "50%",
-          right: 10,
-          transform: "translateY(-50%)",
-          zIndex: 10,
-          boxShadow: "0 4px 12px rgba(0,0,0,0.2)",
-          border: "none",
-          width: 40,
-          height: 40,
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-        }}
-      />
+        {/* Scroll buttons */}
+        <Button
+          shape="circle"
+          icon={<LeftOutlined />}
+          onClick={() => scroll("left")}
+          style={{
+            position: "absolute",
+            left: -20,
+            top: "50%",
+            transform: "translateY(-50%)",
+            zIndex: 5,
+            boxShadow: "0 6px 18px rgba(0,0,0,0.2)",
+            border: "none",
+            width: 44,
+            height: 44,
+            background: "white",
+            color: "#667eea",
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.background =
+              "linear-gradient(135deg, #667eea 0%, #764ba2 100%)";
+            e.currentTarget.style.color = "#fff";
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.background = "white";
+            e.currentTarget.style.color = "#667eea";
+          }}
+        />
+        <Button
+          shape="circle"
+          icon={<RightOutlined />}
+          onClick={() => scroll("right")}
+          style={{
+            position: "absolute",
+            right: -20,
+            top: "50%",
+            transform: "translateY(-50%)",
+            zIndex: 5,
+            boxShadow: "0 6px 18px rgba(0,0,0,0.2)",
+            border: "none",
+            width: 44,
+            height: 44,
+            background: "white",
+            color: "#667eea",
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.background =
+              "linear-gradient(135deg, #667eea 0%, #764ba2 100%)";
+            e.currentTarget.style.color = "#fff";
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.background = "white";
+            e.currentTarget.style.color = "#667eea";
+          }}
+        />
 
-      {/* Scrollable list */}
-      <div
-        ref={scrollRef}
-        style={{
-          display: "flex",
-          gap: 24,
-          overflow: "hidden",
-          scrollBehavior: "smooth",
-          justifyContent: "center",
-          alignItems: "stretch",
-          transition: "all 0.5s ease",
-        }}
-      >
-        {getVisiblePodcasts().map((podcast, index) => {
-          const isCurrentlyPlaying =
-            currentPodcast?.id === podcast.id && isPlaying;
+        {/* Podcast Carousel */}
+        <div
+          ref={scrollRef}
+          style={{
+            display: "flex",
+            gap: 24,
+            overflowX: "auto",
+            scrollBehavior: "smooth",
+            paddingBottom: 8,
+          }}
+        >
+          {podcasts.map((podcast) => {
+            const isPlayingNow = currentPodcast?.id === podcast.id && isPlaying;
 
-          return (
-            <Card
-              key={`${podcast.id}-${index}`}
-              hoverable
-              style={{
-                flex: "0 0 260px",
-                borderRadius: 16,
-                overflow: "hidden",
-                border: "none",
-                boxShadow: "0 4px 20px rgba(0,0,0,0.08)",
-                transition: "all 0.3s ease",
-                position: "relative",
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.transform = "translateY(-4px)";
-                e.currentTarget.style.boxShadow = "0 8px 30px rgba(0,0,0,0.12)";
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.transform = "translateY(0)";
-                e.currentTarget.style.boxShadow = "0 4px 20px rgba(0,0,0,0.08)";
-              }}
-              cover={
-                <div style={{ position: "relative", height: 180 }}>
-                  <img
-                    src={podcast.cover_image}
-                    alt={podcast.title}
-                    onError={(e) =>
-                      (e.target.src = "/images/podcasts/default.jpg")
-                    }
-                    style={{
-                      width: "100%",
-                      height: "100%",
-                      objectFit: "cover",
-                      borderRadius: "16px 16px 0 0",
-                      transition: "transform 0.3s ease",
-                    }}
-                  />
-
-                  {/* Gradient overlay */}
-                  <div
-                    style={{
-                      position: "absolute",
-                      top: 0,
-                      left: 0,
-                      right: 0,
-                      bottom: 0,
-                      background:
-                        "linear-gradient(to bottom, transparent 0%, rgba(0,0,0,0.1) 100%)",
-                      borderRadius: "16px 16px 0 0",
-                    }}
-                  />
-
-                  {/* Duration */}
-                  <div
-                    style={{
-                      position: "absolute",
-                      bottom: 10,
-                      right: 10,
-                      background: "rgba(0,0,0,0.75)",
-                      borderRadius: 12,
-                      color: "#fff",
-                      fontSize: 11,
-                      fontWeight: 600,
-                      padding: "4px 10px",
-                      backdropFilter: "blur(4px)",
-                    }}
-                  >
-                    {formatTime(podcast.duration_sec)}
-                  </div>
-
-                  {/* Play Button Overlay */}
-                  <div
-                    style={{
-                      position: "absolute",
-                      top: 0,
-                      left: 0,
-                      right: 0,
-                      bottom: 0,
-                      background: "rgba(0,0,0,0.4)",
-                      borderRadius: "16px 16px 0 0",
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      opacity: 0,
-                      transition: "all 0.3s ease",
-                    }}
-                    className="play-overlay"
-                  >
-                    {/* Play Button */}
-                    <Button
-                      shape="circle"
-                      icon={
-                        isCurrentlyPlaying ? (
-                          <PauseCircleOutlined style={{ fontSize: 24 }} />
-                        ) : (
-                          <PlayCircleOutlined style={{ fontSize: 24 }} />
-                        )
-                      }
-                      onClick={() => handlePlay(podcast)}
-                      style={{
-                        width: 60,
-                        height: 60,
-                        border: "none",
-                        boxShadow: "0 8px 32px rgba(0,0,0,0.3)",
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "center",
-                        transition: "all 0.3s ease",
-                      }}
-                      className="play-button"
-                    />
-                  </div>
-                </div>
-              }
-            >
-              {/* Active playing indicator */}
-              {isCurrentlyPlaying && (
-                <div
-                  style={{
-                    position: "absolute",
-                    top: 12,
-                    left: 12,
-                    width: 8,
-                    height: 8,
-                    borderRadius: "50%",
-                    background: "#10b981",
-                    animation: "pulse 2s infinite",
-                    zIndex: 2,
-                  }}
-                />
-              )}
-
-              <div
+            return (
+              <Card
+                key={podcast.id}
+                hoverable
                 onClick={() => navigate(`/podcast/${podcast.id}`)}
                 style={{
-                  cursor: "pointer",
+                  minWidth: 260,
+                  maxWidth: 260,
+                  borderRadius: 20,
+                  overflow: "hidden",
+                  border: "none",
+                  boxShadow: "0 4px 20px rgba(0,0,0,0.08)",
                   transition: "all 0.3s ease",
-                  borderRadius: 8,
-                  padding: "4px 0",
+                  cursor: "pointer",
                 }}
                 onMouseEnter={(e) => {
-                  e.currentTarget.style.fontStyle = "italic";
+                  e.currentTarget.style.transform = "translateY(-4px)";
+                  e.currentTarget.style.boxShadow =
+                    "0 10px 30px rgba(0,0,0,0.15)";
                 }}
                 onMouseLeave={(e) => {
-                  e.currentTarget.style.fontStyle = "normal";
+                  e.currentTarget.style.transform = "translateY(0)";
+                  e.currentTarget.style.boxShadow =
+                    "0 4px 20px rgba(0,0,0,0.08)";
                 }}
-              >
-                <Meta
-                  title={
-                    <Text
-                      strong
-                      ellipsis={{ rows: 1 }}
+                cover={
+                  <div
+                    style={{
+                      position: "relative",
+                      height: 180,
+                      overflow: "hidden",
+                    }}
+                  >
+                    <img
+                      src={podcast.cover_image}
+                      alt={podcast.title}
                       style={{
-                        fontSize: 15,
-                        lineHeight: 1.3,
-                        color: "#1f2937",
+                        width: "100%",
+                        height: "100%",
+                        objectFit: "cover",
                       }}
-                    >
-                      {podcast.title}
-                    </Text>
-                  }
-                  description={
-                    <Paragraph
-                      ellipsis={{ rows: 1 }}
-                      style={{
-                        fontSize: 13,
-                        margin: "8px 0",
-                        lineHeight: 1.5,
-                        color: "#6b7280",
-                      }}
-                    >
-                      {podcast.description || "Không có mô tả"}
-                    </Paragraph>
-                  }
-                />
-              </div>
+                      onError={(e) =>
+                        (e.target.src = "/images/podcasts/default.jpg")
+                      }
+                    />
 
-              <div
-                style={{
-                  display: "flex",
-                  justifyContent: "space-between",
-                  alignItems: "center",
-                  color: "#9ca3af",
-                  fontSize: 12,
-                  marginTop: 12,
-                }}
+                    {/* Gradient overlay */}
+                    <div
+                      style={{
+                        position: "absolute",
+                        bottom: 0,
+                        left: 0,
+                        right: 0,
+                        height: "50%",
+                        background:
+                          "linear-gradient(to top, rgba(0,0,0,0.6), transparent)",
+                      }}
+                    />
+
+                    {/* Play Button */}
+                    <div
+                      style={{
+                        position: "absolute",
+                        bottom: 12,
+                        right: 12,
+                      }}
+                    >
+                      <Tooltip
+                        title={isPlayingNow ? "Tạm dừng" : "Nghe ngay"}
+                        placement="left"
+                      >
+                        <Button
+                          shape="circle"
+                          icon={
+                            isPlayingNow ? (
+                              <PauseCircleOutlined style={{ fontSize: 28 }} />
+                            ) : (
+                              <PlayCircleOutlined style={{ fontSize: 28 }} />
+                            )
+                          }
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handlePlay(podcast);
+                          }}
+                          style={{
+                            width: 56,
+                            height: 56,
+                            border: "none",
+                            background:
+                              "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+                            color: "white",
+                            boxShadow: "0 8px 20px rgba(0,0,0,0.2)",
+                          }}
+                        />
+                      </Tooltip>
+                    </div>
+
+                    {/* Duration */}
+                    <div
+                      style={{
+                        position: "absolute",
+                        top: 10,
+                        left: 10,
+                        background: "rgba(0,0,0,0.5)",
+                        borderRadius: 12,
+                        color: "white",
+                        fontSize: 11,
+                        padding: "2px 8px",
+                      }}
+                    >
+                      <SoundOutlined /> {formatTime(podcast.duration_sec)}
+                    </div>
+                  </div>
+                }
               >
-                <span style={{ display: "flex", alignItems: "center", gap: 4 }}>
-                  <EyeOutlined />
-                  {podcast.view_count || 0}
-                </span>
-                <span style={{ display: "flex", alignItems: "center", gap: 4 }}>
-                  <HeartOutlined />
-                  {podcast.like_count || 0}
-                </span>
-              </div>
-              <TagScroller tags={podcast.tags} />
-            </Card>
-          );
-        })}
+                <Title
+                  level={5}
+                  ellipsis
+                  style={{ margin: 0, fontWeight: 600 }}
+                >
+                  {podcast.title}
+                </Title>
+                <Paragraph
+                  ellipsis={{ rows: 2 }}
+                  style={{ color: "#6b7280", fontSize: 13, marginTop: 6 }}
+                >
+                  {podcast.description || "Không có mô tả"}
+                </Paragraph>
+
+                <div
+                  style={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    marginTop: 10,
+                    color: "#9ca3af",
+                    fontSize: 12,
+                  }}
+                >
+                  <span>
+                    <EyeOutlined /> {podcast.view_count || 0}
+                  </span>
+                  <span>
+                    <HeartOutlined /> {podcast.like_count || 0}
+                  </span>
+                </div>
+
+                <TagScroller tags={podcast.tags} />
+              </Card>
+            );
+          })}
+        </div>
       </div>
 
       <style jsx>{`
-        .play-overlay:hover {
-          opacity: 1 !important;
+        ::-webkit-scrollbar {
+          height: 8px;
         }
-
-        .play-button:hover {
-          transform: scale(1.1) !important;
-          box-shadow: 0 12px 40px rgba(0, 0, 0, 0.4) !important;
-        }
-
-        @keyframes pulse {
-          0% {
-            transform: scale(1);
-            opacity: 1;
-          }
-          50% {
-            transform: scale(1.2);
-            opacity: 0.7;
-          }
-          100% {
-            transform: scale(1);
-            opacity: 1;
-          }
+        ::-webkit-scrollbar-thumb {
+          background: #d1d5db;
+          border-radius: 4px;
         }
       `}</style>
     </section>

@@ -29,12 +29,13 @@ import CustomAudioPlayer from "../../../components/AudioPlayer";
 import FlashcardStudySection from "./FlashcardStudySection";
 import CollapsibleSummary from "./CollapsibleSummary";
 import {
-  getPodcastDetail,
   createFlashcards,
   getFlashcardsByPodcast,
 } from "../../../services/api_flashcards";
 import { useNavigate } from "react-router-dom";
 import { ThemeContext } from "../../../utils/useTheme";
+import { getPodcastById } from "../../../services/api_podcast";
+import { formatTime } from "../../../utils/helpers";
 const { Title, Paragraph, Text } = Typography;
 const { Panel } = Collapse;
 
@@ -42,9 +43,10 @@ const PodcastDetailPageUser = () => {
   const navigate = useNavigate();
   const { id } = useParams();
   const [podcast, setPodcast] = useState(null);
+  const [chapters, setChapters] = useState([]);
+
   // const [related, setRelated] = useState([]);
   const [loading, setLoading] = useState(true);
-  // const [progress, setProgress] = useState(40); // ví dụ
   const [flashcards, setFlashcards] = useState([]);
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [showListModal, setShowListModal] = useState(false);
@@ -69,21 +71,21 @@ const PodcastDetailPageUser = () => {
   useEffect(() => {
     const fetchPodcast = async () => {
       try {
-        const res = await getPodcastDetail(id);
+        const res = await getPodcastById(id);
         console.log("Podcast detail raw:", res);
 
-        // Dữ liệu thực tế là object podcast, không bọc trong data
-        const podcastData = res.data || res;
-        console.log("Parsed podcast data:", podcastData);
+        const podcastObj = res.data?.data || res.data || res;
+        const chapterList = res.data?.chapters || res.chapters || [];
 
-        if (!podcastData?.id) {
-          console.error("Không tìm thấy ID trong podcastData:", podcastData);
+        if (!podcastObj?.id) {
+          console.error("Không tìm thấy ID trong podcastObj:", podcastObj);
           message.error("Dữ liệu podcast không hợp lệ!");
           return;
         }
 
-        setPodcast(podcastData);
-        await fetchFlashcards(podcastData.id);
+        setPodcast(podcastObj);
+        setChapters(chapterList); // Lưu danh sách chương
+        await fetchFlashcards(podcastObj.id);
       } catch (err) {
         console.error("Lỗi fetchPodcast:", err);
         message.error("Không thể tải dữ liệu podcast");
@@ -241,17 +243,6 @@ const PodcastDetailPageUser = () => {
 
             <div style={{ display: "flex", justifyContent: "space-between" }}>
               <Button
-                type="primary"
-                icon={<PlayCircleOutlined />}
-                style={{
-                  backgroundColor: "#1DB954",
-                  border: "none",
-                  fontWeight: "bold",
-                }}
-              >
-                Tiếp tục học
-              </Button>
-              <Button
                 icon={<HeartOutlined />}
                 style={{
                   color: "#555",
@@ -266,41 +257,68 @@ const PodcastDetailPageUser = () => {
 
             {/* === Chương học === */}
             <Title level={4}>Nội dung bài học</Title>
-            <Collapse accordion bordered={false}>
-              {(
-                podcast.lessons || [
-                  { title: "Giới thiệu", duration: "3:24" },
-                  { title: "Nội dung chính", duration: "8:12" },
-                  { title: "Tổng kết và quiz", duration: "4:10" },
-                ]
-              ).map((lesson, index) => (
-                <Panel
-                  header={
-                    <div style={{ fontWeight: 500 }}>
-                      {lesson.title || `Bài ${index + 1}`}
-                    </div>
-                  }
-                  key={index}
-                  extra={<Text type="secondary">{lesson.duration || ""}</Text>}
-                >
-                  <Paragraph>
-                    {lesson.description ||
-                      "Nội dung bài học chi tiết sẽ hiển thị tại đây."}
-                  </Paragraph>
-                  <Button
-                    icon={<PlayCircleOutlined />}
-                    size="small"
-                    style={{
-                      background: "#1DB954",
-                      border: "none",
-                      color: "white",
-                    }}
-                  >
-                    Nghe bài này
-                  </Button>
-                </Panel>
-              ))}
-            </Collapse>
+            {chapters.length > 0 ? (
+              <Collapse accordion bordered={false}>
+                {chapters.map((chapter) => {
+                  const isCurrentChapter = chapter.id === podcast.Chapter?.id;
+                  return (
+                    <Panel
+                      key={chapter.id}
+                      header={
+                        <div style={{ fontWeight: 600 }}>
+                          {chapter.title}{" "}
+                          {isCurrentChapter && (
+                            <Tag color="green" style={{ marginLeft: 8 }}>
+                              Hiện tại
+                            </Tag>
+                          )}
+                        </div>
+                      }
+                    >
+                      {chapter.podcasts?.length > 0 ? (
+                        <List
+                          dataSource={chapter.podcasts}
+                          renderItem={(p) => (
+                            <List.Item
+                              style={{
+                                cursor: "pointer",
+                                padding: "6px 8px",
+                                borderRadius: 8,
+                                background:
+                                  p.id === podcast.id
+                                    ? "#e6f7ff"
+                                    : "transparent",
+                              }}
+                              onClick={() => {
+                                if (p.id !== podcast.id)
+                                  navigate(`/podcast/${p.id}`);
+                              }}
+                            >
+                              <List.Item.Meta
+                                title={<Text strong>{p.title}</Text>}
+                                description={
+                                  <Text type="secondary">
+                                    {p.description?.slice(0, 80) ||
+                                      "Không có mô tả"}
+                                  </Text>
+                                }
+                              />
+                              <Tag>{formatTime(p.duration_sec)}</Tag>
+                            </List.Item>
+                          )}
+                        />
+                      ) : (
+                        <Text type="secondary">
+                          Chưa có bài học nào trong chương này.
+                        </Text>
+                      )}
+                    </Panel>
+                  );
+                })}
+              </Collapse>
+            ) : (
+              <Text type="secondary">Không có chương nào được tìm thấy.</Text>
+            )}
           </Card>
         </div>
 

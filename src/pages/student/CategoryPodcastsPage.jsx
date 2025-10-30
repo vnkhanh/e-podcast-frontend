@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import {
   Row,
   Col,
@@ -24,13 +24,13 @@ import {
   HeartOutlined,
   PlayCircleOutlined,
 } from "@ant-design/icons";
-import { useNavigate } from "react-router-dom";
 import { getCategoryPodcasts } from "../../services/api_podcast";
+import { formatTime } from "../../utils/helpers";
 const { Title, Paragraph, Text } = Typography;
 const { Search } = Input;
 const { Option } = Select;
 
-const CategoryPodcastsPage = () => {
+export default function CategoryPodcastsPage() {
   const { slug } = useParams();
   const [category, setCategory] = useState(null);
   const [podcasts, setPodcasts] = useState([]);
@@ -42,39 +42,30 @@ const CategoryPodcastsPage = () => {
   const [search, setSearch] = useState("");
   const navigate = useNavigate();
 
-  useEffect(() => {
-    const fetchPodcasts = async () => {
-      setLoading(true);
-      try {
-        const data = await getCategoryPodcasts({
-          slug,
-          page,
-          limit,
-          sort,
-          search,
-        });
-        setCategory(data.category);
-        setPodcasts(data.podcasts);
-        setTotal(data.pagination.total);
-      } catch (err) {
-        message.error("Không thể tải danh sách podcast");
-        console.log(err);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchPodcasts();
-  }, [slug, page, sort, search, limit]);
-
-  const formatDuration = (seconds) => {
-    if (!seconds || isNaN(seconds)) return "0 giây";
-    const minutes = Math.floor(seconds / 60);
-    const remainingSeconds = Math.floor(seconds % 60);
-    if (minutes === 0) return `${remainingSeconds} giây`;
-    if (remainingSeconds === 0) return `${minutes} phút`;
-    return `${minutes} phút ${remainingSeconds} giây`;
+  const fetchPodcasts = async () => {
+    setLoading(true);
+    try {
+      const data = await getCategoryPodcasts({
+        slug,
+        page,
+        limit,
+        sort,
+        search,
+      });
+      setCategory(data.category);
+      setPodcasts(data.podcasts);
+      setTotal(data.pagination.total);
+    } catch (err) {
+      message.error("Không thể tải danh sách podcast");
+      console.log(err);
+    } finally {
+      setLoading(false);
+    }
   };
+
+  useEffect(() => {
+    fetchPodcasts();
+  }, [slug, page, sort, search]);
 
   if (loading)
     return (
@@ -84,19 +75,17 @@ const CategoryPodcastsPage = () => {
     );
 
   return (
-    <div
-      style={{
-        padding: "60px 40px",
-        minHeight: "100vh",
-      }}
-    >
-      {/* ====== HEADER ====== */}
-      <div style={{ textAlign: "center", marginBottom: 40 }}>
+    <div style={{ padding: "60px 40px", minHeight: "100vh" }}>
+      {/* ===== HEADER ===== */}
+      <div style={{ textAlign: "center", marginBottom: 50 }}>
         <Title
           level={2}
           style={{
-            marginBottom: 8,
+            marginBottom: 10,
+            background: "linear-gradient(90deg, #667eea, #764ba2)",
             WebkitBackgroundClip: "text",
+            WebkitTextFillColor: "transparent",
+            fontWeight: 800,
           }}
         >
           {category?.name || "Danh mục Podcast"}
@@ -106,46 +95,44 @@ const CategoryPodcastsPage = () => {
         </Text>
       </div>
 
-      {/* ====== FILTER BAR ====== */}
+      {/* ===== FILTER BAR ===== */}
       <div
         style={{
-          padding: "20px 28px",
+          padding: "20px 24px",
           borderRadius: 14,
-          marginBottom: 32,
+          marginBottom: 36,
+          background: "rgba(255,255,255,0.9)",
+          boxShadow: "0 4px 16px rgba(0,0,0,0.06)",
           display: "flex",
           flexWrap: "wrap",
           justifyContent: "space-between",
           alignItems: "center",
           gap: 12,
+          backdropFilter: "blur(8px)",
         }}
       >
         <Search
           prefix={<SearchOutlined />}
           placeholder="Tìm kiếm podcast..."
-          onSearch={(value) => setSearch(value.trim())}
+          onSearch={(v) => setSearch(v.trim())}
           allowClear
           enterButton="Tìm"
           style={{ width: 340, maxWidth: "100%" }}
         />
 
-        <Select
-          value={sort}
-          onChange={(value) => setSort(value)}
-          style={{ width: 220 }}
-          size="middle"
-        >
+        <Select value={sort} onChange={setSort} style={{ width: 220 }}>
           <Option value="latest">
             <ClockCircleOutlined /> Mới nhất
           </Option>
           <Option value="popular">
-            <FireOutlined /> Phổ biến nhất
+            <FireOutlined /> Phổ biến
           </Option>
           <Option value="duration">⏱ Thời lượng dài nhất</Option>
         </Select>
       </div>
 
-      {/* ====== PODCAST GRID ====== */}
-      {!podcasts || podcasts.length === 0 ? (
+      {/* ===== PODCAST GRID ===== */}
+      {!podcasts.length ? (
         <Empty
           description="Chưa có podcast nào trong danh mục này."
           style={{ marginTop: 80 }}
@@ -156,20 +143,32 @@ const CategoryPodcastsPage = () => {
             <Col key={p.id} xs={24} sm={12} md={8} lg={6}>
               <Card
                 hoverable
-                variant="borderless"
                 style={{
-                  borderRadius: 14,
+                  borderRadius: 16,
                   overflow: "hidden",
-                  transition: "all 0.25s ease",
+                  border: "none",
+                  boxShadow: "0 4px 20px rgba(0,0,0,0.06)",
+                  transition: "all 0.35s ease",
+                  cursor: "pointer",
                 }}
-                bodyStyle={{ padding: 16 }}
+                onClick={() => navigate(`/podcast/${p.id}`)}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.transform = "translateY(-6px)";
+                  e.currentTarget.style.boxShadow =
+                    "0 12px 30px rgba(102,126,234,0.25)";
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.transform = "translateY(0)";
+                  e.currentTarget.style.boxShadow =
+                    "0 4px 20px rgba(0,0,0,0.06)";
+                }}
                 cover={
                   <div
                     style={{
                       position: "relative",
                       overflow: "hidden",
-                      borderTopLeftRadius: 14,
-                      borderTopRightRadius: 14,
+                      borderTopLeftRadius: 16,
+                      borderTopRightRadius: 16,
                     }}
                   >
                     <img
@@ -179,20 +178,63 @@ const CategoryPodcastsPage = () => {
                         width: "100%",
                         height: 200,
                         objectFit: "cover",
-                        transition: "transform 0.3s ease",
+                        transition: "transform 0.35s ease",
                       }}
                       onMouseOver={(e) =>
-                        (e.currentTarget.style.transform = "scale(1.05)")
+                        (e.currentTarget.style.transform = "scale(1.08)")
                       }
                       onMouseOut={(e) =>
                         (e.currentTarget.style.transform = "scale(1)")
                       }
                     />
+
+                    {/* Overlay gradient + hover effect */}
+                    <div
+                      className="overlay"
+                      style={{
+                        position: "absolute",
+                        inset: 0,
+                        background:
+                          "linear-gradient(to top, rgba(0,0,0,0.45), transparent)",
+                        transition: "background 0.3s ease",
+                      }}
+                    />
+
+                    {/* Play Button */}
+                    <Button
+                      shape="circle"
+                      icon={<PlayCircleOutlined />}
+                      size="large"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        navigate(`/podcast/${p.id}`);
+                      }}
+                      style={{
+                        position: "absolute",
+                        bottom: 16,
+                        right: 16,
+                        background: "rgba(255,255,255,0.9)",
+                        color: "#667eea",
+                        border: "none",
+                        transition: "all 0.3s ease",
+                      }}
+                      onMouseEnter={(e) => {
+                        e.currentTarget.style.transform = "scale(1.2)";
+                        e.currentTarget.style.boxShadow =
+                          "0 0 12px rgba(118,75,162,0.6)";
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.transform = "scale(1)";
+                        e.currentTarget.style.boxShadow = "none";
+                      }}
+                    />
+
+                    {/* Duration tag */}
                     <div
                       style={{
                         position: "absolute",
-                        bottom: 10,
-                        right: 10,
+                        bottom: 12,
+                        left: 14,
                         background: "rgba(0,0,0,0.6)",
                         color: "#fff",
                         padding: "3px 8px",
@@ -200,7 +242,7 @@ const CategoryPodcastsPage = () => {
                         fontSize: 12,
                       }}
                     >
-                      {formatDuration(p.duration_sec)}
+                      {formatTime(p.duration_sec)}
                     </div>
                   </div>
                 }
@@ -209,60 +251,72 @@ const CategoryPodcastsPage = () => {
                   <Title
                     level={5}
                     ellipsis={{ rows: 1 }}
-                    style={{ marginBottom: 6 }}
+                    style={{
+                      marginBottom: 6,
+                      fontWeight: 600,
+                      color: "#1f1f1f",
+                      transition: "color 0.3s ease",
+                    }}
+                    onMouseEnter={(e) =>
+                      (e.currentTarget.style.color = "#764ba2")
+                    }
+                    onMouseLeave={(e) =>
+                      (e.currentTarget.style.color = "#1f1f1f")
+                    }
                   >
                     {p.title}
                   </Title>
                 </Tooltip>
 
                 <Paragraph
-                  type="secondary"
-                  ellipsis={{ rows: 1 }}
-                  style={{ fontSize: 13, marginBottom: 12 }}
+                  ellipsis={{ rows: 2 }}
+                  style={{
+                    fontSize: 13,
+                    color: "#6b7280",
+                    marginBottom: 10,
+                    transition: "color 0.3s ease",
+                  }}
+                  onMouseEnter={(e) =>
+                    (e.currentTarget.style.color = "#4f46e5")
+                  }
+                  onMouseLeave={(e) =>
+                    (e.currentTarget.style.color = "#6b7280")
+                  }
                 >
                   {p.description || "Không có mô tả."}
                 </Paragraph>
 
                 <Space size={[8, 8]} wrap>
-                  <Tag icon={<EyeOutlined />} color="blue">
-                    {p.view_count || 0} xem
+                  <Tag icon={<EyeOutlined />} color="geekblue">
+                    {p.view_count || 0} lượt xem
                   </Tag>
-                  <Tag icon={<HeartOutlined />} color="red">
+                  <Tag icon={<HeartOutlined />} color="magenta">
                     {p.like_count ?? 0} yêu thích
                   </Tag>
                 </Space>
-
-                <Button
-                  type="primary"
-                  icon={<PlayCircleOutlined />}
-                  onClick={() => navigate(`/podcast/${p.id}`)}
-                  block
-                  style={{
-                    marginTop: 12,
-                    borderRadius: 8,
-                    background: "#1677ff",
-                  }}
-                >
-                  Nghe ngay
-                </Button>
               </Card>
             </Col>
           ))}
         </Row>
       )}
 
-      {/* ====== PAGINATION ====== */}
-      <div style={{ textAlign: "center", marginTop: 48 }}>
+      {/* ===== PAGINATION ===== */}
+      <div style={{ textAlign: "center", marginTop: 50 }}>
         <Pagination
           current={page}
           total={total}
           pageSize={limit}
-          onChange={(p) => setPage(p)} // click số trang → setPage → trigger useEffect
+          onChange={(p) => setPage(p)}
           showSizeChanger={false}
+          style={{
+            padding: "8px 20px",
+            background: "white",
+            borderRadius: 10,
+            boxShadow: "0 2px 12px rgba(0,0,0,0.05)",
+            display: "inline-block",
+          }}
         />
       </div>
     </div>
   );
-};
-
-export default CategoryPodcastsPage;
+}

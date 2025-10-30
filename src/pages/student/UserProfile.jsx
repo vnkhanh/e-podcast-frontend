@@ -25,9 +25,9 @@ import {
 } from "@ant-design/icons";
 import UserListeningHistory from "./UserListeningHistory";
 import { getUserProfile } from "../../services/api_auth";
+
 const { Title, Text } = Typography;
 
-// Component UserProfile chính
 export default function UserProfile() {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -47,34 +47,30 @@ export default function UserProfile() {
         setLoading(false);
       }
     };
-
     fetchData();
   }, [token]);
 
-  if (loading) {
+  if (loading)
     return (
-      <div style={{ textAlign: "center", marginTop: 50 }}>
-        <Spin size="large" />
+      <div style={{ textAlign: "center", marginTop: 80 }}>
+        <Spin size="large" tip="Đang tải thông tin người dùng..." />
       </div>
     );
-  }
 
-  if (error) {
+  if (error)
     return (
-      <div style={{ maxWidth: 800, margin: "50px auto" }}>
-        <Alert type="error" message="Lỗi" description={error} />
+      <div style={{ maxWidth: 800, margin: "60px auto" }}>
+        <Alert type="error" message="Lỗi tải dữ liệu" description={error} />
       </div>
     );
-  }
 
   if (!user) return null;
 
-  // Badge màu theo role
   const roleColor = {
-    admin: "red",
-    teacher: "blue",
-    student: "green",
-    user: "purple",
+    admin: "#ff4d4f",
+    teacher: "#1890ff",
+    student: "#52c41a",
+    user: "#764ba2",
   };
 
   const roleIcons = {
@@ -112,56 +108,91 @@ export default function UserProfile() {
   ];
 
   return (
-    <div style={{ maxWidth: 1200, margin: "30px auto", padding: "0 20px" }}>
-      <Row gutter={[24, 24]}>
-        {/* Cột thông tin user */}
-        <Col xs={24} lg={12}>
-          <Card
+    <div
+      style={{
+        maxWidth: 1200,
+        margin: "40px auto",
+        padding: "0 20px",
+      }}
+    >
+      <Card
+        style={{
+          border: "none",
+          borderRadius: 20,
+          overflow: "hidden",
+          boxShadow: "0 8px 30px rgba(0,0,0,0.08)",
+          marginBottom: 32,
+        }}
+      >
+        {/* Banner */}
+        <div
+          style={{
+            height: 180,
+            background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+            borderTopLeftRadius: 20,
+            borderTopRightRadius: 20,
+            position: "relative",
+          }}
+        >
+          <Avatar
+            size={100}
+            icon={<UserOutlined />}
+            src={user.avatar_url}
             style={{
-              borderRadius: 16,
-              boxShadow: "0 8px 24px rgba(0,0,0,0.1)",
-              border: "none",
-              height: "100%",
+              position: "absolute",
+              bottom: -50,
+              left: 40,
+              border: "4px solid white",
+              boxShadow: "0 4px 20px rgba(0,0,0,0.25)",
+              background: "linear-gradient(135deg, #667eea, #764ba2)",
             }}
-          >
-            <div
-              style={{
-                display: "flex",
-                alignItems: "flex-start",
-                marginBottom: 24,
-              }}
-            >
-              <Avatar
-                size={80}
-                icon={<UserOutlined />}
-                style={{
-                  background: "linear-gradient(45deg, #667eea, #764ba2)",
-                  boxShadow: "0 4px 12px rgba(102, 126, 234, 0.3)",
-                }}
+          />
+        </div>
+
+        {/* Info section */}
+        <div style={{ marginTop: 70, padding: "0 24px 24px" }}>
+          <Row justify="space-between" align="middle">
+            <Col>
+              <Title level={2} style={{ marginBottom: 0 }}>
+                {user.full_name}
+              </Title>
+              <Badge
+                color={roleColor[user.role]}
+                text={
+                  <Space>
+                    {roleIcons[user.role]}
+                    <Text
+                      strong
+                      style={{
+                        textTransform: "capitalize",
+                        color: roleColor[user.role],
+                      }}
+                    >
+                      {user.role}
+                    </Text>
+                  </Space>
+                }
               />
-              <div style={{ marginLeft: 20, flex: 1 }}>
-                <Title level={2} style={{ margin: 0, color: "#1a1a1a" }}>
-                  {user.full_name}
-                </Title>
-                <Badge
-                  color={roleColor[user.role] || "blue"}
-                  text={
-                    <Space style={{ marginTop: 4 }}>
-                      {roleIcons[user.role]}
-                      <Text strong style={{ textTransform: "capitalize" }}>
-                        {user.role}
-                      </Text>
-                    </Space>
-                  }
-                />
-              </div>
-            </div>
+            </Col>
+            <Col>
+              <Tag
+                color={user.status ? "success" : "error"}
+                style={{
+                  fontWeight: 600,
+                  padding: "4px 10px",
+                  borderRadius: 6,
+                }}
+              >
+                {user.status ? "Đã kích hoạt" : "Tạm khóa"}
+              </Tag>
+            </Col>
+          </Row>
 
-            <Divider style={{ margin: "20px 0" }} />
+          <Divider style={{ margin: "20px 0" }} />
 
-            {/* Thông tin cá nhân */}
-            <Space direction="vertical" size={16} style={{ width: "100%" }}>
-              <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+          <Row gutter={[16, 16]}>
+            <Col xs={24} md={8}>
+              <Space align="start">
                 <MailOutlined style={{ color: "#1890ff", fontSize: 16 }} />
                 <div>
                   <Text type="secondary" style={{ fontSize: 12 }}>
@@ -170,24 +201,10 @@ export default function UserProfile() {
                   <br />
                   <Text strong>{user.email}</Text>
                 </div>
-              </div>
-
-              <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-                <SafetyCertificateOutlined
-                  style={{ color: "#52c41a", fontSize: 16 }}
-                />
-                <div>
-                  <Text type="secondary" style={{ fontSize: 12 }}>
-                    Trạng thái
-                  </Text>
-                  <br />
-                  <Tag color={user.status ? "success" : "error"}>
-                    {user.status ? "Đã kích hoạt" : "Tạm khóa"}
-                  </Tag>
-                </div>
-              </div>
-
-              <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+              </Space>
+            </Col>
+            <Col xs={24} md={8}>
+              <Space align="start">
                 <CalendarOutlined style={{ color: "#fa8c16", fontSize: 16 }} />
                 <div>
                   <Text type="secondary" style={{ fontSize: 12 }}>
@@ -195,44 +212,66 @@ export default function UserProfile() {
                   </Text>
                   <br />
                   <Text strong>
-                    {new Date(user.created_at).toLocaleDateString("vi-VI")}
+                    {new Date(user.created_at).toLocaleDateString("vi-VN")}
                   </Text>
                 </div>
-              </div>
-            </Space>
+              </Space>
+            </Col>
+            <Col xs={24} md={8}>
+              <Space align="start">
+                <SafetyCertificateOutlined
+                  style={{ color: "#52c41a", fontSize: 16 }}
+                />
+                <div>
+                  <Text type="secondary" style={{ fontSize: 12 }}>
+                    Bảo mật
+                  </Text>
+                  <br />
+                  <Text strong>Mức cao</Text>
+                </div>
+              </Space>
+            </Col>
+          </Row>
+        </div>
+      </Card>
 
-            <Divider style={{ margin: "24px 0" }} />
-
-            {/* Thống kê */}
-            <Title level={5} style={{ marginBottom: 16 }}>
-              Thống kê hoạt động
-            </Title>
-            <Row gutter={[16, 16]}>
-              {stats.map((stat, index) => (
-                <Col xs={12} key={index}>
+      <Row gutter={[24, 24]}>
+        {/* Thống kê */}
+        <Col xs={24} lg={6}>
+          <Card
+            title={<Title level={5}>Thống kê hoạt động</Title>}
+            style={{
+              borderRadius: 16,
+              boxShadow: "0 8px 24px rgba(0,0,0,0.08)",
+              border: "none",
+            }}
+            bodyStyle={{ padding: "20px 16px" }}
+          >
+            <Row gutter={[12, 12]}>
+              {stats.map((s, i) => (
+                <Col span={12} key={i}>
                   <div
                     style={{
-                      padding: "12px",
-                      borderRadius: 8,
+                      background: `${s.color}15`,
+                      borderRadius: 10,
+                      padding: "12px 8px",
                       textAlign: "center",
-                      border: `1px solid ${stat.color}20`,
+                      transition: "transform 0.3s",
                     }}
+                    onMouseEnter={(e) =>
+                      (e.currentTarget.style.transform = "translateY(-3px)")
+                    }
+                    onMouseLeave={(e) =>
+                      (e.currentTarget.style.transform = "translateY(0)")
+                    }
                   >
-                    <div
-                      style={{
-                        color: stat.color,
-                        fontSize: 20,
-                        marginBottom: 4,
-                      }}
-                    >
-                      {stat.icon}
-                    </div>
-                    <Text strong style={{ fontSize: 18, color: stat.color }}>
-                      {stat.value}
+                    <div style={{ fontSize: 20, color: s.color }}>{s.icon}</div>
+                    <Text strong style={{ color: s.color, fontSize: 16 }}>
+                      {s.value}
                     </Text>
                     <br />
                     <Text type="secondary" style={{ fontSize: 12 }}>
-                      {stat.label}
+                      {s.label}
                     </Text>
                   </div>
                 </Col>
@@ -241,8 +280,8 @@ export default function UserProfile() {
           </Card>
         </Col>
 
-        {/* Cột lịch sử nghe */}
-        <Col xs={24} lg={12}>
+        {/* Lịch sử nghe */}
+        <Col xs={24} lg={18}>
           <UserListeningHistory />
         </Col>
       </Row>
