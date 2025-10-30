@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { ConfigProvider, theme as antdTheme } from "antd";
 
-import { ThemeContext } from "../utils/useTheme";
+import { ThemeContext } from "./useTheme";
 
 export const ThemeProvider = ({ children }) => {
   const [isDarkMode, setIsDarkMode] = useState(() => {

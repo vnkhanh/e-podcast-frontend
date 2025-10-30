@@ -26,6 +26,8 @@ import {
 } from "@ant-design/icons";
 import { getCategoryPodcasts } from "../../services/api_podcast";
 import { formatTime } from "../../utils/helpers";
+import { getAllListeningHistory } from "../../services/api_history";
+
 const { Title, Paragraph, Text } = Typography;
 const { Search } = Input;
 const { Option } = Select;
@@ -41,8 +43,10 @@ export default function CategoryPodcastsPage() {
   const [sort, setSort] = useState("latest");
   const [search, setSearch] = useState("");
   const navigate = useNavigate();
+  const [progressMap, setProgressMap] = useState({});
+  const token = localStorage.getItem("token");
 
-  const fetchPodcasts = async () => {
+  const fetchPodcasts = React.useCallback(async () => {
     setLoading(true);
     try {
       const data = await getCategoryPodcasts({
@@ -61,11 +65,33 @@ export default function CategoryPodcastsPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [slug, page, limit, sort, search]);
 
   useEffect(() => {
     fetchPodcasts();
-  }, [slug, page, sort, search]);
+  }, [fetchPodcasts]);
+  useEffect(() => {
+    const fetchProgress = async () => {
+      if (!token) return;
+      try {
+        const res = await getAllListeningHistory(token);
+        // Tạo map để dễ truy cập
+        const map = {};
+        res.data?.forEach((h) => {
+          if (h.podcast_id)
+            map[h.podcast_id] = {
+              pos: h.last_position || 0,
+              dur: h.duration || 1,
+              completed: h.completed || false,
+            };
+        });
+        setProgressMap(map);
+      } catch (err) {
+        console.error("Lỗi tải tiến trình nghe:", err);
+      }
+    };
+    fetchProgress();
+  }, [token]);
 
   if (loading)
     return (
@@ -151,7 +177,16 @@ export default function CategoryPodcastsPage() {
                   transition: "all 0.35s ease",
                   cursor: "pointer",
                 }}
-                onClick={() => navigate(`/podcast/${p.id}`)}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  const progress = progressMap[p.id];
+                  const lastPos = progress?.last_position || progress?.pos || 0;
+                  if (progress && lastPos > 10 && !progress.completed) {
+                    navigate(`/podcast/${p.id}?t=${Math.floor(lastPos)}`);
+                  } else {
+                    navigate(`/podcast/${p.id}`);
+                  }
+                }}
                 onMouseEnter={(e) => {
                   e.currentTarget.style.transform = "translateY(-6px)";
                   e.currentTarget.style.boxShadow =
@@ -207,7 +242,14 @@ export default function CategoryPodcastsPage() {
                       size="large"
                       onClick={(e) => {
                         e.stopPropagation();
-                        navigate(`/podcast/${p.id}`);
+                        const progress = progressMap[p.id];
+                        const lastPos =
+                          progress?.last_position || progress?.pos || 0;
+                        if (progress && lastPos > 10 && !progress.completed) {
+                          navigate(`/podcast/${p.id}?t=${Math.floor(lastPos)}`);
+                        } else {
+                          navigate(`/podcast/${p.id}`);
+                        }
                       }}
                       style={{
                         position: "absolute",
@@ -244,6 +286,38 @@ export default function CategoryPodcastsPage() {
                     >
                       {formatTime(p.duration_sec)}
                     </div>
+
+                    {/* Listening progress bar */}
+                    {progressMap[p.id] && progressMap[p.id].dur > 0 && (
+                      <Tooltip
+                        title={`${formatTime(
+                          progressMap[p.id].pos
+                        )} / ${formatTime(progressMap[p.id].dur)}`}
+                      >
+                        <div
+                          style={{
+                            position: "absolute",
+                            bottom: 0,
+                            left: 0,
+                            height: 4,
+                            width: `${Math.min(
+                              (progressMap[p.id].pos / progressMap[p.id].dur) *
+                                100,
+                              100
+                            )}%`,
+                            background: progressMap[p.id].completed
+                              ? "#52c41a"
+                              : "linear-gradient(90deg, #667eea, #764ba2)",
+                            borderBottomLeftRadius: 16,
+                            borderBottomRightRadius: progressMap[p.id].completed
+                              ? 16
+                              : 0,
+                            boxShadow: "0 0 8px rgba(118,75,162,0.5)",
+                            transition: "width 0.4s ease",
+                          }}
+                        />
+                      </Tooltip>
+                    )}
                   </div>
                 }
               >

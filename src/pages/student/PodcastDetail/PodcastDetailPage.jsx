@@ -33,9 +33,11 @@ import {
   getFlashcardsByPodcast,
 } from "../../../services/api_flashcards";
 import { useNavigate } from "react-router-dom";
-import { ThemeContext } from "../../../utils/useTheme";
+import { ThemeContext } from "../../../context/useTheme";
 import { getPodcastById } from "../../../services/api_podcast";
 import { formatTime } from "../../../utils/helpers";
+import { getPodcastHistory } from "../../../services/api_history";
+
 import { useLocation } from "react-router-dom";
 const { Title, Paragraph, Text } = Typography;
 const { Panel } = Collapse;
@@ -45,6 +47,8 @@ const PodcastDetailPageUser = () => {
   const { id } = useParams();
   const [podcast, setPodcast] = useState(null);
   const [chapters, setChapters] = useState([]);
+  const [startTime, setStartTime] = useState(0);
+  const token = localStorage.getItem("token");
 
   // const [related, setRelated] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -54,7 +58,7 @@ const PodcastDetailPageUser = () => {
   const [generating, setGenerating] = useState(false);
   const location = useLocation();
   const query = new URLSearchParams(location.search);
-  const startTime = parseFloat(query.get("t")) || 0; // vị trí bắt đầu
+  const queryStart = parseFloat(query.get("t")) || 0; // có thể có param ?t=xx
   const { isDarkMode } = useContext(ThemeContext);
 
   const overlayGradient = isDarkMode
@@ -109,6 +113,38 @@ const PodcastDetailPageUser = () => {
     fetchPodcast();
     // fetchRelated();
   }, [id]);
+  // === FETCH TIẾN TRÌNH NGHE ===
+  useEffect(() => {
+    const fetchListeningHistory = async () => {
+      if (!token) {
+        if (queryStart > 0) setStartTime(queryStart);
+        return;
+      }
+
+      try {
+        const res = await getPodcastHistory(id, token);
+        const hist = res?.data;
+        let position = 0;
+
+        if (queryStart > 0) {
+          position = queryStart; // ưu tiên query param
+        } else if (hist && !hist.completed && hist.last_position > 10) {
+          position = hist.last_position;
+        }
+
+        setStartTime(position);
+        if (position > 0) console.log("Tiếp tục nghe từ giây:", position);
+      } catch (err) {
+        console.log(
+          "Không có lịch sử nghe:",
+          err.response?.data || err.message
+        );
+        if (queryStart > 0) setStartTime(queryStart);
+      }
+    };
+
+    fetchListeningHistory();
+  }, [id, token, queryStart]);
 
   if (loading)
     return (

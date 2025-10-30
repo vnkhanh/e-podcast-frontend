@@ -24,7 +24,7 @@ import {
   ClockCircleOutlined,
 } from "@ant-design/icons";
 import { formatTime } from "../../utils/helpers";
-import { ThemeContext } from "../../utils/useTheme";
+import { ThemeContext } from "../../context/useTheme";
 import { useNavigate } from "react-router-dom";
 import { getLatestPodcasts } from "../../services/api_podcast";
 const { Text, Paragraph, Title } = Typography;

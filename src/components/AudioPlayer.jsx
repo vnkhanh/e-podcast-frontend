@@ -21,6 +21,8 @@ const CustomAudioPlayer = ({
   podcastId,
   userToken,
   startTime = 0,
+  externalPlaying, // thêm prop
+  onPlayStateChange, // callback để sync lên trên
 }) => {
   const audioRef = useRef(null);
   const volumeSliderRef = useRef(null);
@@ -50,9 +52,15 @@ const CustomAudioPlayer = ({
     const updateDuration = () => setDuration(audio.duration);
     const handleEnd = () => {
       setIsPlaying(false);
+      // Khi nghe hết
       if (podcastId && userToken) {
-        // Khi nghe xong -> đánh dấu completed
-        saveListeningHistory(podcastId, audio.duration, true, userToken);
+        saveListeningHistory(
+          podcastId,
+          audio.duration,
+          true,
+          userToken,
+          audio.duration
+        );
       }
     };
 
@@ -81,10 +89,11 @@ const CustomAudioPlayer = ({
     const interval = setInterval(() => {
       if (isPlaying && audioRef.current && duration > 0) {
         const pos = Math.floor(audioRef.current.currentTime);
-        saveListeningHistory(podcastId, pos, false, userToken);
-        console.log("Đã lưu lịch sử nghe:", pos);
+        const dur = Math.floor(audioRef.current.duration || 0);
+        saveListeningHistory(podcastId, pos, false, userToken, dur);
+        console.log("Đã lưu lịch sử nghe:", pos, "/", dur);
       }
-    }, 5000); // 5s/lần
+    }, 5000);
 
     return () => clearInterval(interval);
   }, [isPlaying, duration, podcastId, userToken]);
@@ -110,6 +119,20 @@ const CustomAudioPlayer = ({
       audio.removeEventListener("loadedmetadata", seekToPosition);
     };
   }, [startTime]);
+
+  // --- Đồng bộ trạng thái phát từ bên ngoài ---
+  useEffect(() => {
+    const audio = audioRef.current;
+    if (!audio) return;
+
+    if (externalPlaying) {
+      audio.play();
+      setIsPlaying(true);
+    } else {
+      audio.pause();
+      setIsPlaying(false);
+    }
+  }, [externalPlaying]);
 
   // --- Giao diện điều khiển ---
   const handleRateChange = (value) => {
@@ -160,9 +183,11 @@ const CustomAudioPlayer = ({
 
   const togglePlay = () => {
     const audio = audioRef.current;
-    if (isPlaying) audio.pause();
-    else audio.play();
-    setIsPlaying(!isPlaying);
+    const newState = !isPlaying;
+    if (newState) audio.play();
+    else audio.pause();
+    setIsPlaying(newState);
+    onPlayStateChange && onPlayStateChange(newState); // báo lên trên
   };
 
   const skip = (seconds) => {

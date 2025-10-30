@@ -70,6 +70,8 @@ const NowPlayingBar = ({ playerState, userToken }) => {
             userToken={userToken}
             size="default"
             style={{ width: "100%" }}
+            externalPlaying={playerState.isPlaying} // trạng thái phát
+            onPlayStateChange={playerState.setIsPlaying}
           />
         </Col>
 

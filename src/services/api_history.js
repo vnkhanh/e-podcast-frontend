@@ -28,14 +28,17 @@ export async function saveListeningHistory(
   podcastId,
   lastPosition,
   completed = false,
-  token
+  token,
+  duration
 ) {
   try {
-    console.log("📡 Gửi API lưu lịch sử:", podcastId, lastPosition, completed);
-
     const res = await axios.post(
       `${API_BASE_URL}/user/account/listening-history/${podcastId}`,
-      { last_position: Math.floor(lastPosition), completed },
+      {
+        last_position: Math.floor(lastPosition),
+        duration: Math.floor(duration || 0), // thêm dòng này
+        completed,
+      },
       {
         headers: {
           Authorization: `Bearer ${token}`,
@@ -45,7 +48,7 @@ export async function saveListeningHistory(
     return res.data;
   } catch (err) {
     console.error(
-      "❌ Lỗi khi cập nhật lịch sử nghe:",
+      "Lỗi khi cập nhật lịch sử nghe:",
       err.response?.data || err.message
     );
   }
