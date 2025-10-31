@@ -27,11 +27,11 @@ import { formatTime } from "../../utils/helpers";
 import { ThemeContext } from "../../context/useTheme";
 import { useNavigate } from "react-router-dom";
 import { getLatestPodcasts } from "../../services/api_podcast";
+import PodcastFavoriteButton from "./PodcastFavoriteButton";
 const { Text, Paragraph, Title } = Typography;
 
 const PodcastList = ({ playerState, title = "Podcast Mới Nhất" }) => {
-  const { currentPodcast, isPlaying, likedPodcasts, handlePlay, handleLike } =
-    playerState;
+  const { currentPodcast, isPlaying, handlePlay } = playerState;
   const [hoveredIndex, setHoveredIndex] = useState(null);
   const [podcasts, setPodcasts] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -103,32 +103,18 @@ const PodcastList = ({ playerState, title = "Podcast Mới Nhất" }) => {
                     <PauseCircleOutlined style={{ fontSize: 22 }} />
                   ) : (
                     <PlayCircleOutlined
-                      style={{
-                        fontSize: 22,
-                        color: "rgba(102,126,234,1)",
-                      }}
+                      style={{ fontSize: 22, color: "rgba(102,126,234,1)" }}
                     />
                   )
                 }
-                onClick={() => handlePlay(podcast)}
+                onClick={(e) => {
+                  e.stopPropagation(); // Ngăn event nổi bọt
+                  handlePlay(podcast);
+                }}
               />
             </Tooltip>,
             <Tooltip title="Yêu thích">
-              <Button
-                type="text"
-                icon={
-                  likedPodcasts.includes(podcast.id) ? (
-                    <HeartFilled style={{ color: "#ff4d4f" }} />
-                  ) : (
-                    <HeartOutlined
-                      style={{
-                        color: isDarkMode ? "#f9fafb" : "inherit",
-                      }}
-                    />
-                  )
-                }
-                onClick={() => handleLike(podcast.id)}
-              />
+              <PodcastFavoriteButton podcastId={podcast.id} />
             </Tooltip>,
             <Tooltip title="Chia sẻ">
               <Button
@@ -138,6 +124,7 @@ const PodcastList = ({ playerState, title = "Podcast Mới Nhất" }) => {
                     style={{ color: isDarkMode ? "#f9fafb" : "inherit" }}
                   />
                 }
+                onClick={(e) => e.stopPropagation()} // Ngăn event nổi bọt
               />
             </Tooltip>,
             <Tooltip title="Tải xuống">
@@ -148,6 +135,7 @@ const PodcastList = ({ playerState, title = "Podcast Mới Nhất" }) => {
                     style={{ color: isDarkMode ? "#f9fafb" : "inherit" }}
                   />
                 }
+                onClick={(e) => e.stopPropagation()} // Ngăn event nổi bọt
               />
             </Tooltip>,
           ]}

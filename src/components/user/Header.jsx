@@ -1,4 +1,4 @@
-import React, { useEffect, useContext } from "react";
+import React, { useEffect, useContext, useState } from "react";
 import {
   Layout,
   Menu,
@@ -8,6 +8,7 @@ import {
   Dropdown,
   Typography,
   message,
+  AutoComplete,
   Space,
 } from "antd";
 import {
@@ -21,16 +22,62 @@ import {
 import { useNavigate } from "react-router-dom";
 import { ThemeContext } from "../../context/useTheme";
 import { jwtDecode } from "jwt-decode";
+import { searchAutocomplete } from "../../services/api_search"; // <-- import API
 
 const { Header } = Layout;
 const { Title } = Typography;
-const { Search } = Input;
 
 const AppHeader = () => {
   const { isDarkMode, toggleTheme } = useContext(ThemeContext);
   const token = localStorage.getItem("token");
   const user = token ? JSON.parse(localStorage.getItem("user")) : null;
   const navigate = useNavigate();
+
+  const [searchText, setSearchText] = useState("");
+  const [options, setOptions] = useState([]);
+
+  // Gọi API autocomplete
+  const handleSearchChange = async (value) => {
+    setSearchText(value);
+    if (!value.trim()) {
+      setOptions([]);
+      return;
+    }
+    try {
+      const data = await searchAutocomplete(value, 10);
+      setOptions(
+        data.map((item) => ({
+          value: item.type === "podcast" ? item.title : item.name,
+          label: (
+            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+              {item.type === "podcast" ? "🎧" : "📚"} {item.title || item.name}
+            </div>
+          ),
+          id: item.id,
+          type: item.type,
+        }))
+      );
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  // Khi chọn 1 gợi ý
+  const handleSelect = (value, option) => {
+    if (option?.type && option?.id) {
+      if (option.type === "podcast") navigate(`/podcast/${option.id}`);
+      else navigate(`/subjects/${option.slug}`);
+    }
+  };
+
+  // Khi nhấn Enter
+  const handleSearchEnter = () => {
+    if (!searchText.trim()) {
+      message.warning("Vui lòng nhập từ khóa!");
+      return;
+    }
+    navigate("/search", { state: { query: searchText } });
+  };
 
   useEffect(() => {
     if (token) {
@@ -163,17 +210,37 @@ const AppHeader = () => {
               height: 40,
             }}
           >
-            <Search
-              placeholder="Tìm kiếm khóa học, podcast..."
-              enterButton={<SearchOutlined />}
-              size="middle"
-              style={{
-                width: 280,
-                borderRadius: 20,
-                overflow: "hidden",
-              }}
-              className="search-bar"
-            />
+            <AutoComplete
+              options={options}
+              style={{ width: 280 }}
+              value={searchText}
+              onChange={handleSearchChange}
+              onSelect={handleSelect}
+              dropdownMatchSelectWidth={300}
+              dropdownRender={(menu) => (
+                <div style={{ maxHeight: 300, overflowY: "auto" }}>
+                  {menu}
+                  {options.length > 0 && (
+                    <div
+                      style={{
+                        padding: "4px 12px",
+                        cursor: "pointer",
+                        fontWeight: 600,
+                      }}
+                      onMouseDown={handleSearchEnter}
+                    >
+                      Tìm tất cả kết quả cho "{searchText}"
+                    </div>
+                  )}
+                </div>
+              )}
+            >
+              <Input.Search
+                placeholder="Tìm podcast hoặc môn học..."
+                enterButton={<SearchOutlined />}
+                onSearch={handleSearchEnter}
+              />
+            </AutoComplete>
           </div>
 
           {token && user ? (

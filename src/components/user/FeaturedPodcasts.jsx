@@ -11,7 +11,7 @@ import {
   EyeOutlined,
 } from "@ant-design/icons";
 import { formatTime } from "../../utils/helpers";
-
+import PodcastFavoriteButton from "./PodcastFavoriteButton";
 const { Text, Paragraph, Title } = Typography;
 
 const FeaturedPodcastCard = ({ podcast, playerState }) => {
@@ -102,15 +102,7 @@ const FeaturedPodcastCard = ({ podcast, playerState }) => {
         }}
       >
         <Space>
-          <Button
-            type="text"
-            shape="circle"
-            icon={<HeartOutlined style={{ color: "#fff" }} />}
-            style={{
-              background: "rgba(0,0,0,0.4)",
-              border: "none",
-            }}
-          />
+          <PodcastFavoriteButton podcastId={podcast.id} />
           <Button
             type="text"
             shape="circle"

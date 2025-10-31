@@ -18,6 +18,8 @@ import QuizTakePage from "../pages/student/Quiz/QuizTakePage";
 import QuizHistoryPage from "../pages/student/Quiz/QuizHistoryPage";
 import QuizAttemptDetailPage from "../pages/student/Quiz/QuizAttemptDetailPage";
 import SubjectDetailPage from "../pages/student/SubjectDetailPage";
+import SearchPage from "../pages/student/SearchPage";
+
 // Admin & Teacher dùng chung layout
 import AdminLayout from "../layouts/AdminLayout";
 import AdminDashboard from "../pages/admin/AdminDashboard";
@@ -81,6 +83,7 @@ const AppRoute = () => {
           element={<QuizAttemptDetailPage />}
         />
         <Route path="/subjects/:slug" element={<SubjectDetailPage />} />
+        <Route path="/search" element={<SearchPage />} />
       </Route>
 
       {/* Teacher & Admin dùng chung layout */}

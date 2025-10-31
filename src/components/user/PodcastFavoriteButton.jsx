@@ -55,7 +55,10 @@ const PodcastFavoriteButton = ({ podcastId, onLikeChange }) => {
 
   return (
     <button
-      onClick={toggleFavorite}
+      onClick={(e) => {
+        e.stopPropagation();
+        toggleFavorite();
+      }}
       style={{
         background: "none",
         border: "none",
