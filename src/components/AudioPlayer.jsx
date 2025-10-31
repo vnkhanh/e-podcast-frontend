@@ -142,15 +142,17 @@ const CustomAudioPlayer = ({
 
   const handleProgressClick = (e) => {
     const rect = progressBarRef.current.getBoundingClientRect();
-    const percent = (e.clientX - rect.left) / rect.width;
+    let percent = (e.clientX - rect.left) / rect.width;
+    // Giới hạn trong khoảng 0–1
+    percent = Math.max(0, Math.min(1, percent));
     const newTime = percent * duration;
     audioRef.current.currentTime = newTime;
     setCurrentTime(newTime);
   };
-
   const handleProgressMouseDown = (e) => {
     setIsDragging(true);
     handleProgressClick(e);
+
     const handleMove = (ev) => handleProgressClick(ev);
     const handleUp = () => {
       setIsDragging(false);

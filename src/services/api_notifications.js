@@ -28,3 +28,48 @@ export const markAllNotificationsRead = async (token) => {
     return false;
   }
 };
+
+const getHeaders = () => {
+  const token = localStorage.getItem("token");
+  return { Authorization: `Bearer ${token}` };
+};
+
+// Lấy danh sách thông báo
+export const getNotifications = async () => {
+  const res = await axios.get(`${API_BASE_URL}/admin/notifications`, {
+    headers: getHeaders(),
+  });
+  return res.data;
+};
+
+// Đánh dấu tất cả là đã đọc
+export const markAllAsRead = async () => {
+  await axios.put(
+    `${API_BASE_URL}/admin/notifications/mark-all-read`,
+    {},
+    {
+      headers: getHeaders(),
+    }
+  );
+};
+
+// Xóa 1 thông báo
+export const deleteNotification = async (id) => {
+  await axios.delete(`${API_BASE_URL}/admin/notifications/${id}`, {
+    headers: getHeaders(),
+  });
+};
+
+// Xóa tất cả đã đọc
+export const deleteReadNotifications = async () => {
+  await axios.delete(`${API_BASE_URL}/admin/notifications/read`, {
+    headers: getHeaders(),
+  });
+};
+
+// Xóa tất cả thông báo
+export const deleteAllNotifications = async () => {
+  await axios.delete(`${API_BASE_URL}/admin/notifications`, {
+    headers: getHeaders(),
+  });
+};

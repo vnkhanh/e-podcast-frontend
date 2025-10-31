@@ -15,6 +15,17 @@ export const getAllFavorites = async (token) => {
   }
 };
 
+// Lấy danh sách podcast yêu thích
+
+export const getUserFavorites = async (token) => {
+  const res = await axios.get(`${API_BASE_URL}/user/account/favorites`, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+  return res.data;
+};
+
 // Thêm podcast vào yêu thích
 export const addFavorite = async (token, podcastId) => {
   try {

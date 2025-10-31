@@ -70,8 +70,10 @@ const UserListeningHistory = () => {
     }
   };
 
-  const getProgressPercentage = (current, total = 300) =>
-    Math.min((current / total) * 100, 100);
+  const getProgressPercentage = (current, total) => {
+    if (!total || total <= 0) return 0;
+    return Math.min((current / total) * 100, 100);
+  };
 
   useEffect(() => {
     fetchHistory();
@@ -308,13 +310,19 @@ const UserListeningHistory = () => {
                           </Text>
                           <Text type="secondary" style={{ fontSize: 11 }}>
                             {Math.round(
-                              getProgressPercentage(item.last_position)
+                              getProgressPercentage(
+                                item.last_position,
+                                item.podcast?.duration_sec || item.duration
+                              )
                             )}
                             %
                           </Text>
                         </div>
                         <Progress
-                          percent={getProgressPercentage(item.last_position)}
+                          percent={getProgressPercentage(
+                            item.last_position,
+                            item.podcast?.duration_sec || item.duration
+                          )}
                           size="small"
                           strokeColor={{
                             "0%": "#667eea",

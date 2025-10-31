@@ -1,18 +1,16 @@
-import React, { useState } from "react";
-import { Layout, Button } from "antd";
+import React from "react";
+import { Layout } from "antd";
 import { Outlet } from "react-router-dom";
-import {
-  UpOutlined,
-  DownOutlined,
-  CustomerServiceOutlined,
-} from "@ant-design/icons";
 import AppHeader from "../../components/user/Header";
 import AppFooter from "../../components/user/Footer";
 import { PlayerProvider } from "../../context/PlayerProvider";
 import { usePlayer } from "../../context/usePlayer";
 import NowPlayingBar from "../../components/user/NowPlayingBar";
+import { useLocation } from "react-router-dom";
+
 const { Content } = Layout;
 
+// Bọc layout trong provider
 function UserLayout() {
   return (
     <PlayerProvider>
@@ -20,45 +18,27 @@ function UserLayout() {
     </PlayerProvider>
   );
 }
-
 function UserLayoutContent() {
+  const location = useLocation();
+  const isPodcastDetail = /^\/podcast\/\d+/.test(location.pathname);
+
   const playerState = usePlayer();
   const userToken = localStorage.getItem("token");
-  const [showPlayerBar, setShowPlayerBar] = useState(true);
 
   return (
     <Layout>
       <AppHeader />
       <Content style={{ minHeight: "100vh" }}>
-        <Outlet />
+        <Outlet /> {/* nơi hiển thị các trang con */}
       </Content>
-
-      {/* Nút bật/tắt thanh nghe */}
-      {playerState.currentPodcast && (
-        <div
-          style={{
-            position: "fixed",
-            bottom: showPlayerBar ? 80 : 20,
-            right: 30,
-            zIndex: 1100,
-          }}
-        >
-          <Button
-            type="primary"
-            shape="circle"
-            size="large"
-            icon={
-              showPlayerBar ? <DownOutlined /> : <CustomerServiceOutlined />
-            }
-            onClick={() => setShowPlayerBar(!showPlayerBar)}
-          />
-        </div>
-      )}
-
-      {/* Thanh nghe hiển thị/ẩn */}
-      {playerState.currentPodcast && showPlayerBar && (
+      {/* NowPlaying chạy ngầm nhưng ẩn khi đang ở trang chi tiết */}
+      <div
+        style={{
+          display: isPodcastDetail ? "none" : "block",
+        }}
+      >
         <NowPlayingBar playerState={playerState} userToken={userToken} />
-      )}
+      </div>
 
       <AppFooter />
     </Layout>

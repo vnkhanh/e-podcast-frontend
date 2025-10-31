@@ -25,6 +25,7 @@ import {
 } from "@ant-design/icons";
 import UserListeningHistory from "./UserListeningHistory";
 import { getUserProfile } from "../../services/api_auth";
+import UserFavorites from "../../components/user/UserFavorites";
 
 const { Title, Text } = Typography;
 
@@ -285,6 +286,7 @@ export default function UserProfile() {
         {/* Lịch sử nghe */}
         <Col xs={24} lg={18}>
           <UserListeningHistory />
+          <UserFavorites />
         </Col>
       </Row>
     </div>

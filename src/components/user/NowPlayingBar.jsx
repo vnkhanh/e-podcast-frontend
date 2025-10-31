@@ -1,8 +1,6 @@
 import React, { useState, useRef, useEffect } from "react";
 import { Row, Col, Avatar, Button, Space, Typography } from "antd";
 import {
-  HeartOutlined,
-  HeartFilled,
   ShareAltOutlined,
   DownloadOutlined,
   UnorderedListOutlined,
@@ -12,12 +10,13 @@ import {
   PauseCircleFilled,
 } from "@ant-design/icons";
 import CustomAudioPlayer from "../AudioPlayer";
+import PodcastFavoriteButton from "./PodcastFavoriteButton";
+import SharePodcastButton from "./SharePodcastButton";
 
 const { Text } = Typography;
 
 const NowPlayingBar = ({ playerState, userToken }) => {
-  const { currentPodcast, likedPodcasts, handleLike, isPlaying, setIsPlaying } =
-    playerState;
+  const { currentPodcast, isPlaying, setIsPlaying } = playerState;
 
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [progress, setProgress] = useState(0);
@@ -83,20 +82,10 @@ const NowPlayingBar = ({ playerState, userToken }) => {
                 <Text strong>
                   {currentPodcast?.title || "Không có tiêu đề"}
                 </Text>
-                <Text type="secondary" style={{ fontSize: 12 }}>
-                  {currentPodcast?.chapter?.subject?.name || "Chưa có chủ đề"}
-                </Text>
               </Space>
-              <Button
-                type="text"
-                icon={
-                  likedPodcasts.includes(currentPodcast?.id) ? (
-                    <HeartFilled style={{ color: "#ff4d4f" }} />
-                  ) : (
-                    <HeartOutlined />
-                  )
-                }
-                onClick={() => handleLike(currentPodcast?.id)}
+              <PodcastFavoriteButton
+                podcastId={currentPodcast?.id}
+                userToken={userToken}
               />
             </Space>
           </Col>
@@ -121,7 +110,10 @@ const NowPlayingBar = ({ playerState, userToken }) => {
                 float: isMobile ? "left" : "right",
               }}
             >
-              <Button type="text" icon={<ShareAltOutlined />} />
+              <SharePodcastButton
+                podcastId={currentPodcast?.id}
+                userToken={userToken}
+              />
               <Button type="text" icon={<DownloadOutlined />} />
               <Button type="text" icon={<UnorderedListOutlined />} />
               <Button
