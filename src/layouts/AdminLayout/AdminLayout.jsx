@@ -1,6 +1,6 @@
-import React from "react";
-import { Layout, Menu, Dropdown, Avatar } from "antd";
-import { Link, Outlet, useNavigate } from "react-router-dom";
+import React, { useEffect, useState } from "react";
+import { Layout, Menu, Dropdown, Avatar, Badge, notification } from "antd";
+import { Link, Outlet, useNavigate, useLocation } from "react-router-dom";
 import {
   DashboardOutlined,
   BookOutlined,
@@ -9,12 +9,21 @@ import {
   LogoutOutlined,
   BlockOutlined,
   DockerOutlined,
+  BellOutlined,
 } from "@ant-design/icons";
-
+import {
+  getUnreadNotifications,
+  markAllNotificationsRead,
+} from "../../services/api_notifications";
+import { connectUserWebSocket } from "../../services/ws_user";
 const { Header, Sider, Content } = Layout;
 
 const AdminLayout = () => {
   const navigate = useNavigate();
+  const location = useLocation();
+
+  const [unreadCount, setUnreadCount] = useState(0);
+  const [wsConn, setWsConn] = useState(null);
 
   const user = localStorage.getItem("user")
     ? JSON.parse(localStorage.getItem("user"))
@@ -37,7 +46,36 @@ const AdminLayout = () => {
     </Menu>
   );
 
-  // Menu items tùy theo role
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+    if (!token) return;
+
+    // Gọi API ban đầu
+    getUnreadNotifications(token).then(setUnreadCount);
+
+    // Kết nối WebSocket
+    const ws = connectUserWebSocket(token, (data) => {
+      switch (data.type) {
+        case "favorite_notification":
+          notification.open({
+            message: data.title,
+            description: data.message,
+            placement: "bottomRight",
+          });
+          setUnreadCount((prev) => prev + 1);
+          break;
+        case "badge_update":
+          setUnreadCount(data.unread_count);
+          break;
+        default:
+          console.log("WS:", data);
+      }
+    });
+    setWsConn(ws);
+
+    return () => ws?.close();
+  }, []);
+
   const menuItems = [
     {
       key: "dashboard",
@@ -77,7 +115,6 @@ const AdminLayout = () => {
     },
   ];
 
-  // Admin mới thêm menu User
   if (user?.role === "admin") {
     menuItems.push({
       key: "user",
@@ -86,6 +123,13 @@ const AdminLayout = () => {
       link: "/admin/user",
     });
   }
+
+  const handleOpenNotifications = async () => {
+    navigate("/teacher/notifications");
+    const token = localStorage.getItem("token");
+    const ok = await markAllNotificationsRead(token);
+    if (ok) setUnreadCount(0);
+  };
 
   return (
     <Layout style={{ minHeight: "100vh" }}>
@@ -106,8 +150,9 @@ const AdminLayout = () => {
         <Menu
           theme="dark"
           mode="inline"
+          selectedKeys={[location.pathname]}
           items={menuItems.map((i) => ({
-            key: i.key,
+            key: i.link,
             icon: i.icon,
             label: <Link to={i.link}>{i.label}</Link>,
           }))}
@@ -125,22 +170,32 @@ const AdminLayout = () => {
           }}
         >
           <h3 style={{ margin: 0 }}>Hệ thống quản trị</h3>
-          <Dropdown overlay={userMenu} placement="bottomRight">
-            <div
-              style={{
-                display: "flex",
-                alignItems: "center",
-                cursor: "pointer",
-              }}
-            >
-              <span>Xin chào, {user?.full_name || "Admin"}!</span>{" "}
-              &nbsp;&nbsp;&nbsp;
-              <Avatar
-                style={{ backgroundColor: "#87d068", marginRight: 8 }}
-                icon={<UserOutlined />}
+
+          <div style={{ display: "flex", alignItems: "center", gap: 20 }}>
+            <Badge count={unreadCount} size="small">
+              <BellOutlined
+                style={{ fontSize: 20, cursor: "pointer" }}
+                onClick={handleOpenNotifications}
               />
-            </div>
-          </Dropdown>
+            </Badge>
+
+            <Dropdown overlay={userMenu} placement="bottomRight">
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  cursor: "pointer",
+                }}
+              >
+                <span>Xin chào, {user?.full_name || "Admin"}!</span>{" "}
+                &nbsp;&nbsp;&nbsp;
+                <Avatar
+                  style={{ backgroundColor: "#87d068", marginRight: 8 }}
+                  icon={<UserOutlined />}
+                />
+              </div>
+            </Dropdown>
+          </div>
         </Header>
 
         <Content style={{ margin: "16px" }}>

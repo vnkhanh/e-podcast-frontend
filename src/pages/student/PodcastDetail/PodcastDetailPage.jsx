@@ -37,7 +37,7 @@ import { ThemeContext } from "../../../context/useTheme";
 import { getPodcastById } from "../../../services/api_podcast";
 import { formatTime } from "../../../utils/helpers";
 import { getPodcastHistory } from "../../../services/api_history";
-
+import PodcastFavoriteButton from "../../../components/user/PodcastFavoriteButton";
 import { useLocation } from "react-router-dom";
 const { Title, Paragraph, Text } = Typography;
 const { Panel } = Collapse;
@@ -281,16 +281,16 @@ const PodcastDetailPageUser = () => {
               style={{ marginBottom: 16 }}
             />
 
-            <div style={{ display: "flex", justifyContent: "space-between" }}>
-              <Button
-                icon={<HeartOutlined />}
-                style={{
-                  color: "#555",
-                  borderColor: "#ddd",
-                }}
-              >
-                Yêu thích
-              </Button>
+            <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+              <PodcastFavoriteButton
+                podcastId={podcast.id}
+                onLikeChange={(newCount) =>
+                  setPodcast({ ...podcast, like_count: newCount })
+                }
+              />
+              <span style={{ fontSize: 16, color: "#555" }}>
+                {podcast.like_count}
+              </span>
             </div>
 
             <Divider />

@@ -31,6 +31,7 @@ import PodcastDetailPage from "../pages/admin/Podcast/PodcastDetail";
 import EditPodcast from "../pages/admin/Podcast/EditPodcast";
 import UserPage from "../pages/admin/User/UserPage";
 import ProtectedRoute from "./ProtectedRoute";
+import NotificationsPage from "../pages/admin/NotificationsPage";
 
 const AppRoute = () => {
   const token = localStorage.getItem("token");
@@ -100,6 +101,7 @@ const AppRoute = () => {
         <Route path="podcast/create" element={<CreatePodcastUpload />} />
         <Route path="podcast/:id" element={<PodcastDetailPage />} />
         <Route path="podcast/:id/edit" element={<EditPodcast />} />
+        <Route path="notifications" element={<NotificationsPage />} />
       </Route>
 
       <Route
@@ -120,6 +122,7 @@ const AppRoute = () => {
         <Route path="podcast/create" element={<CreatePodcastUpload />} />
         <Route path="podcast/:id" element={<PodcastDetailPage />} />
         <Route path="user" element={<UserPage />} />
+        <Route path="notifications" element={<NotificationsPage />} />
       </Route>
     </Routes>
   );

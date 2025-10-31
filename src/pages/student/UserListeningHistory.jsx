@@ -171,7 +171,11 @@ const UserListeningHistory = () => {
                 actions={[
                   <Popconfirm
                     title="Xóa lịch sử này?"
-                    onConfirm={() => handleDelete(item.podcast_id)}
+                    onConfirm={(e) => {
+                      e?.stopPropagation(); // chặn click lan lên List.Item
+                      handleDelete(item.podcast_id);
+                    }}
+                    onCancel={(e) => e?.stopPropagation()} // chặn luôn cancel
                     okText="Xóa"
                     cancelText="Hủy"
                     okButtonProps={{ danger: true }}
@@ -181,6 +185,7 @@ const UserListeningHistory = () => {
                       size="small"
                       icon={<DeleteOutlined />}
                       style={{ borderRadius: 6 }}
+                      onClick={(e) => e.stopPropagation()} // chặn luôn khi click nút
                     />
                   </Popconfirm>,
                 ]}
