@@ -38,6 +38,7 @@ import { getPodcastById } from "../../../services/api_podcast";
 import { formatTime } from "../../../utils/helpers";
 import { getPodcastHistory } from "../../../services/api_history";
 import PodcastFavoriteButton from "../../../components/user/PodcastFavoriteButton";
+import SharePodcastButton from "../../../components/user/SharePodcastButton";
 import { useLocation } from "react-router-dom";
 const { Title, Paragraph, Text } = Typography;
 const { Panel } = Collapse;
@@ -288,9 +289,10 @@ const PodcastDetailPageUser = () => {
                   setPodcast({ ...podcast, like_count: newCount })
                 }
               />
-              <span style={{ fontSize: 16, color: "#555" }}>
-                {podcast.like_count}
-              </span>
+              <SharePodcastButton
+                podcastId={podcast.id}
+                podcastTitle={podcast.title}
+              />
             </div>
 
             <Divider />
