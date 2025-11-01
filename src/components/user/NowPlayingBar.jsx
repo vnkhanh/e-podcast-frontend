@@ -1,46 +1,204 @@
-import React, { useState, useRef, useEffect } from "react";
-import { Row, Col, Avatar, Button, Space, Typography } from "antd";
+import React, { useState, useRef, useEffect, useCallback } from "react";
 import {
-  ShareAltOutlined,
-  DownloadOutlined,
+  Row,
+  Col,
+  Avatar,
+  Button,
+  Space,
+  Typography,
+  Dropdown,
+  Input,
+  List,
+  Tag,
+  message,
+  Tooltip,
+} from "antd";
+import {
   UnorderedListOutlined,
   UpOutlined,
   DownOutlined,
   PlayCircleFilled,
   PauseCircleFilled,
+  PlusOutlined,
+  ClockCircleOutlined,
+  DeleteOutlined,
 } from "@ant-design/icons";
 import CustomAudioPlayer from "../AudioPlayer";
 import PodcastFavoriteButton from "./PodcastFavoriteButton";
 import SharePodcastButton from "./SharePodcastButton";
+import {
+  createPodcastNote,
+  getNotesByPodcast,
+  deleteNote,
+} from "../../services/api_note";
+import { formatTime } from "../../utils/helpers";
 
 const { Text } = Typography;
 
 const NowPlayingBar = ({ playerState, userToken }) => {
-  const { currentPodcast, isPlaying, setIsPlaying } = playerState;
+  const {
+    currentPodcast,
+    isPlaying,
+    setIsPlaying,
+    setCurrentTime,
+    setDuration,
+    currentTime,
+    handlePlay,
+  } = playerState;
 
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [progress, setProgress] = useState(0);
+  const [noteText, setNoteText] = useState("");
+  const [notes, setNotes] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [duration, setLocalDuration] = useState(0);
+
   const audioRef = useRef(null);
   const isMobile = window.innerWidth <= 768;
-  // Cập nhật thanh tiến trình realtime
-  useEffect(() => {
-    // nếu chưa có podcast hoặc audioRef chưa sẵn sàng thì bỏ qua
-    if (!currentPodcast || !audioRef.current) return;
 
+  // Cập nhật tiến trình + thời gian thực
+  useEffect(() => {
+    if (!currentPodcast || !audioRef.current) return;
     const audio = audioRef.current.querySelector("audio");
     if (!audio) return;
 
     const updateProgress = () => {
       if (audio.duration > 0) {
-        setProgress((audio.currentTime / audio.duration) * 100);
+        const percent = (audio.currentTime / audio.duration) * 100;
+        setProgress(percent);
+        setCurrentTime(audio.currentTime);
+        setDuration(audio.duration);
+        setLocalDuration(audio.duration); // set duration cho mini player
       }
     };
 
     audio.addEventListener("timeupdate", updateProgress);
-    return () => audio.removeEventListener("timeupdate", updateProgress);
-  }, [currentPodcast]);
+    audio.addEventListener("loadedmetadata", updateProgress);
+    return () => {
+      audio.removeEventListener("timeupdate", updateProgress);
+      audio.removeEventListener("loadedmetadata", updateProgress);
+    };
+  }, [currentPodcast, setCurrentTime, setDuration]);
+
+  // Lấy danh sách ghi chú
+  const fetchNotes = useCallback(async () => {
+    if (!currentPodcast) return;
+    try {
+      const res = await getNotesByPodcast(currentPodcast.id, userToken);
+      const data = res?.data?.notes || [];
+      setNotes(Array.isArray(data) ? data : []);
+    } catch (err) {
+      console.error(err);
+      setNotes([]);
+    }
+  }, [currentPodcast, userToken]);
+
+  useEffect(() => {
+    fetchNotes();
+  }, [fetchNotes]);
+
+  const handleAddNote = async () => {
+    if (!noteText.trim()) return;
+    setLoading(true);
+    try {
+      await createPodcastNote(
+        {
+          podcast_id: currentPodcast.id,
+          content: noteText,
+          position: Math.floor(currentTime),
+        },
+        userToken
+      );
+      setNoteText("");
+      message.success("Đã thêm ghi chú!");
+      fetchNotes();
+    } catch (err) {
+      console.error(err);
+      message.error("Không thể thêm ghi chú!");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleDeleteNote = async (noteId) => {
+    try {
+      await deleteNote(noteId, userToken);
+      message.success("Đã xóa ghi chú!");
+      fetchNotes();
+    } catch (err) {
+      console.error(err);
+      message.error("Không thể xóa ghi chú!");
+    }
+  };
+
+  const jumpToNote = (note) => {
+    if (currentPodcast?.id === note.podcast_id) {
+      const audio = document.querySelector("audio");
+      if (audio) audio.currentTime = note.position;
+      setCurrentTime(note.position);
+    } else {
+      handlePlay({ id: note.podcast_id, audio_url: note.audio_url });
+      setTimeout(() => {
+        const audio = document.querySelector("audio");
+        if (audio) audio.currentTime = note.position;
+        setCurrentTime(note.position);
+      }, 700);
+    }
+  };
 
   if (!currentPodcast) return null;
+
+  // Dropdown nội dung notes + form tạo note
+  const noteMenu = (
+    <div
+      style={{
+        padding: 12,
+        width: 320,
+        background: "#fff",
+        borderRadius: 8,
+        boxShadow: "0 4px 12px rgba(0,0,0,0.15)",
+      }}
+    >
+      <Input.TextArea
+        rows={3}
+        value={noteText}
+        onChange={(e) => setNoteText(e.target.value)}
+        placeholder={`Nhập ghi chú tại ${formatTime(currentTime)}`}
+      />
+      <Button
+        type="primary"
+        style={{ marginTop: 8, width: "100%" }}
+        loading={loading}
+        icon={<PlusOutlined />}
+        onClick={handleAddNote}
+      >
+        Lưu ghi chú
+      </Button>
+      <List
+        size="small"
+        style={{ marginTop: 12, maxHeight: 200, overflowY: "auto" }}
+        dataSource={notes.sort((a, b) => a.position - b.position)}
+        renderItem={(note) => (
+          <List.Item
+            style={{ cursor: "pointer", padding: "4px 8px" }}
+            onClick={() => jumpToNote(note)}
+          >
+            <Space>
+              <ClockCircleOutlined style={{ color: "#1DB954" }} />
+              <Tag color="green">{formatTime(note.position)}</Tag>
+              <Text>{note.content}</Text>
+              <Button
+                type="text"
+                danger
+                icon={<DeleteOutlined />}
+                onClick={() => handleDeleteNote(note.id)}
+              />
+            </Space>
+          </List.Item>
+        )}
+      />
+    </div>
+  );
 
   return (
     <div
@@ -61,16 +219,12 @@ const NowPlayingBar = ({ playerState, userToken }) => {
         transition: "all 0.3s ease",
       }}
     >
-      {/* --- Player thật (luôn tồn tại để không dừng nhạc) --- */}
+      {/* Full Player */}
       <div
         ref={audioRef}
-        style={{
-          display: isCollapsed ? "none" : "block",
-          width: "100%",
-        }}
+        style={{ display: isCollapsed ? "none" : "block", width: "100%" }}
       >
         <Row align="middle" gutter={[16, 16]}>
-          {/* Thông tin podcast + nút like */}
           <Col xs={24} md={8}>
             <Space>
               <Avatar
@@ -90,32 +244,33 @@ const NowPlayingBar = ({ playerState, userToken }) => {
             </Space>
           </Col>
 
-          {/* Player */}
           <Col xs={24} md={8}>
             <CustomAudioPlayer
               src={currentPodcast?.audio_url}
               podcastId={currentPodcast?.id}
               userToken={userToken}
               size="default"
-              style={{ width: "100%" }}
               externalPlaying={isPlaying}
               onPlayStateChange={setIsPlaying}
+              notes={notes}
             />
           </Col>
 
-          {/* Nút thao tác */}
           <Col xs={24} md={8}>
-            <Space
-              style={{
-                float: isMobile ? "left" : "right",
-              }}
-            >
+            <Space style={{ float: isMobile ? "left" : "right" }}>
               <SharePodcastButton
                 podcastId={currentPodcast?.id}
                 userToken={userToken}
               />
-              <Button type="text" icon={<DownloadOutlined />} />
+              <Dropdown
+                overlay={noteMenu}
+                trigger={["click"]}
+                placement="topRight"
+              >
+                <Button icon={<PlusOutlined />}>Ghi chú</Button>
+              </Dropdown>
               <Button type="text" icon={<UnorderedListOutlined />} />
+
               <Button
                 type="text"
                 icon={<DownOutlined />}
@@ -126,7 +281,7 @@ const NowPlayingBar = ({ playerState, userToken }) => {
         </Row>
       </div>
 
-      {/* --- Mini player khi thu gọn --- */}
+      {/* Mini Player */}
       {isCollapsed && (
         <>
           <Row
@@ -144,7 +299,6 @@ const NowPlayingBar = ({ playerState, userToken }) => {
                 </Space>
               </Space>
             </Col>
-
             <Col>
               <Space>
                 <Button
@@ -171,24 +325,64 @@ const NowPlayingBar = ({ playerState, userToken }) => {
             </Col>
           </Row>
 
-          {/* Thanh tiến trình nhỏ bên dưới */}
+          {/* Progress bar với notes */}
           <div
             style={{
+              position: "relative",
               width: "100%",
-              height: 4,
-              borderRadius: 2,
-              background: "#e0e0e0",
-              overflow: "hidden",
+              height: 20,
+              marginBottom: 8,
             }}
           >
             <div
               style={{
-                width: `${progress}%`,
-                height: "100%",
-                background: "#1890ff",
-                transition: "width 0.2s linear",
+                width: "100%",
+                height: 4,
+                borderRadius: 2,
+                background: "#e0e0e0",
+                overflow: "hidden",
+                position: "relative",
+                top: 8,
               }}
-            />
+            >
+              <div
+                style={{
+                  width: `${progress}%`,
+                  height: "100%",
+                  background: "#1890ff",
+                  transition: "width 0.2s linear",
+                }}
+              />
+            </div>
+
+            {/* Marker notes */}
+            {duration > 0 &&
+              notes.map((note) => {
+                const leftPercent = (note.position / duration) * 100;
+                return (
+                  <Tooltip key={note.id} title={note.content} placement="top">
+                    <div
+                      style={{
+                        position: "absolute",
+                        left: `${leftPercent}%`,
+                        top: 0,
+                        width: 6,
+                        height: 6,
+                        borderRadius: "50%",
+                        background: "#1DB954",
+                        transform: "translateX(-50%)",
+                        cursor: "pointer",
+                      }}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        const audio = document.querySelector("audio");
+                        if (audio) audio.currentTime = note.position;
+                        setCurrentTime(note.position);
+                      }}
+                    />
+                  </Tooltip>
+                );
+              })}
           </div>
         </>
       )}

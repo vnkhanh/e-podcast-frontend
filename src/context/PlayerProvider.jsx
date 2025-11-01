@@ -1,3 +1,4 @@
+// PlayerProvider.jsx
 import React, { useState } from "react";
 import { PlayerContext } from "./PlayerContext";
 
@@ -6,6 +7,8 @@ export const PlayerProvider = ({ children }) => {
   const [isPlaying, setIsPlaying] = useState(false);
   const [progress, setProgress] = useState(0);
   const [likedPodcasts, setLikedPodcasts] = useState([]);
+  const [currentTime, setCurrentTime] = useState(0);
+  const [duration, setDuration] = useState(0);
 
   const handlePlay = (podcast) => {
     if (currentPodcast?.id === podcast.id) {
@@ -14,6 +17,8 @@ export const PlayerProvider = ({ children }) => {
       setCurrentPodcast(podcast);
       setIsPlaying(true);
       setProgress(0);
+      setCurrentTime(0);
+      setDuration(0);
     }
   };
 
@@ -27,13 +32,18 @@ export const PlayerProvider = ({ children }) => {
 
   const playerState = {
     currentPodcast,
+    setCurrentPodcast,
     isPlaying,
-    progress,
-    likedPodcasts,
-    setProgress,
     setIsPlaying,
+    progress,
+    setProgress,
+    likedPodcasts,
     handlePlay,
     handleLike,
+    currentTime,
+    setCurrentTime,
+    duration,
+    setDuration,
   };
 
   return (

@@ -1,5 +1,13 @@
 import React, { useState, useRef, useEffect } from "react";
-import { Button, Space, Typography, Popover, Dropdown, Menu } from "antd";
+import {
+  Button,
+  Space,
+  Typography,
+  Popover,
+  Dropdown,
+  Menu,
+  Tooltip,
+} from "antd";
 import {
   PlayCircleFilled,
   PauseCircleFilled,
@@ -23,6 +31,7 @@ const CustomAudioPlayer = ({
   startTime = 0,
   externalPlaying, // thêm prop
   onPlayStateChange, // callback để sync lên trên
+  notes = [], // thêm prop notes
 }) => {
   const audioRef = useRef(null);
   const volumeSliderRef = useRef(null);
@@ -220,6 +229,7 @@ const CustomAudioPlayer = ({
         onClick={handleProgressClick}
         onMouseDown={handleProgressMouseDown}
       >
+        {/* Thanh progress hiện tại */}
         <div
           style={{
             height: "100%",
@@ -229,6 +239,34 @@ const CustomAudioPlayer = ({
             transition: isDragging ? "none" : "width 0.1s ease",
           }}
         />
+
+        {/* Marker note */}
+        {notes.map((note) => {
+          if (!note.position || !duration) return null;
+          const leftPercent = (note.position / duration) * 100;
+          return (
+            <Tooltip key={note.id} title={note.content} placement="top">
+              <div
+                style={{
+                  position: "absolute",
+                  left: `${leftPercent}%`,
+                  top: 0,
+                  width: 6,
+                  height: 6,
+                  borderRadius: "50%",
+                  background: "#1DB954",
+                  transform: "translateX(-50%)",
+                  cursor: "pointer",
+                }}
+                onClick={(e) => {
+                  e.stopPropagation(); // tránh trigger progress click
+                  audioRef.current.currentTime = note.position;
+                  setCurrentTime(note.position);
+                }}
+              />
+            </Tooltip>
+          );
+        })}
       </div>
 
       <div
@@ -321,11 +359,13 @@ const CustomAudioPlayer = ({
         }}
       >
         <Space size={spacing / 2}>
-          <Button
-            type="text"
-            icon={<StepBackwardFilled />}
-            onClick={() => skip(-10)}
-          />
+          <Tooltip title="10s">
+            <Button
+              type="text"
+              icon={<StepBackwardFilled />}
+              onClick={() => skip(-10)}
+            />
+          </Tooltip>
           <Button
             type="text"
             icon={
@@ -341,12 +381,16 @@ const CustomAudioPlayer = ({
             }
             onClick={togglePlay}
           />
-          <Button
-            type="text"
-            icon={<StepForwardFilled />}
-            onClick={() => skip(10)}
-          />
-          <Button type="text" icon={<ReloadOutlined />} onClick={reset} />
+          <Tooltip title="10s">
+            <Button
+              type="text"
+              icon={<StepForwardFilled />}
+              onClick={() => skip(10)}
+            />
+          </Tooltip>
+          <Tooltip title="Tải lại">
+            <Button type="text" icon={<ReloadOutlined />} onClick={reset} />
+          </Tooltip>
         </Space>
 
         <Dropdown overlay={speedMenu} trigger={["click"]}>
