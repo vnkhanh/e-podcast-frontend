@@ -6,7 +6,6 @@ import AppFooter from "../../components/user/Footer";
 import { PlayerProvider } from "../../context/PlayerProvider";
 import { usePlayer } from "../../context/usePlayer";
 import NowPlayingBar from "../../components/user/NowPlayingBar";
-import { useLocation } from "react-router-dom";
 
 const { Content } = Layout;
 
@@ -19,9 +18,6 @@ function UserLayout() {
   );
 }
 function UserLayoutContent() {
-  const location = useLocation();
-  const isPodcastDetail = /^\/podcast\/\d+/.test(location.pathname);
-
   const playerState = usePlayer();
   const userToken = localStorage.getItem("token");
 
@@ -31,14 +27,8 @@ function UserLayoutContent() {
       <Content style={{ minHeight: "100vh" }}>
         <Outlet /> {/* nơi hiển thị các trang con */}
       </Content>
-      {/* NowPlaying chạy ngầm nhưng ẩn khi đang ở trang chi tiết */}
-      <div
-        style={{
-          display: isPodcastDetail ? "none" : "block",
-        }}
-      >
-        <NowPlayingBar playerState={playerState} userToken={userToken} />
-      </div>
+
+      <NowPlayingBar playerState={playerState} userToken={userToken} />
 
       <AppFooter />
     </Layout>

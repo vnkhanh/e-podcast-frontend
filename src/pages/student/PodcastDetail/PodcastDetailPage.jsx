@@ -24,8 +24,8 @@ import {
   BulbOutlined,
   EyeOutlined,
   HeartOutlined,
+  PauseCircleOutlined,
 } from "@ant-design/icons";
-import CustomAudioPlayer from "../../../components/AudioPlayer";
 import FlashcardStudySection from "./FlashcardStudySection";
 import CollapsibleSummary from "./CollapsibleSummary";
 import {
@@ -40,6 +40,8 @@ import { getPodcastHistory } from "../../../services/api_history";
 import PodcastFavoriteButton from "../../../components/user/PodcastFavoriteButton";
 import SharePodcastButton from "../../../components/user/SharePodcastButton";
 import { useLocation } from "react-router-dom";
+import { usePlayer } from "../../../context/usePlayer";
+
 const { Title, Paragraph, Text } = Typography;
 const { Panel } = Collapse;
 
@@ -50,6 +52,7 @@ const PodcastDetailPageUser = () => {
   const [chapters, setChapters] = useState([]);
   const [startTime, setStartTime] = useState(0);
   const token = localStorage.getItem("token");
+  const { currentPodcast, isPlaying, handlePlay } = usePlayer();
 
   // const [related, setRelated] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -266,21 +269,26 @@ const PodcastDetailPageUser = () => {
 
             <Title level={4}>Bắt đầu học</Title>
 
-            <CustomAudioPlayer
-              src={podcast.audio_url}
-              podcastId={podcast.id}
-              size="default" // 'small' | 'default' | 'large'
-              style={{ marginTop: 16 }}
-              userToken={localStorage.getItem("token")} // token
-              startTime={startTime}
-            />
-
-            <Progress
-              // percent={progress}
-              strokeColor="#1DB954"
-              trailColor="#eee"
-              style={{ marginBottom: 16 }}
-            />
+            <Button
+              type="primary"
+              shape="round"
+              size="large"
+              icon={
+                currentPodcast?.id === podcast.id && isPlaying ? (
+                  <PauseCircleOutlined />
+                ) : (
+                  <PlayCircleOutlined />
+                )
+              }
+              style={{
+                backgroundColor: "#1DB954",
+                border: "none",
+                height: 50,
+                fontSize: 18,
+                fontWeight: 600,
+              }}
+              onClick={() => handlePlay(podcast)}
+            ></Button>
 
             <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
               <PodcastFavoriteButton

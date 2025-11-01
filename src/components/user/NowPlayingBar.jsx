@@ -141,9 +141,6 @@ const NowPlayingBar = ({ playerState, userToken }) => {
                   <Text strong style={{ fontSize: 13 }}>
                     {currentPodcast?.title}
                   </Text>
-                  <Text type="secondary" style={{ fontSize: 12 }}>
-                    {currentPodcast?.chapter?.subject?.name || "Chưa có chủ đề"}
-                  </Text>
                 </Space>
               </Space>
             </Col>
