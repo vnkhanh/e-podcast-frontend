@@ -77,6 +77,7 @@ const EditPodcast = () => {
         form.setFieldsValue({
           title: data.title,
           description: data.description,
+          summary: data.summary,
           subject_id: data.chapter?.subject?.id,
           chapter_id: data.chapter?.id,
           category_ids: data.categories?.map((c) => c.id),
@@ -136,6 +137,7 @@ const EditPodcast = () => {
     formData.append("description", values.description || "");
     formData.append("subject_id", values.subject_id || "");
     formData.append("status", values.status || "");
+    formData.append("summary", values.summary || "");
 
     // Chương
     if (values.chapter_id) {
@@ -299,9 +301,11 @@ const EditPodcast = () => {
           </Modal>
 
           <Form.Item name="description" label="Mô tả">
-            <Input.TextArea rows={3} placeholder="Mô tả nội dung podcast" />
+            <Input.TextArea rows={5} placeholder="Mô tả nội dung podcast" />
           </Form.Item>
-
+          <Form.Item name="summary" label="Tóm tắt">
+            <Input.TextArea rows={5} placeholder="Tóm tắt nội dung podcast" />
+          </Form.Item>
           {/* Ảnh bìa (tùy chọn) */}
           <Form.Item label="Ảnh bìa mới (tuỳ chọn)">
             {podcast?.cover_image && (
