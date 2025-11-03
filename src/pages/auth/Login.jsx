@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Form, Input, Button, message, Typography } from "antd";
+import { Form, Input, Button, message, Typography, Modal } from "antd";
 import { login } from "../../services/api_auth";
 import { useNavigate } from "react-router-dom";
 import GoogleLoginButton from "../../components/GoogleLoginButton";
@@ -14,25 +14,37 @@ const Login = () => {
     setLoading(true);
     try {
       const data = await login(values.email, values.password);
+
+      // Nếu login trả về token -> đăng nhập thành công
       if (data?.token) {
         message.success("Đăng nhập thành công!");
         localStorage.setItem("token", data.token);
         localStorage.setItem("user", JSON.stringify(data.user));
 
         const role = data.user.role?.toLowerCase();
-        if (role === "admin") {
-          navigate("/admin");
-        } else if (role === "teacher") {
-          navigate("/teacher"); // sửa lại
-        } else {
-          navigate("/"); // student
-        }
+        if (role === "admin") navigate("/admin");
+        else if (role === "teacher") navigate("/teacher");
+        else navigate("/");
       } else {
-        message.error(data?.message || "Đăng nhập thất bại!");
+        // Nếu không có token => là lỗi từ backend
+        const errMsg = data?.error || data?.message || "Đăng nhập thất bại!";
+
+        if (
+          errMsg.toLowerCase().includes("tạm khóa") ||
+          errMsg.toLowerCase().includes("vô hiệu")
+        ) {
+          Modal.error({
+            title: "Tài khoản bị vô hiệu hóa",
+            content: errMsg,
+            centered: true,
+          });
+        } else {
+          message.error(errMsg);
+        }
       }
     } catch (err) {
-      message.error("Có lỗi xảy ra!");
       console.error("Login error:", err);
+      message.error("Không thể kết nối đến máy chủ!");
     } finally {
       setLoading(false);
     }
@@ -40,12 +52,10 @@ const Login = () => {
 
   return (
     <>
-      {/* Tiêu đề */}
       <div style={{ textAlign: "center", marginBottom: 24 }}>
         <Title level={3}>Đăng nhập</Title>
       </div>
 
-      {/* Form */}
       <Form
         name="login"
         layout="vertical"
@@ -71,7 +81,6 @@ const Login = () => {
           <Input.Password placeholder="Nhập mật khẩu" />
         </Form.Item>
 
-        {/* Quên mật khẩu */}
         <div style={{ textAlign: "right", marginBottom: 16 }}>
           <Link onClick={() => navigate("/auth/forgot-password")}>
             Quên mật khẩu?
@@ -84,13 +93,11 @@ const Login = () => {
           </Button>
         </Form.Item>
 
-        {/* Đăng ký */}
         <div style={{ textAlign: "center", marginBottom: 16 }}>
           <Text>Chưa có tài khoản? </Text>
           <Link onClick={() => navigate("/auth/register")}>Đăng ký</Link>
         </div>
 
-        {/* Google Login */}
         <GoogleLoginButton />
       </Form>
     </>

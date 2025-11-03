@@ -11,7 +11,7 @@ import {
   Modal,
   Popconfirm,
   Spin,
-  notification,
+  // notification,
   Tag,
   Progress,
   Typography,
@@ -25,11 +25,13 @@ import {
 } from "@ant-design/icons";
 import {
   listDocuments,
-  uploadDocument,
+  // uploadDocument,
   getDocumentDetail,
   deleteDocument,
 } from "../../../services/api_document";
 import useAutoWebSocket from "../../../utils/useAutoWebSocket";
+import { DatePicker } from "antd";
+const { RangePicker } = DatePicker;
 
 const { Option } = Select;
 const { Panel } = Collapse;
@@ -48,6 +50,10 @@ const DocumentPage = () => {
   const [detailData, setDetailData] = useState(null);
   const [detailLoading, setDetailLoading] = useState(false);
 
+  const [lecturer, setLecturer] = useState("");
+  const [startDate, setStartDate] = useState("");
+  const [endDate, setEndDate] = useState("");
+  const user = JSON.parse(localStorage.getItem("user"));
   // Debounce tìm kiếm
   const [debouncedSearch, setDebouncedSearch] = useState(search);
   useEffect(() => {
@@ -63,7 +69,11 @@ const DocumentPage = () => {
         status,
         page,
         limit,
+        lecturer,
+        start_date: startDate,
+        end_date: endDate,
       });
+
       setDocuments(res.data);
       setTotal(res.total);
     } catch (err) {
@@ -72,7 +82,7 @@ const DocumentPage = () => {
     } finally {
       setLoading(false);
     }
-  }, [debouncedSearch, status, page, limit]);
+  }, [debouncedSearch, status, page, limit, lecturer, startDate, endDate]);
 
   useEffect(() => {
     fetchDocuments();
@@ -173,30 +183,32 @@ const DocumentPage = () => {
       render: (_, record) => {
         const { status, progress = 0 } = record;
         let color = "default";
-        switch (status) {
-          case "Đang trích xuất":
-            color = "purple";
-            break;
-          case "Đang làm sạch":
-            color = "geekblue";
-            break;
-          case "Đang tạo kịch bản":
-            color = "blue";
-            break;
-          case "Đang tóm tắt":
-            color = "cyan";
-            break;
-          case "Đang tạo audio":
-            color = "lime";
-            break;
-          case "Hoàn thành":
-            color = "green";
-            break;
-          case "Lỗi tạo audio":
-          case "Lỗi trích xuất":
-          case "Lỗi lưu audio":
-            color = "red";
-            break;
+        if (status?.toLowerCase().includes("lỗi")) {
+          color = "red"; // tất cả trạng thái có chữ "lỗi"
+        } else {
+          switch (status) {
+            case "Đang trích xuất":
+              color = "purple";
+              break;
+            case "Đang làm sạch":
+              color = "geekblue";
+              break;
+            case "Đang tạo kịch bản":
+              color = "blue";
+              break;
+            case "Đang tóm tắt":
+              color = "cyan";
+              break;
+            case "Đang tạo audio":
+            case "Đang lưu audio":
+              color = "lime";
+              break;
+            case "Hoàn thành":
+              color = "green";
+              break;
+            default:
+              color = "default"; // fallback nếu không khớp
+          }
         }
 
         return (
@@ -204,6 +216,7 @@ const DocumentPage = () => {
             <Tag color={color}>{status}</Tag>
             {(status === "Đang trích xuất" ||
               status === "Đang tạo audio" ||
+              status === "Đang lưu audio" ||
               status === "Đang tạo tóm tắt" ||
               status === "Đang tạo kịch bản" ||
               status === "Đang làm sạch" ||
@@ -226,6 +239,18 @@ const DocumentPage = () => {
       key: "created_at",
       render: (text) => new Date(text).toLocaleString(),
     },
+    ...(user?.role === "admin"
+      ? [
+          {
+            title: "Người tạo",
+            dataIndex: ["user", "full_name"],
+            key: "creator",
+            width: 180,
+            render: (_, record) =>
+              record.user?.full_name || record.user?.email || "—",
+          },
+        ]
+      : []),
     {
       title: "Thao tác",
       key: "action",
@@ -236,12 +261,16 @@ const DocumentPage = () => {
             type="primary"
             onClick={() => fetchDocumentDetail(record.id)}
           />
-          {record.status == "Hoàn thành" && (
+
+          {/*Chỉ cho phép xóa nếu status có chữ "Lỗi" */}
+          {record.status?.toLowerCase().includes("lỗi") && (
             <Popconfirm
-              title="Xoá tài liệu?"
+              title="Xoá tài liệu lỗi?"
+              description="Bạn có chắc muốn xoá tài liệu này không?"
               onConfirm={() => handleDelete(record.id)}
               okText="Xoá"
               cancelText="Hủy"
+              okButtonProps={{ danger: true }}
             >
               <Button danger icon={<DeleteOutlined />} />
             </Popconfirm>
@@ -261,7 +290,7 @@ const DocumentPage = () => {
         <Text type="secondary">Quản lý các tài liệu của bạn</Text>
       </div>
 
-      <Space style={{ marginBottom: 16 }}>
+      <Space style={{ marginBottom: 16 }} wrap>
         <Input.Search
           placeholder="Tìm kiếm tài liệu"
           allowClear
@@ -284,7 +313,31 @@ const DocumentPage = () => {
           <Option value="Lỗi">Lỗi</Option>
         </Select>
 
-        <Upload
+        {/* Chỉ admin mới thấy ô lọc theo giảng viên */}
+        {JSON.parse(localStorage.getItem("user"))?.role === "admin" && (
+          <Input
+            placeholder="Lọc theo giảng viên"
+            allowClear
+            onChange={(e) => setLecturer(e.target.value)}
+            style={{ width: 200 }}
+          />
+        )}
+
+        {/* Bộ lọc theo ngày */}
+        <RangePicker
+          format="YYYY-MM-DD"
+          onChange={(dates) => {
+            if (dates && dates.length === 2) {
+              setStartDate(dates[0].format("YYYY-MM-DD"));
+              setEndDate(dates[1].format("YYYY-MM-DD"));
+            } else {
+              setStartDate("");
+              setEndDate("");
+            }
+          }}
+        />
+
+        {/* <Upload
           customRequest={async ({ file }) => {
             try {
               await uploadDocument(file);
@@ -292,20 +345,14 @@ const DocumentPage = () => {
                 message: "Tải lên thành công",
                 description: file.name,
                 placement: "topRight",
-                duration: 2,
-                pauseOnHover: true,
-                showProgress: true,
               });
-              fetchDocuments(); // Reload ngay sau upload
+              fetchDocuments();
             } catch (err) {
               console.error(err);
               notification.error({
                 message: "Tải lên thất bại",
                 description: file.name,
                 placement: "topRight",
-                duration: 2,
-                pauseOnHover: true,
-                showProgress: true,
               });
             }
           }}
@@ -315,7 +362,7 @@ const DocumentPage = () => {
           <Button type="primary" icon={<UploadOutlined />}>
             Tải lên
           </Button>
-        </Upload>
+        </Upload> */}
       </Space>
 
       <Spin spinning={loading} tip="Đang tải dữ liệu...">

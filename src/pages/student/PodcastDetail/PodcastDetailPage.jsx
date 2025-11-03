@@ -52,6 +52,7 @@ const PodcastDetailPageUser = () => {
   const [chapters, setChapters] = useState([]);
   const [startTime, setStartTime] = useState(0);
   const token = localStorage.getItem("token");
+
   const { currentPodcast, isPlaying, handlePlay } = usePlayer();
 
   // const [related, setRelated] = useState([]);
@@ -75,7 +76,6 @@ const PodcastDetailPageUser = () => {
       setFlashcards(flashcards);
     } catch (err) {
       console.error(err);
-      message.error("Không tải được flashcards!");
     }
   };
 
@@ -413,7 +413,20 @@ const PodcastDetailPageUser = () => {
               <Button
                 icon={<ReadOutlined />}
                 type="primary"
-                onClick={() =>
+                onClick={() => {
+                  if (!token) {
+                    Modal.confirm({
+                      title: "Yêu cầu đăng nhập",
+                      content:
+                        "Bạn cần đăng nhập để sử dụng tính năng Flashcards.",
+                      okText: "Đăng nhập ngay",
+                      cancelText: "Hủy",
+                      centered: true,
+                      onOk: () => navigate("/auth/login"),
+                    });
+                    return;
+                  }
+
                   Modal.confirm({
                     title: "Chọn hành động",
                     content:
@@ -422,16 +435,29 @@ const PodcastDetailPageUser = () => {
                     cancelText: "Xem lại",
                     onOk: () => setShowCreateModal(true),
                     onCancel: handleViewFlashcards,
-                  })
-                }
+                  });
+                }}
               >
                 Flashcards
               </Button>
 
               <Button
                 icon={<HistoryOutlined />}
-                onClick={() => navigate(`/podcast/${podcast.id}/quiz-sets`)}
                 type="primary"
+                onClick={() => {
+                  if (!token) {
+                    Modal.confirm({
+                      title: "Yêu cầu đăng nhập",
+                      content: "Bạn cần đăng nhập để làm bài trắc nghiệm.",
+                      okText: "Đăng nhập ngay",
+                      cancelText: "Hủy",
+                      centered: true,
+                      onOk: () => navigate("/auth/login"),
+                    });
+                    return;
+                  }
+                  navigate(`/podcast/${podcast.id}/quiz-sets`);
+                }}
               >
                 Trắc nghiệm
               </Button>

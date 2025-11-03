@@ -37,6 +37,7 @@ const { RangePicker } = DatePicker;
 
 const SubjectPage = () => {
   const [form] = Form.useForm();
+  const user = JSON.parse(localStorage.getItem("user"));
 
   const [subjects, setSubjects] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -53,6 +54,7 @@ const SubjectPage = () => {
   const [searchText, setSearchText] = useState("");
   const [statusFilter, setStatusFilter] = useState();
   const [dateRange, setDateRange] = useState([null, null]);
+  const [lecturerFilter, setLecturerFilter] = useState("");
 
   // pagination
   const [page, setPage] = useState(1);
@@ -73,6 +75,7 @@ const SubjectPage = () => {
         status: statusFilter,
         from_date: dateRange[0]?.format("YYYY-MM-DD"),
         to_date: dateRange[1]?.format("YYYY-MM-DD"),
+        lecturer: lecturerFilter,
         page,
         limit,
       });
@@ -83,11 +86,11 @@ const SubjectPage = () => {
       message.error("Không thể tải danh sách môn học");
     }
     setLoading(false);
-  }, [searchText, statusFilter, dateRange, page, limit]);
+  }, [searchText, statusFilter, dateRange, lecturerFilter, page, limit]);
 
   useEffect(() => {
     setPage(1); // reset page về 1 khi filter/search thay đổi
-  }, [searchText, statusFilter, dateRange]);
+  }, [searchText, statusFilter, dateRange, lecturerFilter]);
 
   useEffect(() => {
     loadSubjects();
@@ -218,6 +221,19 @@ const SubjectPage = () => {
       sorter: (a, b) => new Date(a.created_at) - new Date(b.created_at),
       sortDirections: ["ascend", "descend"],
     },
+    ...(user?.role === "admin"
+      ? [
+          {
+            title: "Người tạo",
+            dataIndex: ["user", "full_name"],
+            key: "creator",
+            width: 180,
+            render: (_, record) =>
+              record.user?.full_name || record.user?.email || "—",
+          },
+        ]
+      : []),
+
     {
       title: "Thao tác",
       key: "action",
@@ -287,6 +303,15 @@ const SubjectPage = () => {
           <Option value="true">Kích hoạt</Option>
           <Option value="false">Ngừng</Option>
         </Select>
+        {JSON.parse(localStorage.getItem("user"))?.role === "admin" && (
+          <Input
+            placeholder="Lọc theo giảng viên"
+            allowClear
+            value={lecturerFilter}
+            onChange={(e) => setLecturerFilter(e.target.value)}
+            style={{ width: 200 }}
+          />
+        )}
 
         <Button
           type="primary"
@@ -299,7 +324,7 @@ const SubjectPage = () => {
 
       <Table
         rowKey="id"
-        columns={columns}
+        columns={columns.filter((col) => !col.hidden)}
         dataSource={subjects}
         loading={loading}
         rowClassName={(record) =>

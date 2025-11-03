@@ -34,6 +34,8 @@ import EditPodcast from "../pages/admin/Podcast/EditPodcast";
 import UserPage from "../pages/admin/User/UserPage";
 import ProtectedRoute from "./ProtectedRoute";
 import NotificationsPage from "../pages/admin/NotificationsPage";
+import AdminPages from "../pages/admin/AdminPages";
+import AdminProfile from "../pages/admin/AdminProfile";
 
 const AppRoute = () => {
   const token = localStorage.getItem("token");
@@ -105,6 +107,7 @@ const AppRoute = () => {
         <Route path="podcast/:id" element={<PodcastDetailPage />} />
         <Route path="podcast/:id/edit" element={<EditPodcast />} />
         <Route path="notifications" element={<NotificationsPage />} />
+        <Route path="me" element={<AdminProfile />} />
       </Route>
 
       <Route
@@ -126,6 +129,8 @@ const AppRoute = () => {
         <Route path="podcast/:id" element={<PodcastDetailPage />} />
         <Route path="user" element={<UserPage />} />
         <Route path="notifications" element={<NotificationsPage />} />
+        <Route path="page" element={<AdminPages />} />
+        <Route path="me" element={<AdminProfile />} />
       </Route>
     </Routes>
   );

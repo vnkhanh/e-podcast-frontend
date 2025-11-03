@@ -1,10 +1,11 @@
 import { Outlet } from "react-router-dom";
 import { Layout, Card, Typography } from "antd";
-
+import { useNavigate } from "react-router-dom";
 const { Content } = Layout;
 const { Title, Text } = Typography;
 
 export default function AuthLayout() {
+  const navigate = useNavigate();
   return (
     <Layout style={{ minHeight: "100vh", backgroundColor: "#f5f5f5" }}>
       <Content
@@ -24,7 +25,11 @@ export default function AuthLayout() {
         >
           {/* Logo hoặc tên hệ thống */}
           <div style={{ textAlign: "center", marginBottom: 24 }}>
-            <Title level={2} style={{ color: "#1677ff", marginBottom: 0 }}>
+            <Title
+              level={2}
+              style={{ color: "#1677ff", marginBottom: 0, cursor: "pointer" }}
+              onClick={() => navigate("/")}
+            >
               E-Podcast
             </Title>
             <Text type="secondary">Học tập mọi lúc, mọi nơi</Text>

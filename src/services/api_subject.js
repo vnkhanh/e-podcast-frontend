@@ -38,9 +38,10 @@ export async function listSubjects({
   limit,
   from_date,
   to_date,
+  lecturer,
 } = {}) {
   const res = await api.get("/admin/subjects", {
-    params: { status, search, page, limit, from_date, to_date },
+    params: { status, search, page, limit, from_date, to_date, lecturer },
   });
   return res.data; // { data: [...], page, limit, total }
 }

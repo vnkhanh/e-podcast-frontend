@@ -5,40 +5,52 @@ import {
   getAllFavorites,
 } from "../../services/api_favorite";
 import { HeartOutlined, HeartFilled } from "@ant-design/icons";
-import { getPodcastById } from "../../services/api_podcast"; // thêm nếu có
+import { getPodcastById } from "../../services/api_podcast";
+import { Modal } from "antd";
+import { useNavigate } from "react-router-dom";
 
 const PodcastFavoriteButton = ({ podcastId, onLikeChange }) => {
   const [isFavorited, setIsFavorited] = useState(false);
   const [isAnimating, setIsAnimating] = useState(false);
   const token = localStorage.getItem("token");
+  const navigate = useNavigate();
 
   const toggleFavorite = async () => {
-    try {
-      if (!token) return;
+    // Nếu chưa đăng nhập → hiển thị yêu cầu đăng nhập
+    if (!token) {
+      Modal.confirm({
+        title: "Yêu cầu đăng nhập",
+        content: "Bạn cần đăng nhập để thêm podcast vào danh sách yêu thích.",
+        okText: "Đăng nhập ngay",
+        cancelText: "Hủy",
+        centered: true,
+        onOk: () => navigate("/auth/login"),
+      });
+      return;
+    }
 
+    try {
       if (isFavorited) {
         await removeFavorite(token, podcastId);
         setIsFavorited(false);
-        if (onLikeChange) {
-          // Gọi lại API để lấy like_count mới
-          const updated = await getPodcastById(podcastId);
-          onLikeChange(updated.like_count);
-        }
       } else {
         await addFavorite(token, podcastId);
         setIsFavorited(true);
         setIsAnimating(true);
         setTimeout(() => setIsAnimating(false), 300);
-        if (onLikeChange) {
-          const updated = await getPodcastById(podcastId);
-          onLikeChange(updated.like_count);
-        }
+      }
+
+      // Sau khi thêm hoặc bỏ, gọi lại API để cập nhật like_count
+      if (onLikeChange) {
+        const updated = await getPodcastById(podcastId);
+        onLikeChange(updated.like_count);
       }
     } catch (err) {
       console.error("toggleFavorite error:", err);
     }
   };
 
+  // === Lấy danh sách yêu thích ban đầu ===
   useEffect(() => {
     const fetchFavorites = async () => {
       if (!token) return;

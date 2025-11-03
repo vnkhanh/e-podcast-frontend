@@ -10,6 +10,7 @@ import {
   BlockOutlined,
   DockerOutlined,
   BellOutlined,
+  ContainerFilled,
 } from "@ant-design/icons";
 import {
   getUnreadNotifications,
@@ -37,7 +38,15 @@ const AdminLayout = () => {
 
   const userMenu = (
     <Menu>
-      <Menu.Item key="profile" icon={<UserOutlined />}>
+      <Menu.Item
+        key="profile"
+        icon={<UserOutlined />}
+        onClick={() => {
+          if (user?.role === "admin") navigate("/admin/me");
+          else if (user?.role === "teacher") navigate("/teacher/me");
+          else navigate("/me");
+        }}
+      >
         Hồ sơ
       </Menu.Item>
       <Menu.Item key="logout" icon={<LogoutOutlined />} onClick={handleLogout}>
@@ -78,12 +87,6 @@ const AdminLayout = () => {
 
   const menuItems = [
     {
-      key: "dashboard",
-      icon: <DashboardOutlined />,
-      label: "Dashboard",
-      link: user?.role === "admin" ? "/admin/dashboard" : "/teacher",
-    },
-    {
       key: "subject",
       icon: <BookOutlined />,
       label: "Môn học",
@@ -114,13 +117,28 @@ const AdminLayout = () => {
       link: user?.role === "admin" ? "/admin/podcast" : "/teacher/podcast",
     },
   ];
-
+  if (user?.role === "admin") {
+    menuItems.unshift({
+      key: "dashboard",
+      icon: <DashboardOutlined />,
+      label: "Dashboard",
+      link: "/admin/dashboard",
+    });
+  }
   if (user?.role === "admin") {
     menuItems.push({
       key: "user",
       icon: <UserOutlined />,
       label: "Người dùng",
       link: "/admin/user",
+    });
+  }
+  if (user?.role === "admin") {
+    menuItems.push({
+      key: "page",
+      icon: <ContainerFilled />,
+      label: "Trang",
+      link: "/admin/page",
     });
   }
 
