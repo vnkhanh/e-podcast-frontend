@@ -1,6 +1,14 @@
 import React, { useState, useEffect } from "react";
 import { List, Badge, Button, message, Empty, Spin } from "antd";
-import { BellOutlined, DeleteOutlined, CheckOutlined } from "@ant-design/icons";
+import {
+  BellOutlined,
+  DeleteOutlined,
+  CheckOutlined,
+  CommentOutlined,
+  HeartOutlined,
+  HeartFilled,
+  RetweetOutlined,
+} from "@ant-design/icons";
 import { useNavigate } from "react-router-dom";
 import {
   getNotifications,
@@ -109,11 +117,23 @@ const NotificationList = () => {
     const iconStyle = { fontSize: 24 };
     switch (type) {
       case "comment_notification":
-        return <span style={iconStyle}>💬</span>;
+        return (
+          <span style={iconStyle}>
+            <CommentOutlined />
+          </span>
+        );
       case "reply_notification":
-        return <span style={iconStyle}>↩️</span>;
+        return (
+          <span style={iconStyle}>
+            <RetweetOutlined />
+          </span>
+        );
       case "favorite":
-        return <span style={iconStyle}>❤️</span>;
+        return (
+          <span style={iconStyle}>
+            <HeartOutlined />
+          </span>
+        );
       default:
         return <BellOutlined style={iconStyle} />;
     }

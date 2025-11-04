@@ -3,7 +3,7 @@ import { Badge, notification } from "antd";
 import { BellOutlined } from "@ant-design/icons";
 import {
   getUnreadNotifications,
-  markAllNotificationsRead,
+  markAllAsRead,
 } from "../services/api_notifications";
 import { connectUserWebSocket } from "../services/ws_user";
 
@@ -91,7 +91,7 @@ const RealtimeNotification = ({ navigate }) => {
     navigate(path);
 
     const token = localStorage.getItem("token");
-    const ok = await markAllNotificationsRead(token);
+    const ok = await markAllAsRead(token);
     if (ok) setUnreadCount(0);
   };
 

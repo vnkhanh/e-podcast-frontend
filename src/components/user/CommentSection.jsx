@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import { List, Avatar, Input, Button, message, Space, Modal } from "antd";
 import {
   getComments,
@@ -21,7 +21,6 @@ const CommentSection = ({ podcastId }) => {
   const storedUser = JSON.parse(localStorage.getItem("user") || "{}");
   const userId = localStorage.getItem("user_id") || storedUser.id || null;
 
-  // --- Lấy danh sách bình luận ---
   useEffect(() => {
     const fetchComments = async () => {
       try {
@@ -31,44 +30,46 @@ const CommentSection = ({ podcastId }) => {
         message.error("Không thể tải bình luận.");
       }
     };
-
     fetchComments();
   }, [podcastId]);
 
-  // --- Hàm đệ quy để thêm reply vào đúng vị trí ---
-  const addReplyRecursively = (comments, parentId, newReply) => {
-    return comments.map((comment) => {
-      if (comment.id === parentId) {
-        return {
-          ...comment,
-          replies: [...(comment.replies || []), newReply],
-        };
-      }
-      if (comment.replies && comment.replies.length > 0) {
-        return {
-          ...comment,
-          replies: addReplyRecursively(comment.replies, parentId, newReply),
-        };
-      }
-      return comment;
-    });
-  };
+  const addReplyRecursively = useCallback((comments, parentId, newReply) => {
+    const inner = (items) =>
+      (Array.isArray(items) ? items : []).map((comment) => {
+        if (comment.id === parentId) {
+          return {
+            ...comment,
+            replies: [...(comment.replies || []), newReply],
+          };
+        }
+        if (comment.replies && comment.replies.length > 0) {
+          return {
+            ...comment,
+            replies: inner(comment.replies),
+          };
+        }
+        return comment;
+      });
+    return inner(Array.isArray(comments) ? comments : []);
+  }, []);
 
-  // --- Hàm đệ quy để xóa comment ở bất kỳ cấp độ nào ---
-  const removeCommentRecursively = (comments, commentIdToRemove) => {
-    return comments
-      .filter((c) => c.id !== commentIdToRemove)
-      .map((c) => ({
-        ...c,
-        replies: c.replies
-          ? removeCommentRecursively(c.replies, commentIdToRemove)
-          : [],
-      }));
-  };
+  const removeCommentRecursively = useCallback(
+    (comments, commentIdToRemove) => {
+      const inner = (items) =>
+        items
+          .filter((c) => c.id !== commentIdToRemove)
+          .map((c) => ({
+            ...c,
+            replies: c.replies ? inner(c.replies) : [],
+          }));
+      return inner(Array.isArray(comments) ? comments : []);
+    },
+    []
+  );
 
-  // --- WebSocket realtime ---
   useEffect(() => {
     if (!podcastId || !token) return;
+    if (socketRef.current) return;
 
     const socket = new WebSocket(
       `ws://localhost:8080/ws/podcast/${podcastId}?token=${token}`
@@ -79,14 +80,10 @@ const CommentSection = ({ podcastId }) => {
       try {
         const data = JSON.parse(event.data);
         if (data.type === "connected") return;
-
-        // ✅ Bình luận mới (gốc hoặc reply đa cấp)
         if (data.type === "new_comment" && data.comment) {
           const newComment = data.comment;
           setComments((prev) => {
             const safePrev = Array.isArray(prev) ? prev : [];
-
-            // Nếu có parent_id → là reply (dùng đệ quy)
             if (newComment.parent_id) {
               return addReplyRecursively(
                 safePrev,
@@ -94,13 +91,9 @@ const CommentSection = ({ podcastId }) => {
                 newComment
               );
             }
-
-            // Nếu không có parent_id → là comment gốc
             return [...safePrev, newComment];
           });
         }
-
-        // ✅ Xóa bình luận realtime (gốc hoặc reply đa cấp)
         if (data.type === "delete_comment" && data.comment_id) {
           setComments((prev) => {
             const safePrev = Array.isArray(prev) ? prev : [];
@@ -114,12 +107,16 @@ const CommentSection = ({ podcastId }) => {
     };
 
     socket.onerror = (err) => console.error("Lỗi WebSocket:", err);
-    socket.onclose = () => console.log("🔌 Socket closed");
+    socket.onclose = () => console.log("Socket closed");
 
-    return () => socket.close();
-  }, [podcastId, token]);
+    return () => {
+      if (socketRef.current) {
+        socketRef.current.close();
+        socketRef.current = null;
+      }
+    };
+  }, [podcastId, token, addReplyRecursively, removeCommentRecursively]);
 
-  // --- Gửi bình luận ---
   const handleSubmit = async () => {
     if (!token) return message.warning("Vui lòng đăng nhập để bình luận.");
     if (!content.trim())
@@ -142,7 +139,6 @@ const CommentSection = ({ podcastId }) => {
     }
   };
 
-  // --- Xóa bình luận (CHỈ gọi API, WebSocket tự động cập nhật UI) ---
   const handleDelete = async (id) => {
     confirm({
       title: "Xác nhận xóa",
@@ -152,7 +148,6 @@ const CommentSection = ({ podcastId }) => {
       cancelText: "Hủy",
       onOk: async () => {
         try {
-          // Chỉ gọi API, WebSocket sẽ tự động sync UI cho tất cả client
           await deleteComment(token, id);
         } catch (error) {
           message.error("Không thể xóa bình luận");
@@ -162,7 +157,6 @@ const CommentSection = ({ podcastId }) => {
     });
   };
 
-  // --- Toggle replies ---
   const toggleReplies = (commentId) => {
     setExpanded((prev) => ({
       ...prev,
@@ -170,21 +164,20 @@ const CommentSection = ({ podcastId }) => {
     }));
   };
 
-  // --- Render từng bình luận (ĐỆ QUY ĐẦY ĐỦ) ---
   const renderComment = (item, depth = 0) => {
     const isReply = depth > 0;
-    const marginLeft = depth * 32; // Thụt vào mỗi cấp 32px
+    const marginLeft = depth * 32;
 
     return (
       <div key={item.id}>
         <div
-          id={`comment-${item.id}`} // ✅ Thêm ID để scroll
+          id={`comment-${item.id}`}
           style={{
             marginBottom: 16,
             marginLeft: marginLeft,
             borderLeft: isReply ? "2px solid #eee" : "none",
             paddingLeft: isReply ? 12 : 0,
-            transition: "background-color 1s", // ✅ Thêm transition để highlight
+            transition: "background-color 1s",
           }}
         >
           <Space align="start">
@@ -232,7 +225,6 @@ const CommentSection = ({ podcastId }) => {
                 )}
               </div>
 
-              {/* Nút toggle replies CHỈ cho comment gốc */}
               {item.replies?.length > 0 && depth === 0 && (
                 <div style={{ marginTop: 4 }}>
                   <Button
@@ -250,8 +242,6 @@ const CommentSection = ({ podcastId }) => {
             </div>
           </Space>
         </div>
-
-        {/* ĐỆ QUY render tất cả replies con */}
         {(depth === 0 ? expanded[item.id] : true) &&
           item.replies?.length > 0 &&
           item.replies.map((reply) => renderComment(reply, depth + 1))}

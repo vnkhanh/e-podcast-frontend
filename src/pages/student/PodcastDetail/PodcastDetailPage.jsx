@@ -48,7 +48,7 @@ const PodcastDetailPageUser = () => {
   const { id } = useParams();
   const [podcast, setPodcast] = useState(null);
   const [chapters, setChapters] = useState([]);
-  const [startTime, setStartTime] = useState(0);
+  const [, setStartTime] = useState(0);
   const token = localStorage.getItem("token");
 
   const location = useLocation();

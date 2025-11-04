@@ -121,7 +121,7 @@ const AppHeader = () => {
     });
 
     return () => ws?.close();
-  }, []);
+  }, [navigate]);
 
   const menuItems = [
     { key: "home", label: "Trang chủ" },
