@@ -10,6 +10,7 @@ import {
   message,
   AutoComplete,
   Space,
+  notification,
 } from "antd";
 import {
   UserOutlined,
@@ -18,11 +19,13 @@ import {
   LogoutOutlined,
   BulbOutlined,
   MoonOutlined,
+  SettingOutlined,
 } from "@ant-design/icons";
 import { useNavigate } from "react-router-dom";
 import { ThemeContext } from "../../context/useTheme";
 import { jwtDecode } from "jwt-decode";
 import { searchAutocomplete } from "../../services/api_search"; // <-- import API
+import { connectUserWebSocket } from "../../services/ws_user";
 
 const { Header } = Layout;
 const { Title } = Typography;
@@ -100,6 +103,22 @@ const AppHeader = () => {
       }
     }
   }, [token, navigate]);
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+    if (!token) return;
+
+    const ws = connectUserWebSocket(token, (data) => {
+      if (data.type === "reply_notification") {
+        notification.open({
+          message: data.title,
+          description: data.message,
+          placement: "bottomRight",
+        });
+      }
+    });
+
+    return () => ws?.close();
+  }, []);
 
   const menuItems = [
     { key: "home", label: "Trang chủ" },
@@ -118,15 +137,21 @@ const AppHeader = () => {
       label: isDarkMode ? "Chế độ sáng" : "Chế độ tối",
     },
     { key: "logout", icon: <LogoutOutlined />, label: "Đăng xuất" },
+    { key: "settings", icon: <SettingOutlined />, label: "Quản lý" },
   ];
 
   const handleUserMenuClick = ({ key }) => {
     if (key === "profile") navigate("/profile");
-    else if (key === "my-courses") navigate("/my-courses");
+    else if (key === "settings") {
+      if (user?.role === "admin") navigate("/admin");
+      else if (user?.role === "teacher") navigate("/teacher");
+      else navigate("/me");
+    } else if (key === "my-courses") navigate("/my-courses");
     else if (key === "theme") toggleTheme();
     else if (key === "logout") {
       localStorage.removeItem("token");
       localStorage.removeItem("user");
+      localStorage.removeItem("user_id");
       message.success("Đã đăng xuất!");
       navigate("/auth/login", { replace: true });
     }

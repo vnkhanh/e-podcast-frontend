@@ -10,6 +10,7 @@ import {
   BlockOutlined,
   DockerOutlined,
   BellOutlined,
+  HomeOutlined,
   ContainerFilled,
 } from "@ant-design/icons";
 import {
@@ -24,7 +25,7 @@ const AdminLayout = () => {
   const location = useLocation();
 
   const [unreadCount, setUnreadCount] = useState(0);
-  const [wsConn, setWsConn] = useState(null);
+  const [, setWsConn] = useState(null);
 
   const user = localStorage.getItem("user")
     ? JSON.parse(localStorage.getItem("user"))
@@ -49,6 +50,13 @@ const AdminLayout = () => {
       >
         Hồ sơ
       </Menu.Item>
+      <Menu.Item
+        key="homepage"
+        icon={<HomeOutlined />}
+        onClick={() => navigate("/")}
+      >
+        E-Podcast
+      </Menu.Item>
       <Menu.Item key="logout" icon={<LogoutOutlined />} onClick={handleLogout}>
         Đăng xuất
       </Menu.Item>
@@ -59,28 +67,55 @@ const AdminLayout = () => {
     const token = localStorage.getItem("token");
     if (!token) return;
 
-    // Gọi API ban đầu
+    // Lấy số lượng chưa đọc ban đầu
     getUnreadNotifications(token).then(setUnreadCount);
 
-    // Kết nối WebSocket
-    const ws = connectUserWebSocket(token, (data) => {
-      switch (data.type) {
-        case "favorite_notification":
-          notification.open({
-            message: data.title,
-            description: data.message,
-            placement: "bottomRight",
-          });
-          setUnreadCount((prev) => prev + 1);
-          break;
-        case "badge_update":
-          setUnreadCount(data.unread_count);
-          break;
-        default:
-          console.log("WS:", data);
+    let ws = connectUserWebSocket(token, (data) => {
+      if (!data?.type) return;
+
+      if (
+        data.type === "favorite_notification" ||
+        data.type === "comment_notification" ||
+        data.type === "reply_notification"
+      ) {
+        notification.open({
+          message: data.title,
+          description: data.message,
+          placement: "bottomRight",
+        });
+      }
+
+      if (data.type === "badge_update") {
+        setUnreadCount(data.unread_count);
       }
     });
+
     setWsConn(ws);
+
+    // Nếu socket bị ngắt, thử reconnect sau 5s
+    ws.onclose = () => {
+      console.warn("WebSocket disconnected, retrying in 5s...");
+      setTimeout(() => {
+        ws = connectUserWebSocket(token, (data) => {
+          if (!data?.type) return;
+          if (
+            data.type === "favorite_notification" ||
+            data.type === "comment_notification" ||
+            data.type === "reply_notification"
+          ) {
+            notification.open({
+              message: data.title,
+              description: data.message,
+              placement: "bottomRight",
+            });
+          }
+          if (data.type === "badge_update") {
+            setUnreadCount(data.unread_count);
+          }
+        });
+        setWsConn(ws);
+      }, 5000);
+    };
 
     return () => ws?.close();
   }, []);

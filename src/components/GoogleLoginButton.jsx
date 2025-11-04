@@ -18,6 +18,7 @@ function GoogleLoginButton() {
 
           localStorage.setItem("token", data.token);
           localStorage.setItem("user", JSON.stringify(data.user));
+          localStorage.setItem("user_id", data.user.id);
 
           const role =
             data.user.role?.toLowerCase() || data.user.vai_tro?.toLowerCase();

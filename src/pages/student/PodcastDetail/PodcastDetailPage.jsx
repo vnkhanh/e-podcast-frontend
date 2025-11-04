@@ -11,7 +11,6 @@ import {
   Row,
   List,
   Avatar,
-  Progress,
   Button,
   Collapse,
   Space,
@@ -27,6 +26,7 @@ import {
   PauseCircleOutlined,
 } from "@ant-design/icons";
 import FlashcardStudySection from "./FlashcardStudySection";
+import CommentSection from "../../../components/user/CommentSection";
 import CollapsibleSummary from "./CollapsibleSummary";
 import {
   createFlashcards,
@@ -369,6 +369,10 @@ const PodcastDetailPageUser = () => {
             ) : (
               <Text type="secondary">Không có chương nào được tìm thấy.</Text>
             )}
+
+            <Divider />
+            <Title level={4}>Bình luận</Title>
+            <CommentSection podcastId={podcast.id} />
           </Card>
         </div>
 

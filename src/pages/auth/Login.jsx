@@ -20,7 +20,7 @@ const Login = () => {
         message.success("Đăng nhập thành công!");
         localStorage.setItem("token", data.token);
         localStorage.setItem("user", JSON.stringify(data.user));
-
+        localStorage.setItem("user_id", data.user.id);
         const role = data.user.role?.toLowerCase();
         if (role === "admin") navigate("/admin");
         else if (role === "teacher") navigate("/teacher");
