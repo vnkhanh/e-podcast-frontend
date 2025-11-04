@@ -7,7 +7,7 @@ import ForgotPassword from "../pages/auth/ForgotPassword";
 import ResetPassword from "../pages/auth/ResetPassword";
 // Trang chủ
 import HomePage from "../pages/HomePage";
-
+import NotificationList from "../components/NotificationList";
 // Sinh viên
 import UserLayout from "../layouts/UserLayout/UserLayout";
 import CategoryPodcastsPage from "../pages/student/CategoryPodcastsPage";
@@ -86,6 +86,7 @@ const AppRoute = () => {
         />
         <Route path="/subjects/:slug" element={<SubjectDetailPage />} />
         <Route path="/search" element={<SearchPage />} />
+        <Route path="notifications" element={<NotificationList />} />
       </Route>
 
       {/* Teacher & Admin dùng chung layout */}
@@ -106,7 +107,7 @@ const AppRoute = () => {
         <Route path="podcast/create" element={<CreatePodcastUpload />} />
         <Route path="podcast/:id" element={<PodcastDetailPage />} />
         <Route path="podcast/:id/edit" element={<EditPodcast />} />
-        <Route path="notifications" element={<NotificationsPage />} />
+        <Route path="notifications" element={<NotificationList />} />
         <Route path="me" element={<AdminProfile />} />
       </Route>
 
@@ -128,7 +129,7 @@ const AppRoute = () => {
         <Route path="podcast/create" element={<CreatePodcastUpload />} />
         <Route path="podcast/:id" element={<PodcastDetailPage />} />
         <Route path="user" element={<UserPage />} />
-        <Route path="notifications" element={<NotificationsPage />} />
+        <Route path="notifications" element={<NotificationList />} />
         <Route path="page" element={<AdminPages />} />
         <Route path="me" element={<AdminProfile />} />
       </Route>

@@ -80,7 +80,7 @@ const CommentSection = ({ podcastId }) => {
         const data = JSON.parse(event.data);
         if (data.type === "connected") return;
 
-        // Bình luận mới (gốc hoặc reply đa cấp)
+        // ✅ Bình luận mới (gốc hoặc reply đa cấp)
         if (data.type === "new_comment" && data.comment) {
           const newComment = data.comment;
           setComments((prev) => {
@@ -100,7 +100,7 @@ const CommentSection = ({ podcastId }) => {
           });
         }
 
-        // Xóa bình luận realtime (gốc hoặc reply đa cấp)
+        // ✅ Xóa bình luận realtime (gốc hoặc reply đa cấp)
         if (data.type === "delete_comment" && data.comment_id) {
           setComments((prev) => {
             const safePrev = Array.isArray(prev) ? prev : [];
@@ -178,11 +178,13 @@ const CommentSection = ({ podcastId }) => {
     return (
       <div key={item.id}>
         <div
+          id={`comment-${item.id}`} // ✅ Thêm ID để scroll
           style={{
             marginBottom: 16,
             marginLeft: marginLeft,
             borderLeft: isReply ? "2px solid #eee" : "none",
             paddingLeft: isReply ? 12 : 0,
+            transition: "background-color 1s", // ✅ Thêm transition để highlight
           }}
         >
           <Space align="start">

@@ -1,5 +1,5 @@
-import React, { useEffect, useState } from "react";
-import { Layout, Menu, Dropdown, Avatar, Badge, notification } from "antd";
+import React from "react";
+import { Layout, Menu, Dropdown, Avatar } from "antd";
 import { Link, Outlet, useNavigate, useLocation } from "react-router-dom";
 import {
   DashboardOutlined,
@@ -9,23 +9,16 @@ import {
   LogoutOutlined,
   BlockOutlined,
   DockerOutlined,
-  BellOutlined,
   HomeOutlined,
   ContainerFilled,
 } from "@ant-design/icons";
-import {
-  getUnreadNotifications,
-  markAllNotificationsRead,
-} from "../../services/api_notifications";
-import { connectUserWebSocket } from "../../services/ws_user";
+import RealtimeNotification from "../../components/RealtimeNotification";
+
 const { Header, Sider, Content } = Layout;
 
 const AdminLayout = () => {
   const navigate = useNavigate();
   const location = useLocation();
-
-  const [unreadCount, setUnreadCount] = useState(0);
-  const [, setWsConn] = useState(null);
 
   const user = localStorage.getItem("user")
     ? JSON.parse(localStorage.getItem("user"))
@@ -62,63 +55,6 @@ const AdminLayout = () => {
       </Menu.Item>
     </Menu>
   );
-
-  useEffect(() => {
-    const token = localStorage.getItem("token");
-    if (!token) return;
-
-    // Lấy số lượng chưa đọc ban đầu
-    getUnreadNotifications(token).then(setUnreadCount);
-
-    let ws = connectUserWebSocket(token, (data) => {
-      if (!data?.type) return;
-
-      if (
-        data.type === "favorite_notification" ||
-        data.type === "comment_notification" ||
-        data.type === "reply_notification"
-      ) {
-        notification.open({
-          message: data.title,
-          description: data.message,
-          placement: "bottomRight",
-        });
-      }
-
-      if (data.type === "badge_update") {
-        setUnreadCount(data.unread_count);
-      }
-    });
-
-    setWsConn(ws);
-
-    // Nếu socket bị ngắt, thử reconnect sau 5s
-    ws.onclose = () => {
-      console.warn("WebSocket disconnected, retrying in 5s...");
-      setTimeout(() => {
-        ws = connectUserWebSocket(token, (data) => {
-          if (!data?.type) return;
-          if (
-            data.type === "favorite_notification" ||
-            data.type === "comment_notification" ||
-            data.type === "reply_notification"
-          ) {
-            notification.open({
-              message: data.title,
-              description: data.message,
-              placement: "bottomRight",
-            });
-          }
-          if (data.type === "badge_update") {
-            setUnreadCount(data.unread_count);
-          }
-        });
-        setWsConn(ws);
-      }, 5000);
-    };
-
-    return () => ws?.close();
-  }, []);
 
   const menuItems = [
     {
@@ -177,13 +113,6 @@ const AdminLayout = () => {
     });
   }
 
-  const handleOpenNotifications = async () => {
-    navigate("/teacher/notifications");
-    const token = localStorage.getItem("token");
-    const ok = await markAllNotificationsRead(token);
-    if (ok) setUnreadCount(0);
-  };
-
   return (
     <Layout style={{ minHeight: "100vh" }}>
       <Sider collapsible>
@@ -225,12 +154,7 @@ const AdminLayout = () => {
           <h3 style={{ margin: 0 }}>Hệ thống quản trị</h3>
 
           <div style={{ display: "flex", alignItems: "center", gap: 20 }}>
-            <Badge count={unreadCount} size="small">
-              <BellOutlined
-                style={{ fontSize: 20, cursor: "pointer" }}
-                onClick={handleOpenNotifications}
-              />
-            </Badge>
+            <RealtimeNotification navigate={navigate} />
 
             <Dropdown overlay={userMenu} placement="bottomRight">
               <div

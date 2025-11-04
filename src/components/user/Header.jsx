@@ -26,7 +26,7 @@ import { ThemeContext } from "../../context/useTheme";
 import { jwtDecode } from "jwt-decode";
 import { searchAutocomplete } from "../../services/api_search"; // <-- import API
 import { connectUserWebSocket } from "../../services/ws_user";
-
+import RealtimeNotification from "../RealtimeNotification";
 const { Header } = Layout;
 const { Title } = Typography;
 
@@ -113,6 +113,9 @@ const AppHeader = () => {
           message: data.title,
           description: data.message,
           placement: "bottomRight",
+          onClick: () => {
+            navigate(`/podcast/${data.podcast_id}#comment-${data.comment_id}`);
+          },
         });
       }
     });
@@ -269,28 +272,32 @@ const AppHeader = () => {
           </div>
 
           {token && user ? (
-            <Dropdown
-              menu={{
-                items: userMenuItems,
-                onClick: handleUserMenuClick,
-              }}
-              placement="bottomRight"
-              trigger={["click"]}
-              arrow
-            >
-              <Avatar
-                size={40}
-                src={user?.avatar_url}
-                icon={<UserOutlined />}
-                style={{
-                  cursor: "pointer",
-                  border: isDarkMode
-                    ? "2px solid #3b82f6"
-                    : "2px solid #6366f1",
-                  transition: "all 0.3s ease",
+            <div>
+              <Dropdown
+                menu={{
+                  items: userMenuItems,
+                  onClick: handleUserMenuClick,
                 }}
-              />
-            </Dropdown>
+                placement="bottomRight"
+                trigger={["click"]}
+                arrow
+              >
+                <Avatar
+                  size={40}
+                  src={user?.avatar_url}
+                  icon={<UserOutlined />}
+                  style={{
+                    cursor: "pointer",
+                    border: isDarkMode
+                      ? "2px solid #3b82f6"
+                      : "2px solid #6366f1",
+                    transition: "all 0.3s ease",
+                  }}
+                />
+              </Dropdown>
+
+              <RealtimeNotification navigate={navigate} />
+            </div>
           ) : (
             <Button
               type="primary"

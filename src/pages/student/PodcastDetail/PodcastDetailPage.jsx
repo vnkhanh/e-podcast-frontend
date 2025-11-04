@@ -1,5 +1,4 @@
-import React, { useEffect, useState, useContext } from "react";
-import { useParams } from "react-router-dom";
+import React, { useEffect, useState, useContext, useRef } from "react";
 import {
   Typography,
   Tag,
@@ -32,14 +31,13 @@ import {
   createFlashcards,
   getFlashcardsByPodcast,
 } from "../../../services/api_flashcards";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams, useLocation } from "react-router-dom";
 import { ThemeContext } from "../../../context/useTheme";
 import { getPodcastById } from "../../../services/api_podcast";
 import { formatTime } from "../../../utils/helpers";
 import { getPodcastHistory } from "../../../services/api_history";
 import PodcastFavoriteButton from "../../../components/user/PodcastFavoriteButton";
 import SharePodcastButton from "../../../components/user/SharePodcastButton";
-import { useLocation } from "react-router-dom";
 import { usePlayer } from "../../../context/usePlayer";
 
 const { Title, Paragraph, Text } = Typography;
@@ -53,6 +51,9 @@ const PodcastDetailPageUser = () => {
   const [startTime, setStartTime] = useState(0);
   const token = localStorage.getItem("token");
 
+  const location = useLocation();
+  const commentSectionRef = useRef(null);
+
   const { currentPodcast, isPlaying, handlePlay } = usePlayer();
 
   // const [related, setRelated] = useState([]);
@@ -61,7 +62,6 @@ const PodcastDetailPageUser = () => {
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [showListModal, setShowListModal] = useState(false);
   const [generating, setGenerating] = useState(false);
-  const location = useLocation();
   const query = new URLSearchParams(location.search);
   const queryStart = parseFloat(query.get("t")) || 0; // có thể có param ?t=xx
   const { isDarkMode } = useContext(ThemeContext);
@@ -117,6 +117,44 @@ const PodcastDetailPageUser = () => {
     fetchPodcast();
     // fetchRelated();
   }, [id]);
+
+  // ✅ AUTO SCROLL ĐẾN COMMENT KHI CÓ NOTIFICATION
+  useEffect(() => {
+    // Kiểm tra nếu có scrollToComment trong state
+    const scrollToComment = location.state?.scrollToComment;
+
+    if (scrollToComment && commentSectionRef.current) {
+      // Đợi DOM render xong
+      setTimeout(() => {
+        // Tìm element comment theo ID
+        const commentElement = document.getElementById(
+          `comment-${scrollToComment}`
+        );
+
+        if (commentElement) {
+          // Scroll đến comment với hiệu ứng mượt
+          commentElement.scrollIntoView({
+            behavior: "smooth",
+            block: "center",
+          });
+
+          // Highlight comment (tùy chọn)
+          commentElement.style.transition = "background-color 1s";
+          commentElement.style.backgroundColor = "#fff9c4";
+
+          setTimeout(() => {
+            commentElement.style.backgroundColor = "";
+          }, 2000);
+        } else {
+          // Nếu không tìm thấy comment cụ thể, scroll đến section comment
+          commentSectionRef.current.scrollIntoView({
+            behavior: "smooth",
+          });
+        }
+      }, 500); // Đợi 500ms để đảm bảo comments đã load
+    }
+  }, [location.state, id]);
+
   // === FETCH TIẾN TRÌNH NGHE ===
   useEffect(() => {
     const fetchListeningHistory = async () => {
