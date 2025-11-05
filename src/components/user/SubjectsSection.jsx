@@ -99,7 +99,7 @@ const SubjectsSection = () => {
     <section
       style={{
         padding: "60px 20px",
-        maxWidth: 1300,
+        width: "80%",
         margin: "0 auto",
         position: "relative",
       }}

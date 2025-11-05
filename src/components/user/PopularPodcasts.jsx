@@ -69,6 +69,8 @@ const PopularPodcasts = ({ playerState }) => {
       style={{
         padding: "60px 24px",
         position: "relative",
+        width: "85%",
+        margin: "0 auto",
       }}
     >
       <div style={{ maxWidth: 1200, margin: "0 auto", position: "relative" }}>

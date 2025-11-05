@@ -2,6 +2,20 @@ import axios from "axios";
 const API_BASE_URL =
   import.meta.env.VITE_API_BASE_URL || "http://localhost:8080/api";
 
+// Lấy danh sách podcast yêu thích
+export const getAllFavorites = async (token) => {
+  try {
+    const res = await axios.get(`${API_BASE_URL}/user/account/favorites`, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    return res.data;
+  } catch (err) {
+    console.error("[getAllFavorites] Error:", err);
+    throw err.response?.data || err;
+  }
+};
+
+// Lấy danh sách podcast yêu thích
 // Lấy danh sách podcast yêu thích (có phân trang, lọc, sắp xếp)
 export const getUserFavorites = async (token, params = {}) => {
   const res = await axios.get(`${API_BASE_URL}/user/account/favorites`, {

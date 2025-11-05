@@ -113,31 +113,6 @@ const PodcastList = ({ playerState, title = "Podcast Mới Nhất" }) => {
                 }}
               />
             </Tooltip>,
-            <Tooltip title="Yêu thích">
-              <PodcastFavoriteButton podcastId={podcast.id} />
-            </Tooltip>,
-            <Tooltip title="Chia sẻ">
-              <Button
-                type="text"
-                icon={
-                  <ShareAltOutlined
-                    style={{ color: isDarkMode ? "#f9fafb" : "inherit" }}
-                  />
-                }
-                onClick={(e) => e.stopPropagation()} // Ngăn event nổi bọt
-              />
-            </Tooltip>,
-            <Tooltip title="Tải xuống">
-              <Button
-                type="text"
-                icon={
-                  <DownloadOutlined
-                    style={{ color: isDarkMode ? "#f9fafb" : "inherit" }}
-                  />
-                }
-                onClick={(e) => e.stopPropagation()} // Ngăn event nổi bọt
-              />
-            </Tooltip>,
           ]}
         >
           <List.Item.Meta
@@ -264,11 +239,11 @@ const PodcastList = ({ playerState, title = "Podcast Mới Nhất" }) => {
   return (
     <section
       style={{
-        width: "100%",
-        margin: "48px 0",
+        width: "80%",
+        margin: "0 auto",
+        alignContent: "center",
         borderRadius: 24,
-        padding: "40px 32px",
-        boxShadow: "0 8px 30px rgba(0,0,0,0.05)",
+        padding: "40px auto",
         transition: "all 0.3s ease",
       }}
     >

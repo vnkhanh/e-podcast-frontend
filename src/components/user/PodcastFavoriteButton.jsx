@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import {
   addFavorite,
   removeFavorite,
-  getUserFavorites,
+  checkFavorite,
 } from "../../services/api_favorite";
 import { HeartOutlined, HeartFilled } from "@ant-design/icons";
 import { getPodcastById } from "../../services/api_podcast";
@@ -52,17 +52,16 @@ const PodcastFavoriteButton = ({ podcastId, onLikeChange }) => {
 
   // === Lấy danh sách yêu thích ban đầu ===
   useEffect(() => {
-    const fetchFavorites = async () => {
+    const fetchStatus = async () => {
       if (!token) return;
       try {
-        const favorites = await getUserFavorites(token);
-        const isFav = favorites.some((fav) => fav.podcast_id === podcastId);
+        const isFav = await checkFavorite(token, podcastId);
         setIsFavorited(isFav);
       } catch (err) {
-        console.error("getAllFavorites error:", err);
+        console.error("checkFavorite error:", err);
       }
     };
-    fetchFavorites();
+    fetchStatus();
   }, [podcastId, token]);
 
   return (

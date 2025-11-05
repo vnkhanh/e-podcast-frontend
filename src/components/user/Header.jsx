@@ -133,9 +133,9 @@ const AppHeader = () => {
   const menuItems = [
     { key: "home", label: "Trang chủ" },
     { key: "courses", label: "Môn học" },
+    { key: "category", label: "Danh mục" },
+    { key: "about", label: "Chủ đề" },
     { key: "podcasts", label: "Podcast" },
-    { key: "blog", label: "Blog" },
-    { key: "about", label: "Về chúng tôi" },
   ];
   const handleMenuClick = ({ key }) => {
     if (key === "home") navigate("/");

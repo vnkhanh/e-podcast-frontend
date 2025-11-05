@@ -10,15 +10,25 @@ export const PlayerProvider = ({ children }) => {
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
 
-  const handlePlay = (podcast) => {
+  const handlePlay = (podcast, startTime = 0) => {
+    // Nếu đang phát cùng podcast -> chỉ toggle play/pause
     if (currentPodcast?.id === podcast.id) {
       setIsPlaying(!isPlaying);
     } else {
+      // Nếu đổi podcast mới
       setCurrentPodcast(podcast);
       setIsPlaying(true);
       setProgress(0);
       setCurrentTime(0);
       setDuration(0);
+
+      // Khi audio sẵn sàng, nhảy đến vị trí startTime (nếu có)
+      setTimeout(() => {
+        const audio = document.querySelector("audio");
+        if (audio && startTime > 0) {
+          audio.currentTime = startTime;
+        }
+      }, 700); // delay nhẹ để audio kịp mount
     }
   };
 

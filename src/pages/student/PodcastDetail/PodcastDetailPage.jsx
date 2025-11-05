@@ -118,7 +118,7 @@ const PodcastDetailPageUser = () => {
     // fetchRelated();
   }, [id]);
 
-  // ✅ AUTO SCROLL ĐẾN COMMENT KHI CÓ NOTIFICATION
+  // AUTO SCROLL ĐẾN COMMENT KHI CÓ NOTIFICATION
   useEffect(() => {
     // Kiểm tra nếu có scrollToComment trong state
     const scrollToComment = location.state?.scrollToComment;
@@ -325,7 +325,7 @@ const PodcastDetailPageUser = () => {
                 fontSize: 18,
                 fontWeight: 600,
               }}
-              onClick={() => handlePlay(podcast)}
+              onClick={() => handlePlay(podcast, queryStart)}
             ></Button>
 
             <div style={{ display: "flex", alignItems: "center", gap: 6 }}>

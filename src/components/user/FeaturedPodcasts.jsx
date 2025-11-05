@@ -4,17 +4,17 @@ import {
   PlayCircleOutlined,
   PauseCircleOutlined,
   HeartOutlined,
-  ShareAltOutlined,
   BookOutlined,
   ClockCircleOutlined,
-  UserOutlined,
   EyeOutlined,
 } from "@ant-design/icons";
 import { formatTime } from "../../utils/helpers";
 import PodcastFavoriteButton from "./PodcastFavoriteButton";
+import { useNavigate } from "react-router-dom";
 const { Text, Paragraph, Title } = Typography;
 
 const FeaturedPodcastCard = ({ podcast, playerState }) => {
+  const navigate = useNavigate();
   const { currentPodcast, isPlaying, handlePlay, progress } = playerState;
   const isCurrentlyPlaying = currentPodcast?.id === podcast.id && isPlaying;
 
@@ -44,6 +44,7 @@ const FeaturedPodcastCard = ({ podcast, playerState }) => {
       }}
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
+      onClick={() => navigate(`/podcast/${podcast.id}`)}
     >
       {/* Progress bar */}
       {isCurrentlyPlaying && (
@@ -103,15 +104,6 @@ const FeaturedPodcastCard = ({ podcast, playerState }) => {
       >
         <Space>
           <PodcastFavoriteButton podcastId={podcast.id} />
-          <Button
-            type="text"
-            shape="circle"
-            icon={<ShareAltOutlined style={{ color: "#fff" }} />}
-            style={{
-              background: "rgba(0,0,0,0.4)",
-              border: "none",
-            }}
-          />
         </Space>
       </div>
 
@@ -124,7 +116,7 @@ const FeaturedPodcastCard = ({ podcast, playerState }) => {
           transform: "translate(-50%, -50%)",
           opacity: hovered || isCurrentlyPlaying ? 1 : 0,
           transition: "all 0.3s ease",
-          zIndex: 2,
+          zIndex: 50,
         }}
       >
         <Button
@@ -217,14 +209,6 @@ const FeaturedPodcastCard = ({ podcast, playerState }) => {
           >
             {/* Meta */}
             <Space size={12}>
-              <Space size={6}>
-                <UserOutlined style={{ color: "#93c5fd", fontSize: 14 }} />
-                <Text
-                  style={{ color: "#cbd5e1", fontSize: 12, fontWeight: 600 }}
-                >
-                  {podcast.instructor || "Giảng viên"}
-                </Text>
-              </Space>
               <Space size={6}>
                 <ClockCircleOutlined
                   style={{ color: "#cbd5e1", fontSize: 12 }}

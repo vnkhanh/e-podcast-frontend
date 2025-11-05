@@ -32,10 +32,11 @@ import {
   deleteNote,
 } from "../../services/api_note";
 import { formatTime } from "../../utils/helpers";
-
+import { useNavigate } from "react-router-dom";
 const { Text } = Typography;
 
 const NowPlayingBar = ({ playerState, userToken }) => {
+  const navigate = useNavigate();
   const {
     currentPodcast,
     isPlaying,
@@ -232,7 +233,12 @@ const NowPlayingBar = ({ playerState, userToken }) => {
                 size={40}
                 src={currentPodcast?.cover_image}
               />
-              <Space direction="vertical" size={0}>
+              <Space
+                direction="vertical"
+                size={0}
+                onClick={() => navigate(`/podcast/${currentPodcast?.id}`)}
+                style={{ cursor: "pointer", borderRadius: 8 }}
+              >
                 <Text strong>
                   {currentPodcast?.title || "Không có tiêu đề"}
                 </Text>
@@ -291,9 +297,17 @@ const NowPlayingBar = ({ playerState, userToken }) => {
           >
             <Col>
               <Space>
-                <Avatar size={36} src={currentPodcast?.cover_image} />
+                <Avatar
+                  size={36}
+                  src={currentPodcast?.cover_image}
+                  onClick={() => navigate(`/podcast/${currentPodcast?.id}`)}
+                />
                 <Space direction="vertical" size={0}>
-                  <Text strong style={{ fontSize: 13 }}>
+                  <Text
+                    strong
+                    style={{ fontSize: 13 }}
+                    onClick={() => navigate(`/podcast/${currentPodcast?.id}`)}
+                  >
                     {currentPodcast?.title}
                   </Text>
                 </Space>
