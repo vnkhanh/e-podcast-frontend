@@ -17,7 +17,7 @@ import QuizSetsListPage from "../pages/student/Quiz/QuizSetsListPage";
 import QuizTakePage from "../pages/student/Quiz/QuizTakePage";
 import QuizHistoryPage from "../pages/student/Quiz/QuizHistoryPage";
 import QuizAttemptDetailPage from "../pages/student/Quiz/QuizAttemptDetailPage";
-import SubjectDetailPage from "../pages/student/SubjectDetailPage";
+import SubjectDetailPage from "../pages/student/Subject/SubjectDetailPage";
 import SearchPage from "../pages/student/SearchPage";
 
 // Admin & Teacher dùng chung layout
@@ -33,9 +33,9 @@ import PodcastDetailPage from "../pages/admin/Podcast/PodcastDetail";
 import EditPodcast from "../pages/admin/Podcast/EditPodcast";
 import UserPage from "../pages/admin/User/UserPage";
 import ProtectedRoute from "./ProtectedRoute";
-import NotificationsPage from "../pages/admin/NotificationsPage";
 import AdminPages from "../pages/admin/AdminPages";
 import AdminProfile from "../pages/admin/AdminProfile";
+import SubjectListPage from "../pages/student/Subject/SubjectListPage";
 
 const AppRoute = () => {
   const token = localStorage.getItem("token");
@@ -85,6 +85,7 @@ const AppRoute = () => {
           element={<QuizAttemptDetailPage />}
         />
         <Route path="/subjects/:slug" element={<SubjectDetailPage />} />
+        <Route path="/subjects" element={<SubjectListPage />} />
         <Route path="/search" element={<SearchPage />} />
         <Route path="notifications" element={<NotificationList />} />
       </Route>

@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import {
   addFavorite,
   removeFavorite,
-  getAllFavorites,
+  getUserFavorites,
 } from "../../services/api_favorite";
 import { HeartOutlined, HeartFilled } from "@ant-design/icons";
 import { getPodcastById } from "../../services/api_podcast";
@@ -55,7 +55,7 @@ const PodcastFavoriteButton = ({ podcastId, onLikeChange }) => {
     const fetchFavorites = async () => {
       if (!token) return;
       try {
-        const favorites = await getAllFavorites(token);
+        const favorites = await getUserFavorites(token);
         const isFav = favorites.some((fav) => fav.podcast_id === podcastId);
         setIsFavorited(isFav);
       } catch (err) {

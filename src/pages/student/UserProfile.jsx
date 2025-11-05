@@ -11,29 +11,28 @@ import {
   Col,
   Space,
   Tag,
+  Tabs,
 } from "antd";
 import {
   UserOutlined,
   CalendarOutlined,
   MailOutlined,
   SafetyCertificateOutlined,
-  TeamOutlined,
-  FileTextOutlined,
   HeartOutlined,
-  EditOutlined,
   BookOutlined,
+  TeamOutlined,
 } from "@ant-design/icons";
 import UserListeningHistory from "./UserListeningHistory";
 import { getUserProfile } from "../../services/api_auth";
 import UserFavorites from "../../components/user/UserFavorites";
 
 const { Title, Text } = Typography;
+const { TabPane } = Tabs;
 
 export default function UserProfile() {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-
   const token = localStorage.getItem("token");
 
   useEffect(() => {
@@ -81,33 +80,6 @@ export default function UserProfile() {
     user: <UserOutlined />,
   };
 
-  const stats = [
-    {
-      icon: <FileTextOutlined />,
-      label: "Tài liệu",
-      value: user.documents?.length || 0,
-      color: "#1890ff",
-    },
-    {
-      icon: <HeartOutlined />,
-      label: "Yêu thích",
-      value: user.favorites?.length || 0,
-      color: "#eb2f96",
-    },
-    {
-      icon: <EditOutlined />,
-      label: "Ghi chú",
-      value: user.notes?.length || 0,
-      color: "#52c41a",
-    },
-    {
-      icon: <BookOutlined />,
-      label: "Flashcards",
-      value: user.flashcards?.length || 0,
-      color: "#fa8c16",
-    },
-  ];
-
   return (
     <div
       style={{
@@ -116,6 +88,7 @@ export default function UserProfile() {
         padding: "0 20px",
       }}
     >
+      {/* Thông tin người dùng */}
       <Card
         style={{
           border: "none",
@@ -236,59 +209,40 @@ export default function UserProfile() {
         </div>
       </Card>
 
-      <Row gutter={[24, 24]}>
-        {/* Thống kê */}
-        <Col xs={24} lg={6}>
-          <Card
-            title={<Title level={5}>Thống kê hoạt động</Title>}
-            style={{
-              borderRadius: 16,
-              boxShadow: "0 8px 24px rgba(0,0,0,0.08)",
-              border: "none",
-            }}
-            styles={{
-              body: { padding: "20px 16px" },
-            }}
-          >
-            <Row gutter={[12, 12]}>
-              {stats.map((s, i) => (
-                <Col span={12} key={i}>
-                  <div
-                    style={{
-                      background: `${s.color}15`,
-                      borderRadius: 10,
-                      padding: "12px 8px",
-                      textAlign: "center",
-                      transition: "transform 0.3s",
-                    }}
-                    onMouseEnter={(e) =>
-                      (e.currentTarget.style.transform = "translateY(-3px)")
-                    }
-                    onMouseLeave={(e) =>
-                      (e.currentTarget.style.transform = "translateY(0)")
-                    }
-                  >
-                    <div style={{ fontSize: 20, color: s.color }}>{s.icon}</div>
-                    <Text strong style={{ color: s.color, fontSize: 16 }}>
-                      {s.value}
-                    </Text>
-                    <br />
-                    <Text type="secondary" style={{ fontSize: 12 }}>
-                      {s.label}
-                    </Text>
-                  </div>
-                </Col>
-              ))}
-            </Row>
-          </Card>
-        </Col>
-
-        {/* Lịch sử nghe */}
-        <Col xs={24} lg={18}>
-          <UserListeningHistory />
-          <UserFavorites />
-        </Col>
-      </Row>
+      {/* Tabs hoạt động người dùng */}
+      <Card
+        style={{
+          borderRadius: 16,
+          boxShadow: "0 8px 24px rgba(0,0,0,0.08)",
+          border: "none",
+        }}
+      >
+        <Tabs
+          defaultActiveKey="1"
+          items={[
+            {
+              key: "1",
+              label: (
+                <Space>
+                  <HeartOutlined style={{ color: "#eb2f96" }} />
+                  <Text strong>Podcast yêu thích</Text>
+                </Space>
+              ),
+              children: <UserFavorites />,
+            },
+            {
+              key: "2",
+              label: (
+                <Space>
+                  <BookOutlined style={{ color: "#667eea" }} />
+                  <Text strong>Lịch sử nghe</Text>
+                </Space>
+              ),
+              children: <UserListeningHistory />,
+            },
+          ]}
+        />
+      </Card>
     </div>
   );
 }

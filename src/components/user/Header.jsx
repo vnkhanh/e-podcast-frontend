@@ -20,6 +20,8 @@ import {
   BulbOutlined,
   MoonOutlined,
   SettingOutlined,
+  CustomerServiceOutlined,
+  FileSearchOutlined,
 } from "@ant-design/icons";
 import { useNavigate } from "react-router-dom";
 import { ThemeContext } from "../../context/useTheme";
@@ -53,7 +55,12 @@ const AppHeader = () => {
           value: item.type === "podcast" ? item.title : item.name,
           label: (
             <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-              {item.type === "podcast" ? "🎧" : "📚"} {item.title || item.name}
+              {item.type === "podcast" ? (
+                <CustomerServiceOutlined />
+              ) : (
+                <FileSearchOutlined />
+              )}{" "}
+              {item.title || item.name}
             </div>
           ),
           id: item.id,
@@ -125,15 +132,21 @@ const AppHeader = () => {
 
   const menuItems = [
     { key: "home", label: "Trang chủ" },
-    { key: "courses", label: "Khóa học" },
+    { key: "courses", label: "Môn học" },
     { key: "podcasts", label: "Podcast" },
     { key: "blog", label: "Blog" },
     { key: "about", label: "Về chúng tôi" },
   ];
+  const handleMenuClick = ({ key }) => {
+    if (key === "home") navigate("/");
+    else if (key === "courses") navigate("/subjects");
+    else if (key === "podcasts") navigate("/podcasts");
+    else if (key === "blog") navigate("/blog");
+    else if (key === "about") navigate("/about");
+  };
 
   const userMenuItems = [
     { key: "profile", icon: <UserOutlined />, label: "Hồ sơ" },
-    { key: "my-courses", icon: <BookOutlined />, label: "Khóa học của tôi" },
     {
       key: "theme",
       icon: isDarkMode ? <BulbOutlined /> : <MoonOutlined />,
@@ -219,6 +232,7 @@ const AppHeader = () => {
             mode="horizontal"
             defaultSelectedKeys={["home"]}
             items={menuItems}
+            onClick={handleMenuClick}
             theme={isDarkMode ? "dark" : "light"}
             style={{
               background: "transparent",

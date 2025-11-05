@@ -88,12 +88,25 @@ export const getChaptersBySubject = async (subjectId) => {
   return res.data;
 };
 
-//User
+//USER
+// Lấy chi tiết môn học (có thể kèm tiến độ nếu user đăng nhập)
 export const getSubjectDetailUser = async (slug) => {
-  const res = await axios.get(`${API_BASE_URL}/user/subjects/${slug}`);
-  return res.data?.data || null;
-};
+  try {
+    const token = localStorage.getItem("token");
 
+    const headers = token ? { Authorization: `Bearer ${token}` } : {}; // Nếu chưa đăng nhập thì không gửi header
+
+    const res = await axios.get(`${API_BASE_URL}/user/subjects/${slug}`, {
+      headers,
+    });
+
+    // Trả về toàn bộ response (bao gồm progress)
+    return res.data || null;
+  } catch (err) {
+    console.error("Lỗi khi gọi API getSubjectDetailUser:", err);
+    throw err;
+  }
+};
 export const getPopularSubjects = async () => {
   try {
     const res = await axios.get(`${API_BASE_URL}/user/subjects/popular`);
@@ -102,4 +115,17 @@ export const getPopularSubjects = async () => {
     console.error("Lỗi khi tải môn học phổ biến:", err);
     return [];
   }
+};
+
+// Lấy danh sách môn học có thể kèm tiến độ
+export const getAllSubjectsUser = async (params = {}) => {
+  const token = localStorage.getItem("token");
+  const headers = token ? { Authorization: `Bearer ${token}` } : {};
+
+  const res = await axios.get(`${API_BASE_URL}/user/subjects`, {
+    headers,
+    params, // { page, limit, search, sort }
+  });
+
+  return res.data || null;
 };

@@ -3,12 +3,14 @@ import axios from "axios";
 const API_BASE_URL =
   import.meta.env.VITE_API_BASE_URL || "http://localhost:8080/api";
 
-export const getAllListeningHistory = async (token, params = {}) => {
+//Lấy lịch sử nghe của user
+export const getAllListeningHistory = async (params) => {
+  const { token, page, limit, time, completed, sort } = params;
   const res = await axios.get(
     `${API_BASE_URL}/user/account/listening-history`,
     {
       headers: { Authorization: `Bearer ${token}` },
-      params,
+      params: { page, limit, time, completed, sort },
     }
   );
   return res.data;
