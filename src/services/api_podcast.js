@@ -22,13 +22,6 @@ export async function listSubjects() {
   return res.data; // trả về mảng subjects
 }
 
-export async function listTopics() {
-  const token = localStorage.getItem("token");
-  const res = await axios.get(`${API_BASE_URL}/admin/topics/get`, {
-    headers: { Authorization: `Bearer ${token}` },
-  });
-  return res.data; // trả về mảng topics
-}
 export async function listCategories() {
   const token = localStorage.getItem("token");
   const res = await axios.get(`${API_BASE_URL}/admin/categories/get`, {

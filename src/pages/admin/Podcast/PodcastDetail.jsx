@@ -23,7 +23,6 @@ import {
   ArrowLeftOutlined,
   EyeOutlined,
   HeartOutlined,
-  PlayCircleOutlined,
   TagOutlined,
 } from "@ant-design/icons";
 import { getPodcastDetail } from "../../../services/api_podcast";
@@ -258,15 +257,6 @@ export default function PodcastDetailPage() {
               <Descriptions.Item label="Chương">
                 {podcast.chapter?.title || "Không có"}
               </Descriptions.Item>
-              <Descriptions.Item label="Chủ đề">
-                {podcast.topics?.length
-                  ? podcast.topics.map((t) => (
-                      <Tag key={t.id} color="geekblue">
-                        {t.name}
-                      </Tag>
-                    ))
-                  : "Không có"}
-              </Descriptions.Item>
               <Descriptions.Item label="Danh mục">
                 {podcast.categories?.length
                   ? podcast.categories.map((c) => (
@@ -277,18 +267,6 @@ export default function PodcastDetailPage() {
                   : "Không có"}
               </Descriptions.Item>
             </Descriptions>
-            <Divider />
-            <Card
-              type="inner"
-              title={
-                <>
-                  <SoundOutlined /> Tóm tắt
-                </>
-              }
-            >
-              <Paragraph>{podcast.summary || "Không có tóm tắt"}</Paragraph>
-            </Card>
-
             {podcast.tags?.length > 0 && (
               <>
                 <Divider />
@@ -308,6 +286,18 @@ export default function PodcastDetailPage() {
                 </Card>
               </>
             )}
+            <Divider />
+
+            <Card
+              type="inner"
+              title={
+                <>
+                  <SoundOutlined /> Tóm tắt
+                </>
+              }
+            >
+              <Paragraph>{podcast.summary || "Không có tóm tắt"}</Paragraph>
+            </Card>
           </Card>
         </Col>
       </Row>

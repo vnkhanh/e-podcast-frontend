@@ -10,7 +10,7 @@ import HomePage from "../pages/HomePage";
 import NotificationList from "../components/NotificationList";
 // Sinh viên
 import UserLayout from "../layouts/UserLayout/UserLayout";
-import CategoryPodcastsPage from "../pages/student/CategoryPodcastsPage";
+import CategoryPodcastsPage from "../pages/student/Category/CategoryPodcastsPage";
 import PodcastDetailPageUser from "../pages/student/PodcastDetail/PodcastDetailPage";
 import UserProfile from "../pages/student/UserProfile";
 import QuizSetsListPage from "../pages/student/Quiz/QuizSetsListPage";
@@ -24,7 +24,6 @@ import SearchPage from "../pages/student/SearchPage";
 import AdminLayout from "../layouts/AdminLayout";
 import AdminDashboard from "../pages/admin/AdminDashboard";
 import SubjectPage from "../pages/admin/Subject/SubjectPage";
-import TopicPage from "../pages/admin/Topic/TopicPage";
 import CategoryPage from "../pages/admin/Category/CategoryPage";
 import DocumentPage from "../pages/admin/Document/DocumentPage";
 import PodcastPage from "../pages/admin/Podcast/PodcastPage";
@@ -33,7 +32,6 @@ import PodcastDetailPage from "../pages/admin/Podcast/PodcastDetail";
 import EditPodcast from "../pages/admin/Podcast/EditPodcast";
 import UserPage from "../pages/admin/User/UserPage";
 import ProtectedRoute from "./ProtectedRoute";
-import AdminPages from "../pages/admin/AdminPages";
 import AdminProfile from "../pages/admin/AdminProfile";
 import SubjectListPage from "../pages/student/Subject/SubjectListPage";
 
@@ -101,7 +99,6 @@ const AppRoute = () => {
       >
         <Route index element={<SubjectPage />} />
         <Route path="subject" element={<SubjectPage />} />
-        <Route path="topic" element={<TopicPage />} />
         <Route path="category" element={<CategoryPage />} />
         <Route path="document" element={<DocumentPage />} />
         <Route path="podcast" element={<PodcastPage />} />
@@ -123,7 +120,6 @@ const AppRoute = () => {
         <Route index element={<AdminDashboard />} />
         <Route path="dashboard" element={<AdminDashboard />} />
         <Route path="subject" element={<SubjectPage />} />
-        <Route path="topic" element={<TopicPage />} />
         <Route path="category" element={<CategoryPage />} />
         <Route path="document" element={<DocumentPage />} />
         <Route path="podcast" element={<PodcastPage />} />
@@ -131,7 +127,6 @@ const AppRoute = () => {
         <Route path="podcast/:id" element={<PodcastDetailPage />} />
         <Route path="user" element={<UserPage />} />
         <Route path="notifications" element={<NotificationList />} />
-        <Route path="page" element={<AdminPages />} />
         <Route path="me" element={<AdminProfile />} />
       </Route>
     </Routes>

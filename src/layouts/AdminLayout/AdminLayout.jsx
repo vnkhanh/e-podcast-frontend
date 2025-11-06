@@ -64,12 +64,6 @@ const AdminLayout = () => {
       link: user?.role === "admin" ? "/admin/subject" : "/teacher/subject",
     },
     {
-      key: "topic",
-      icon: <GroupOutlined />,
-      label: "Chủ đề",
-      link: user?.role === "admin" ? "/admin/topic" : "/teacher/topic",
-    },
-    {
       key: "category",
       icon: <BlockOutlined />,
       label: "Danh mục",

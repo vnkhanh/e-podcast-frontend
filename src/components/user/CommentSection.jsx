@@ -1,13 +1,34 @@
 import React, { useState, useEffect, useRef, useCallback } from "react";
-import { List, Avatar, Input, Button, message, Space, Modal } from "antd";
+import {
+  List,
+  Avatar,
+  Input,
+  Button,
+  message,
+  Space,
+  Modal,
+  Card,
+  Typography,
+  Divider,
+} from "antd";
 import {
   getComments,
   createComment,
   deleteComment,
 } from "../../services/api_comment";
+import {
+  SendOutlined,
+  UserOutlined,
+  MessageOutlined,
+  DeleteOutlined,
+  CloseOutlined,
+  EyeOutlined,
+  EyeInvisibleOutlined,
+} from "@ant-design/icons";
 
 const { TextArea } = Input;
 const { confirm } = Modal;
+const { Text, Paragraph } = Typography;
 
 const CommentSection = ({ podcastId }) => {
   const [comments, setComments] = useState([]);
@@ -146,6 +167,17 @@ const CommentSection = ({ podcastId }) => {
       okText: "Xóa",
       okType: "danger",
       cancelText: "Hủy",
+      centered: true,
+      okButtonProps: {
+        style: {
+          borderRadius: 8,
+        },
+      },
+      cancelButtonProps: {
+        style: {
+          borderRadius: 8,
+        },
+      },
       onOk: async () => {
         try {
           await deleteComment(token, id);
@@ -175,50 +207,98 @@ const CommentSection = ({ podcastId }) => {
           style={{
             marginBottom: 16,
             marginLeft: marginLeft,
-            borderLeft: isReply ? "2px solid #eee" : "none",
-            paddingLeft: isReply ? 12 : 0,
-            transition: "background-color 1s",
+            borderLeft: isReply ? "3px solid #f0f0f0" : "none",
+            paddingLeft: isReply ? 16 : 0,
+            transition: "all 0.3s ease",
+            borderRadius: 8,
+            padding: "12px 16px",
           }}
+          className="comment-item"
         >
-          <Space align="start">
-            <Avatar size={depth > 1 ? "small" : "default"}>
+          <Space align="start" style={{ width: "100%" }}>
+            <Avatar
+              size={depth > 1 ? "small" : "default"}
+              style={{
+                background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+                border: "2px solid #fff",
+                boxShadow: "0 2px 8px rgba(102, 126, 234, 0.3)",
+              }}
+              icon={<UserOutlined />}
+            >
               {item.user_name?.[0] || item.user?.full_name?.[0] || "?"}
             </Avatar>
             <div style={{ flex: 1 }}>
-              <div style={{ fontWeight: 500 }}>
-                {item.user_name || item.user?.full_name || "Ẩn danh"}{" "}
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 8,
+                  marginBottom: 4,
+                }}
+              >
+                <Text strong style={{ fontSize: 14 }}>
+                  {item.user_name || item.user?.full_name || "Ẩn danh"}
+                </Text>
                 {item.user_role && (
-                  <span style={{ color: "#888", fontSize: 13 }}>
-                    · {item.user_role}
+                  <span
+                    style={{
+                      color: "#667eea",
+                      fontSize: 12,
+                      background: "rgba(102, 126, 234, 0.1)",
+                      padding: "2px 8px",
+                      borderRadius: 12,
+                      fontWeight: 500,
+                    }}
+                  >
+                    {item.user_role}
                   </span>
                 )}
               </div>
 
               {item.created_at && (
-                <div style={{ color: "#999", fontSize: 12, marginBottom: 4 }}>
+                <div style={{ color: "#999", fontSize: 12, marginBottom: 8 }}>
                   {item.created_at}
                 </div>
               )}
 
-              <div style={{ marginBottom: 4 }}>{item.content}</div>
+              <Paragraph
+                style={{
+                  margin: 0,
+                  lineHeight: 1.5,
+                  fontSize: 14,
+                }}
+              >
+                {item.content}
+              </Paragraph>
 
-              <div style={{ marginTop: 4 }}>
+              <div style={{ marginTop: 8, display: "flex", gap: 8 }}>
                 <Button
-                  type="link"
+                  type="text"
                   size="small"
-                  style={{ paddingLeft: 0 }}
+                  icon={<MessageOutlined />}
                   onClick={() => setReplyTo(item)}
+                  style={{
+                    color: "#667eea",
+                    fontSize: 12,
+                    height: 24,
+                    padding: "0 8px",
+                  }}
                 >
                   Trả lời
                 </Button>
 
                 {String(item.user_id || item.user?.id) === String(userId) && (
                   <Button
-                    type="link"
+                    type="text"
                     size="small"
                     danger
-                    style={{ paddingLeft: 8 }}
+                    icon={<DeleteOutlined />}
                     onClick={() => handleDelete(item.id)}
+                    style={{
+                      fontSize: 12,
+                      height: 24,
+                      padding: "0 8px",
+                    }}
                   >
                     Xóa
                   </Button>
@@ -226,16 +306,26 @@ const CommentSection = ({ podcastId }) => {
               </div>
 
               {item.replies?.length > 0 && depth === 0 && (
-                <div style={{ marginTop: 4 }}>
+                <div style={{ marginTop: 8 }}>
                   <Button
                     type="link"
                     size="small"
-                    style={{ paddingLeft: 0 }}
+                    icon={
+                      expanded[item.id] ? (
+                        <EyeInvisibleOutlined />
+                      ) : (
+                        <EyeOutlined />
+                      )
+                    }
                     onClick={() => toggleReplies(item.id)}
+                    style={{
+                      paddingLeft: 0,
+                      fontSize: 12,
+                      color: "#667eea",
+                      height: 24,
+                    }}
                   >
-                    {expanded[item.id]
-                      ? "Ẩn trả lời"
-                      : `Xem ${item.replies.length} trả lời`}
+                    {expanded[item.id] ? "Ẩn trả lời" : `Xem trả lời`}
                   </Button>
                 </div>
               )}
@@ -250,51 +340,136 @@ const CommentSection = ({ podcastId }) => {
   };
 
   return (
-    <div
+    <Card
       style={{
-        borderRadius: 12,
-        border: "1px solid #eee",
-        padding: 16,
-        background: "#fff",
+        borderRadius: 16,
+        border: "none",
       }}
+      bodyStyle={{ padding: 24 }}
     >
-      <List
-        itemLayout="vertical"
-        dataSource={comments || []}
-        renderItem={(item) => renderComment(item, 0)}
-      />
+      <div style={{ marginBottom: 24 }}>
+        <Text
+          strong
+          style={{
+            fontSize: 18,
+            display: "flex",
+            alignItems: "center",
+            gap: 8,
+          }}
+        >
+          <MessageOutlined style={{ color: "#667eea" }} /> Bình luận (
+          {comments.length})
+        </Text>
+      </div>
 
-      <div style={{ marginTop: 16 }}>
+      {/* COMMENT INPUT SECTION */}
+      <div
+        style={{
+          borderRadius: 12,
+          padding: 16,
+          marginBottom: 24,
+          border: "1px solid #f0f0f0",
+        }}
+      >
         {replyTo && (
-          <div style={{ marginBottom: 8 }}>
-            Đang trả lời <strong>{replyTo.user_name || "ẩn danh"}</strong>:{" "}
-            <span style={{ color: "#666" }}>
-              {replyTo.content.slice(0, 50)}...
-            </span>
-            <Button type="link" size="small" onClick={() => setReplyTo(null)}>
-              Hủy
-            </Button>
+          <div
+            style={{
+              marginBottom: 12,
+              padding: "8px 12px",
+              borderRadius: 8,
+              border: "1px solid #e6f7ff",
+            }}
+          >
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "flex-start",
+                marginBottom: 4,
+              }}
+            >
+              <Text strong style={{ fontSize: 12, color: "#1890ff" }}>
+                Đang trả lời {replyTo.user_name || "ẩn danh"}
+              </Text>
+              <Button
+                type="text"
+                size="small"
+                icon={<CloseOutlined />}
+                onClick={() => setReplyTo(null)}
+                style={{ height: 20, width: 20, minWidth: 20 }}
+              />
+            </div>
+            <Text style={{ fontSize: 12 }}>
+              {replyTo.content.slice(0, 80)}...
+            </Text>
           </div>
         )}
 
         <TextArea
           rows={3}
-          placeholder="Viết bình luận..."
+          placeholder="Viết bình luận của bạn..."
           value={content}
           onChange={(e) => setContent(e.target.value)}
+          style={{
+            borderRadius: 8,
+            border: "1px solid #e8e8e8",
+            resize: "vertical",
+          }}
         />
-        <div style={{ textAlign: "right", marginTop: 8 }}>
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+            marginTop: 12,
+          }}
+        >
+          <Text type="secondary" style={{ fontSize: 12 }}>
+            {token
+              ? "Bình luận hiển thị " + (storedUser.full_name || "Người dùng")
+              : "Vui lòng đăng nhập để bình luận"}
+          </Text>
           <Button
             type="primary"
             loading={loading}
             onClick={handleSubmit}
             disabled={!content.trim()}
+            icon={<SendOutlined />}
+            style={{
+              background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+              border: "none",
+              borderRadius: 8,
+              fontWeight: 500,
+              height: 36,
+              padding: "0 20px",
+            }}
           >
-            Gửi
+            Gửi bình luận
           </Button>
         </div>
       </div>
-    </div>
+
+      <Divider style={{ margin: "16px 0" }} />
+
+      {/* COMMENTS LIST */}
+      {comments.length === 0 ? (
+        <div style={{ textAlign: "center", padding: "40px 20px" }}>
+          <MessageOutlined
+            style={{ fontSize: 48, color: "#d9d9d9", marginBottom: 16 }}
+          />
+          <Text type="secondary" style={{ display: "block" }}>
+            Chưa có bình luận nào
+          </Text>
+          <Text type="secondary" style={{ fontSize: 12 }}>
+            Hãy là người đầu tiên bình luận về podcast này
+          </Text>
+        </div>
+      ) : (
+        <div style={{ maxHeight: 600, overflow: "auto" }}>
+          {comments.map((item) => renderComment(item, 0))}
+        </div>
+      )}
+    </Card>
   );
 };
 

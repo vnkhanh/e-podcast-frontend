@@ -21,7 +21,6 @@ import {
   updatePodcast,
   listSubjects,
   listCategories,
-  listTopics,
   listTags,
   createChapter,
   listChaptersBySubject,
@@ -41,7 +40,6 @@ const EditPodcast = () => {
   const [subjects, setSubjects] = useState([]);
   const [chapters, setChapters] = useState([]);
   const [categories, setCategories] = useState([]);
-  const [topics, setTopics] = useState([]);
   const [tags, setTags] = useState([]);
 
   const [selectedSubject, setSelectedSubject] = useState(null);
@@ -51,15 +49,13 @@ const EditPodcast = () => {
   useEffect(() => {
     (async () => {
       try {
-        const [sub, cat, top, tg] = await Promise.all([
+        const [sub, cat, tg] = await Promise.all([
           listSubjects(),
           listCategories(),
-          listTopics(),
           listTags(),
         ]);
         setSubjects(sub);
         setCategories(cat);
-        setTopics(top);
         setTags(tg);
       } catch (err) {
         console.error("Lỗi load dữ liệu:", err);
@@ -81,7 +77,6 @@ const EditPodcast = () => {
           subject_id: data.chapter?.subject?.id,
           chapter_id: data.chapter?.id,
           category_ids: data.categories?.map((c) => c.id),
-          topic_ids: data.topics?.map((t) => t.id),
           tags_combined: data.tags?.map((t) => t.id),
           status: data.status,
         });
@@ -149,11 +144,6 @@ const EditPodcast = () => {
     // Danh mục
     (values.category_ids || []).forEach((id) =>
       formData.append("category_ids[]", id)
-    );
-
-    // Chủ đề
-    (values.topic_ids || []).forEach((id) =>
-      formData.append("topic_ids[]", id)
     );
 
     // Tags
@@ -344,16 +334,7 @@ const EditPodcast = () => {
             </Select>
           </Form.Item>
 
-          <Form.Item name="topic_ids" label="Chủ đề">
-            <Select mode="multiple" placeholder="Chọn chủ đề">
-              {topics.map((t) => (
-                <Option key={t.id} value={t.id}>
-                  {t.name}
-                </Option>
-              ))}
-            </Select>
-          </Form.Item>
-
+          {/*Thẻ tag*/}
           <Form.Item name="tags_combined" label="Thẻ tag">
             <Select
               mode="tags"

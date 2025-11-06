@@ -24,9 +24,9 @@ import {
   HeartOutlined,
   PlayCircleOutlined,
 } from "@ant-design/icons";
-import { getCategoryPodcasts } from "../../services/api_podcast";
-import { formatTime } from "../../utils/helpers";
-import { getAllListeningHistory } from "../../services/api_history";
+import { getCategoryPodcasts } from "../../../services/api_podcast";
+import { formatTime } from "../../../utils/helpers";
+import { getAllListeningHistory } from "../../../services/api_history";
 
 const { Title, Paragraph, Text } = Typography;
 const { Search } = Input;
@@ -343,7 +343,7 @@ export default function CategoryPodcastsPage() {
                 </Tooltip>
 
                 <Paragraph
-                  ellipsis={{ rows: 2 }}
+                  ellipsis={{ rows: 1 }}
                   style={{
                     fontSize: 13,
                     color: "#6b7280",

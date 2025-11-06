@@ -22,7 +22,6 @@ const CollapsibleSummary = ({ text }) => {
         style={{
           whiteSpace: "normal",
           lineHeight: "1.5",
-          color: "#444",
           fontSize: 15,
           fontStyle: "italic",
           textAlign: "justify",

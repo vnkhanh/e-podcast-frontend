@@ -21,7 +21,6 @@ import {
   uploadPodcast,
   listSubjects,
   listCategories,
-  listTopics,
   listTags,
   createChapter,
   listChaptersBySubject,
@@ -37,7 +36,6 @@ const CreatePodcastUpload = () => {
   const [subjects, setSubjects] = useState([]);
   const [chapters, setChapters] = useState([]);
   const [categories, setCategories] = useState([]);
-  const [topics, setTopics] = useState([]);
   const [tags, setTags] = useState([]);
   // const [loading, setLoading] = useState(false);
   const [selectedSubject, setSelectedSubject] = useState(null);
@@ -48,15 +46,13 @@ const CreatePodcastUpload = () => {
   useEffect(() => {
     (async () => {
       try {
-        const [sub, cat, top, tg] = await Promise.all([
+        const [sub, cat, tg] = await Promise.all([
           listSubjects(),
           listCategories(),
-          listTopics(),
           listTags(),
         ]);
         setSubjects(sub);
         setCategories(cat);
-        setTopics(top);
         setTags(tg);
       } catch (err) {
         console.error("Lỗi load dữ liệu:", err);
@@ -137,11 +133,6 @@ const CreatePodcastUpload = () => {
     // Danh mục
     (values.category_ids || []).forEach((id) =>
       formData.append("category_ids[]", id)
-    );
-
-    // Chủ đề
-    (values.topic_ids || []).forEach((id) =>
-      formData.append("topic_ids[]", id)
     );
 
     // Tag (id cũ và tag mới)
@@ -360,21 +351,6 @@ const CreatePodcastUpload = () => {
               {categories.map((c) => (
                 <Option key={c.id} value={c.id}>
                   {c.name}
-                </Option>
-              ))}
-            </Select>
-          </Form.Item>
-
-          {/* Chủ đề */}
-          <Form.Item
-            name="topic_ids"
-            label="Chủ đề"
-            rules={[{ required: true, message: "Chọn ít nhất 1 chủ đề" }]}
-          >
-            <Select mode="multiple" placeholder="Chọn chủ đề">
-              {topics.map((t) => (
-                <Option key={t.id} value={t.id}>
-                  {t.name}
                 </Option>
               ))}
             </Select>

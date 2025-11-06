@@ -84,7 +84,7 @@ export const getCategoryDetail = async (id) => {
 /////USER
 export async function listCategoriesUser() {
   const token = localStorage.getItem("token");
-  const res = await axios.get(`${API_BASE_URL}/user/categories`, {
+  const res = await axios.get(`${API_BASE_URL}/user/categories/featured`, {
     headers: {
       Authorization: `Bearer ${token}`,
     },

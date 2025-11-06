@@ -24,7 +24,6 @@ import {
   DeleteOutlined,
 } from "@ant-design/icons";
 import CustomAudioPlayer from "../AudioPlayer";
-import PodcastFavoriteButton from "./PodcastFavoriteButton";
 import SharePodcastButton from "./SharePodcastButton";
 import {
   createPodcastNote,
@@ -243,10 +242,6 @@ const NowPlayingBar = ({ playerState, userToken }) => {
                   {currentPodcast?.title || "Không có tiêu đề"}
                 </Text>
               </Space>
-              <PodcastFavoriteButton
-                podcastId={currentPodcast?.id}
-                userToken={userToken}
-              />
             </Space>
           </Col>
 

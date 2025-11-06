@@ -134,15 +134,13 @@ const AppHeader = () => {
     { key: "home", label: "Trang chủ" },
     { key: "courses", label: "Môn học" },
     { key: "category", label: "Danh mục" },
-    { key: "about", label: "Chủ đề" },
     { key: "podcasts", label: "Podcast" },
   ];
   const handleMenuClick = ({ key }) => {
     if (key === "home") navigate("/");
     else if (key === "courses") navigate("/subjects");
     else if (key === "podcasts") navigate("/podcasts");
-    else if (key === "blog") navigate("/blog");
-    else if (key === "about") navigate("/about");
+    else if (key === "category") navigate("/category");
   };
 
   const userMenuItems = [
@@ -152,8 +150,11 @@ const AppHeader = () => {
       icon: isDarkMode ? <BulbOutlined /> : <MoonOutlined />,
       label: isDarkMode ? "Chế độ sáng" : "Chế độ tối",
     },
+
+    ...(user?.role === "admin" || user?.role === "teacher"
+      ? [{ key: "settings", icon: <SettingOutlined />, label: "Trang quản lý" }]
+      : []),
     { key: "logout", icon: <LogoutOutlined />, label: "Đăng xuất" },
-    { key: "settings", icon: <SettingOutlined />, label: "Quản lý" },
   ];
 
   const handleUserMenuClick = ({ key }) => {
