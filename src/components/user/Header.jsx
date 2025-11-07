@@ -23,12 +23,12 @@ import {
   CustomerServiceOutlined,
   FileSearchOutlined,
 } from "@ant-design/icons";
-import { useNavigate } from "react-router-dom";
 import { ThemeContext } from "../../context/useTheme";
 import { jwtDecode } from "jwt-decode";
 import { searchAutocomplete } from "../../services/api_search"; // <-- import API
 import { connectUserWebSocket } from "../../services/ws_user";
 import RealtimeNotification from "../RealtimeNotification";
+import { useNavigate, useLocation } from "react-router-dom";
 const { Header } = Layout;
 const { Title } = Typography;
 
@@ -38,6 +38,8 @@ const AppHeader = () => {
   const user = token ? JSON.parse(localStorage.getItem("user")) : null;
   const navigate = useNavigate();
 
+  const location = useLocation(); //lấy URL hiện tại
+  const { pathname } = location;
   const [searchText, setSearchText] = useState("");
   const [options, setOptions] = useState([]);
 
@@ -130,17 +132,26 @@ const AppHeader = () => {
     return () => ws?.close();
   }, [navigate]);
 
+  const getSelectedKey = () => {
+    if (pathname === "/" || pathname.startsWith("/home")) return "home";
+    if (pathname.startsWith("/subjects")) return "courses";
+    if (pathname.startsWith("/categories")) return "categories";
+    if (pathname.startsWith("/podcasts") || pathname.startsWith("/podcast"))
+      return "podcasts";
+    return "home";
+  };
+  const selectedKey = getSelectedKey();
   const menuItems = [
     { key: "home", label: "Trang chủ" },
     { key: "courses", label: "Môn học" },
-    { key: "category", label: "Danh mục" },
+    { key: "categories", label: "Danh mục" },
     { key: "podcasts", label: "Podcast" },
   ];
   const handleMenuClick = ({ key }) => {
     if (key === "home") navigate("/");
     else if (key === "courses") navigate("/subjects");
     else if (key === "podcasts") navigate("/podcasts");
-    else if (key === "category") navigate("/category");
+    else if (key === "categories") navigate("/categories");
   };
 
   const userMenuItems = [
@@ -232,6 +243,7 @@ const AppHeader = () => {
           <Menu
             mode="horizontal"
             defaultSelectedKeys={["home"]}
+            selectedKeys={[selectedKey]}
             items={menuItems}
             onClick={handleMenuClick}
             theme={isDarkMode ? "dark" : "light"}
@@ -259,8 +271,8 @@ const AppHeader = () => {
               value={searchText}
               onChange={handleSearchChange}
               onSelect={handleSelect}
-              dropdownMatchSelectWidth={300}
-              dropdownRender={(menu) => (
+              popupMatchSelectWidth={300}
+              popupRender={(menu) => (
                 <div style={{ maxHeight: 300, overflowY: "auto" }}>
                   {menu}
                   {options.length > 0 && (

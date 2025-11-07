@@ -98,14 +98,6 @@ const AdminLayout = () => {
       link: "/admin/user",
     });
   }
-  if (user?.role === "admin") {
-    menuItems.push({
-      key: "page",
-      icon: <ContainerFilled />,
-      label: "Trang",
-      link: "/admin/page",
-    });
-  }
 
   return (
     <Layout style={{ minHeight: "100vh" }}>
@@ -126,7 +118,10 @@ const AdminLayout = () => {
         <Menu
           theme="dark"
           mode="inline"
-          selectedKeys={[location.pathname]}
+          selectedKeys={[
+            menuItems.find((item) => location.pathname.startsWith(item.link))
+              ?.link || location.pathname,
+          ]}
           items={menuItems.map((i) => ({
             key: i.link,
             icon: i.icon,
@@ -138,11 +133,11 @@ const AdminLayout = () => {
       <Layout>
         <Header
           style={{
-            background: "#fff",
             padding: "0 16px",
             display: "flex",
             justifyContent: "space-between",
             alignItems: "center",
+            background: "white",
           }}
         >
           <h3 style={{ margin: 0 }}>Hệ thống quản trị</h3>
@@ -170,7 +165,7 @@ const AdminLayout = () => {
         </Header>
 
         <Content style={{ margin: "16px" }}>
-          <div style={{ padding: 24, background: "#fff", minHeight: 360 }}>
+          <div style={{ padding: 24, minHeight: 360 }}>
             <Outlet />
           </div>
         </Content>

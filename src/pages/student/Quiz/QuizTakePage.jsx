@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useContext } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import {
   Card,
@@ -22,12 +22,15 @@ import {
   ClockCircleOutlined,
 } from "@ant-design/icons";
 import { getQuizQuestions, submitQuiz } from "../../../services/api_quiz";
+import { ThemeContext } from "../../../context/useTheme";
 
 const { Title, Text, Paragraph } = Typography;
 
 const QuizTakePage = () => {
   const { id } = useParams(); // quiz_set_id
   const navigate = useNavigate();
+  const { isDarkMode } = useContext(ThemeContext);
+
   const [loading, setLoading] = useState(false);
   const [quizSet, setQuizSet] = useState(null);
   const [questions, setQuestions] = useState([]);
@@ -66,21 +69,22 @@ const QuizTakePage = () => {
 
   const handleSubmit = async () => {
     const unanswered = questions.filter((q) => !answers[q.id]);
+    const confirmProps = {
+      okText: "Nộp bài",
+      cancelText: "Tiếp tục làm",
+      onOk: () => submitQuizConfirm(),
+    };
     if (unanswered.length > 0) {
       Modal.confirm({
         title: "Còn câu hỏi chưa trả lời",
         content: `Bạn còn ${unanswered.length} câu chưa trả lời. Bạn có chắc muốn nộp bài?`,
-        okText: "Nộp bài",
-        cancelText: "Tiếp tục làm",
-        onOk: () => submitQuizConfirm(),
+        ...confirmProps,
       });
     } else {
       Modal.confirm({
         title: "Nộp bài?",
         content: "Bạn có chắc chắn muốn nộp bài làm không?",
-        okText: "Nộp",
-        cancelText: "Hủy",
-        onOk: () => submitQuizConfirm(),
+        ...confirmProps,
       });
     }
   };
@@ -122,7 +126,9 @@ const QuizTakePage = () => {
         style={{
           textAlign: "center",
           padding: "120px 0",
-          background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+          background: isDarkMode
+            ? "linear-gradient(135deg, #111827 0%, #1f2937 100%)"
+            : "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
           minHeight: "100vh",
         }}
       >
@@ -134,9 +140,9 @@ const QuizTakePage = () => {
   return (
     <div
       style={{
-        background: "linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%)",
         minHeight: "100vh",
         padding: 24,
+        color: isDarkMode ? "#e5e7eb" : "#000",
       }}
     >
       <div style={{ maxWidth: 900, margin: "0 auto" }}>
@@ -205,7 +211,14 @@ const QuizTakePage = () => {
 
           {/* Questions */}
           {questions.length === 0 ? (
-            <Card style={{ borderRadius: 16, textAlign: "center" }}>
+            <Card
+              style={{
+                borderRadius: 16,
+                textAlign: "center",
+                background: isDarkMode ? "#1f2937" : "white",
+                color: isDarkMode ? "#e5e7eb" : "#000",
+              }}
+            >
               <Text type="secondary">Bộ trắc nghiệm này chưa có câu hỏi.</Text>
             </Card>
           ) : (
@@ -215,14 +228,23 @@ const QuizTakePage = () => {
                   key={q.id}
                   style={{
                     borderRadius: 16,
-                    background: "white",
-                    boxShadow: "0 4px 12px rgba(0,0,0,0.05)",
+                    background: isDarkMode ? "#1f2937" : "white",
+                    boxShadow: isDarkMode
+                      ? "0 2px 6px rgba(0,0,0,0.3)"
+                      : "0 4px 12px rgba(0,0,0,0.05)",
                     transition: "all 0.3s ease",
+                    color: isDarkMode ? "#e5e7eb" : "#000",
                   }}
                   className="quiz-question-card"
                   title={
                     <Space>
-                      <Text strong style={{ fontSize: 16 }}>
+                      <Text
+                        strong
+                        style={{
+                          fontSize: 16,
+                          color: isDarkMode ? "#fff" : "#000",
+                        }}
+                      >
                         Câu {index + 1}
                       </Text>
                       {answers[q.id] && (
@@ -276,15 +298,22 @@ const QuizTakePage = () => {
                           value={opt.id}
                           style={{
                             padding: "12px 16px",
-                            border: "1px solid #d9d9d9",
+                            border: isDarkMode
+                              ? "1px solid #374151"
+                              : "1px solid #d9d9d9",
                             borderRadius: 8,
                             width: "100%",
                             marginBottom: 8,
                             transition: "all 0.2s ease",
                             background:
                               answers[q.id] === opt.id
-                                ? "linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%)"
+                                ? isDarkMode
+                                  ? "linear-gradient(135deg, #312e81 0%, #4338ca 100%)"
+                                  : "linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%)"
+                                : isDarkMode
+                                ? "#111827"
                                 : "white",
+                            color: isDarkMode ? "#f3f4f6" : "#000",
                           }}
                         >
                           {opt.option_text}
@@ -295,7 +324,13 @@ const QuizTakePage = () => {
                 </Card>
               ))}
 
-              <Card style={{ borderRadius: 16, textAlign: "center" }}>
+              <Card
+                style={{
+                  borderRadius: 16,
+                  textAlign: "center",
+                  background: isDarkMode ? "#1f2937" : "white",
+                }}
+              >
                 <Button
                   type="primary"
                   icon={<SendOutlined />}
@@ -326,6 +361,7 @@ const QuizTakePage = () => {
           footer={null}
           onCancel={() => setSourceModal({ open: false, text: "", hint: "" })}
           title="Gợi ý từ câu hỏi"
+          style={{ color: isDarkMode ? "#fff" : "#000" }}
         >
           {sourceModal.hint && (
             <Paragraph italic style={{ color: "#faad14", marginBottom: 16 }}>
@@ -352,7 +388,7 @@ const QuizTakePage = () => {
           {sourceModal.showSource && (
             <div
               style={{
-                background: "#fafafa",
+                background: isDarkMode ? "#374151" : "#fafafa",
                 borderRadius: 8,
                 padding: 12,
                 marginTop: 8,
@@ -389,7 +425,10 @@ const QuizTakePage = () => {
           title="Kết quả bài làm"
           width={800}
         >
-          <Title level={3} style={{ textAlign: "center", color: "#52c41a" }}>
+          <Title
+            level={3}
+            style={{ textAlign: "center", color: "#52c41a", marginBottom: 20 }}
+          >
             Điểm của bạn: {score?.toFixed(2)} / 10
           </Title>
 
@@ -412,7 +451,12 @@ const QuizTakePage = () => {
                 key={q.question_id}
                 type="inner"
                 title={`Câu ${idx + 1}: ${q.question}`}
-                style={{ marginBottom: 16, borderRadius: 12 }}
+                style={{
+                  marginBottom: 16,
+                  borderRadius: 12,
+                  background: isDarkMode ? "#1f2937" : "#fff",
+                  color: isDarkMode ? "#e5e7eb" : "#000",
+                }}
               >
                 <Radio.Group
                   value={selectedId || null}
@@ -433,11 +477,15 @@ const QuizTakePage = () => {
                               ? "green"
                               : isSelected
                               ? "red"
+                              : isDarkMode
+                              ? "#e5e7eb"
                               : "inherit",
                             background: isCorrect
                               ? "#f6ffed"
                               : isSelected && !isCorrect
                               ? "#fff1f0"
+                              : isDarkMode
+                              ? "#111827"
                               : "white",
                             padding: 8,
                             borderRadius: 6,
@@ -457,10 +505,13 @@ const QuizTakePage = () => {
           })}
         </Modal>
       </div>
+
       <style jsx>{`
         .quiz-question-card:hover {
           transform: translateY(-2px);
-          box-shadow: 0 6px 16px rgba(0, 0, 0, 0.08);
+          box-shadow: ${isDarkMode
+            ? "0 4px 12px rgba(255,255,255,0.1)"
+            : "0 6px 16px rgba(0, 0, 0, 0.08)"};
         }
       `}</style>
     </div>

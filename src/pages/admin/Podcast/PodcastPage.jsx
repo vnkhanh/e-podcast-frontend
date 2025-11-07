@@ -21,6 +21,7 @@ import {
   EditOutlined,
   EyeFilled,
   HeartFilled,
+  ReloadOutlined,
 } from "@ant-design/icons";
 import { useNavigate } from "react-router-dom";
 import { listPodcasts, deletePodcast } from "../../../services/api_podcast";
@@ -102,12 +103,28 @@ const PodcastPage = () => {
   return (
     <div style={{ padding: 24 }}>
       {/* Header */}
-      <div style={{ marginBottom: 24 }}>
-        <Title level={2} style={{ margin: 0 }}>
-          Quản lý Podcast
-        </Title>
-        <Text type="secondary">Tạo và quản lý các podcast của bạn</Text>
-      </div>
+      <Row justify="space-between" align="middle" style={{ marginBottom: 24 }}>
+        <Col>
+          <Title level={2} style={{ marginBottom: 0 }}>
+            Quản lý Podcast
+          </Title>
+          <Text type="secondary">Tạo và quản lý podcast của bạn</Text>
+        </Col>
+        <Col>
+          <Space>
+            <Button icon={<ReloadOutlined />} onClick={() => fetchData()}>
+              Làm mới
+            </Button>
+            <Button
+              type="primary"
+              icon={<PlusOutlined />}
+              onClick={() => navigate("/teacher/podcast/create")}
+            >
+              Thêm podcast
+            </Button>
+          </Space>
+        </Col>
+      </Row>
 
       {/* Thanh công cụ */}
       <div
@@ -144,15 +161,6 @@ const PodcastPage = () => {
             <Option value="draft">Bản nháp</Option>
           </Select>
         </div>
-
-        <Button
-          type="primary"
-          icon={<PlusOutlined />}
-          onClick={() => navigate("/teacher/podcast/create")}
-          size="middle"
-        >
-          Tạo Podcast
-        </Button>
       </div>
 
       {/* Danh sách podcast */}

@@ -7,21 +7,24 @@ import {
   Space,
   message,
   Modal,
+  Row,
+  Col,
   Form,
   Switch,
   Popconfirm,
+  Typography,
   Tag,
 } from "antd";
 import {
   listUsers,
   createLecturer,
   ToggleUserStatus,
-  deleteUser,
 } from "../../../services/api_user";
 import dayjs from "dayjs";
-
+import { PlusOutlined, ReloadOutlined } from "@ant-design/icons";
 const { Search } = Input;
 const { Option } = Select;
+const { Title, Text } = Typography;
 
 const UserList = () => {
   const [users, setUsers] = useState([]);
@@ -113,34 +116,6 @@ const UserList = () => {
       key: "created_at",
       render: (text) => dayjs(text).format("DD/MM/YYYY HH:mm"),
     },
-    {
-      title: "Hành động",
-      key: "action",
-      render: (_, record) => (
-        <Space>
-          <Button
-            size="small"
-            danger
-            onClick={async () => {
-              try {
-                await deleteUser(record.id);
-                message.success("Xoá user thành công");
-                fetchUsers(
-                  pagination.page,
-                  pagination.limit,
-                  filters.name,
-                  filters.role
-                );
-              } catch (err) {
-                message.error(err.response?.data?.error || "Lỗi khi xoá user");
-              }
-            }}
-          >
-            Xoá
-          </Button>
-        </Space>
-      ),
-    },
   ];
 
   // Pagination change
@@ -174,7 +149,35 @@ const UserList = () => {
 
   return (
     <div style={{ padding: 24 }}>
-      <h1 style={{ marginBottom: 16 }}>Quản lý Người dùng</h1>
+      <div style={{ marginBottom: 24 }}>
+        {/* Header */}
+        <Row
+          justify="space-between"
+          align="middle"
+          style={{ marginBottom: 24 }}
+        >
+          <Col>
+            <Title level={2} style={{ marginBottom: 0 }}>
+              Quản lý Người dùng
+            </Title>
+            <Text type="secondary">Tạo và quản lý tài khoản người dùng</Text>
+          </Col>
+          <Col>
+            <Space>
+              <Button icon={<ReloadOutlined />} onClick={() => fetchUsers()}>
+                Làm mới
+              </Button>
+              <Button
+                type="primary"
+                icon={<PlusOutlined />}
+                onClick={() => setModalVisible(true)}
+              >
+                Tạo tài khoản giảng viên
+              </Button>
+            </Space>
+          </Col>
+        </Row>
+      </div>{" "}
       <Space style={{ marginBottom: 16 }}>
         <Search
           placeholder="Tìm theo tên"
@@ -197,11 +200,7 @@ const UserList = () => {
         <Button type="primary" onClick={handleSearch}>
           Lọc
         </Button>
-        <Button type="default" onClick={() => setModalVisible(true)}>
-          Tạo giảng viên
-        </Button>
       </Space>
-
       <Table
         columns={columns}
         dataSource={users}
@@ -216,7 +215,6 @@ const UserList = () => {
         }}
         onChange={handleTableChange}
       />
-
       <Modal
         title="Tạo giảng viên"
         visible={modalVisible}

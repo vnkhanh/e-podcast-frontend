@@ -127,7 +127,6 @@ export default function CategoryPodcastsPage() {
           padding: "20px 24px",
           borderRadius: 14,
           marginBottom: 36,
-          background: "rgba(255,255,255,0.9)",
           boxShadow: "0 4px 16px rgba(0,0,0,0.06)",
           display: "flex",
           flexWrap: "wrap",
@@ -255,7 +254,6 @@ export default function CategoryPodcastsPage() {
                         position: "absolute",
                         bottom: 16,
                         right: 16,
-                        background: "rgba(255,255,255,0.9)",
                         color: "#667eea",
                         border: "none",
                         transition: "all 0.3s ease",
@@ -328,15 +326,8 @@ export default function CategoryPodcastsPage() {
                     style={{
                       marginBottom: 6,
                       fontWeight: 600,
-                      color: "#1f1f1f",
                       transition: "color 0.3s ease",
                     }}
-                    onMouseEnter={(e) =>
-                      (e.currentTarget.style.color = "#764ba2")
-                    }
-                    onMouseLeave={(e) =>
-                      (e.currentTarget.style.color = "#1f1f1f")
-                    }
                   >
                     {p.title}
                   </Title>
@@ -346,16 +337,9 @@ export default function CategoryPodcastsPage() {
                   ellipsis={{ rows: 1 }}
                   style={{
                     fontSize: 13,
-                    color: "#6b7280",
                     marginBottom: 10,
                     transition: "color 0.3s ease",
                   }}
-                  onMouseEnter={(e) =>
-                    (e.currentTarget.style.color = "#4f46e5")
-                  }
-                  onMouseLeave={(e) =>
-                    (e.currentTarget.style.color = "#6b7280")
-                  }
                 >
                   {p.description || "Không có mô tả."}
                 </Paragraph>
@@ -384,7 +368,6 @@ export default function CategoryPodcastsPage() {
           showSizeChanger={false}
           style={{
             padding: "8px 20px",
-            background: "white",
             borderRadius: 10,
             boxShadow: "0 2px 12px rgba(0,0,0,0.05)",
             display: "inline-block",

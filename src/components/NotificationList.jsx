@@ -1,12 +1,20 @@
-import React, { useState, useEffect } from "react";
-import { List, Badge, Button, message, Empty, Spin } from "antd";
+import React, { useState, useEffect, useContext } from "react";
+import {
+  List,
+  Badge,
+  Button,
+  message,
+  Empty,
+  Spin,
+  Typography,
+  Space,
+} from "antd";
 import {
   BellOutlined,
   DeleteOutlined,
   CheckOutlined,
   CommentOutlined,
   HeartOutlined,
-  HeartFilled,
   RetweetOutlined,
 } from "@ant-design/icons";
 import { useNavigate } from "react-router-dom";
@@ -17,12 +25,16 @@ import {
   deleteNotification,
   deleteReadNotifications,
 } from "../services/api_notifications";
+import { ThemeContext } from "../context/useTheme";
+
+const { Title, Text } = Typography;
 
 const NotificationList = () => {
   const [notifications, setNotifications] = useState([]);
   const [loading, setLoading] = useState(false);
   const [unreadCount, setUnreadCount] = useState(0);
   const navigate = useNavigate();
+  const { isDarkMode } = useContext(ThemeContext);
 
   // Lấy danh sách thông báo
   const fetchNotifications = async () => {
@@ -117,23 +129,11 @@ const NotificationList = () => {
     const iconStyle = { fontSize: 24 };
     switch (type) {
       case "comment_notification":
-        return (
-          <span style={iconStyle}>
-            <CommentOutlined />
-          </span>
-        );
+        return <CommentOutlined style={iconStyle} />;
       case "reply_notification":
-        return (
-          <span style={iconStyle}>
-            <RetweetOutlined />
-          </span>
-        );
+        return <RetweetOutlined style={iconStyle} />;
       case "favorite":
-        return (
-          <span style={iconStyle}>
-            <HeartOutlined />
-          </span>
-        );
+        return <HeartOutlined style={iconStyle} />;
       default:
         return <BellOutlined style={iconStyle} />;
     }
@@ -141,96 +141,206 @@ const NotificationList = () => {
 
   if (loading)
     return (
-      <div style={{ textAlign: "center", padding: 50 }}>
-        <Spin size="large" />
+      <div
+        style={{
+          textAlign: "center",
+          padding: 100,
+          minHeight: "100vh",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          background: isDarkMode ? "#111827" : "#fff",
+        }}
+      >
+        <Spin size="large" tip="Đang tải thông báo..." />
       </div>
     );
 
   return (
-    <div style={{ maxWidth: 800, margin: "0 auto", padding: 20 }}>
-      <div
-        style={{
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-          marginBottom: 16,
-        }}
-      >
-        <h2>
-          Thông báo <Badge count={unreadCount} style={{ marginLeft: 8 }} />
-        </h2>
-        <div>
-          <Button
-            icon={<CheckOutlined />}
-            onClick={handleMarkAllRead}
-            style={{ marginRight: 8 }}
-            disabled={unreadCount === 0}
+    <div
+      style={{
+        minHeight: "100vh",
+        padding: "24px",
+      }}
+    >
+      <div style={{ maxWidth: 800, margin: "0 auto" }}>
+        {/* Header */}
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+            marginBottom: 24,
+          }}
+        >
+          <Title
+            level={3}
+            style={{ color: isDarkMode ? "#e5e7eb" : "#000", margin: 0 }}
           >
-            Đọc tất cả
-          </Button>
-          <Button icon={<DeleteOutlined />} onClick={handleDeleteRead} danger>
-            Xóa đã đọc
-          </Button>
-        </div>
-      </div>
-
-      {notifications.length === 0 ? (
-        <Empty description="Không có thông báo" />
-      ) : (
-        <List
-          itemLayout="horizontal"
-          dataSource={notifications}
-          renderItem={(item) => (
-            <List.Item
-              onClick={() => handleNotificationClick(item)}
+            Thông báo{" "}
+            <Badge
+              count={unreadCount}
               style={{
-                cursor: "pointer",
-                padding: 16,
-                backgroundColor: item.is_read ? "#fff" : "#f0f8ff",
-                borderRadius: 8,
-                marginBottom: 8,
-                border: "1px solid #eee",
-                transition: "all 0.3s",
+                backgroundColor: isDarkMode ? "#6366f1" : "#1890ff",
+                marginLeft: 8,
               }}
-              actions={[
-                <Button
-                  type="text"
-                  danger
-                  icon={<DeleteOutlined />}
-                  onClick={(e) => handleDelete(item.id, e)}
-                  size="small"
-                >
-                  Xóa
-                </Button>,
-              ]}
+            />
+          </Title>
+
+          <Space>
+            <Button
+              icon={<CheckOutlined />}
+              onClick={handleMarkAllRead}
+              style={{
+                background: isDarkMode ? "#374151" : "#f0f0f0",
+                color: isDarkMode ? "#e5e7eb" : "#000",
+                border: "none",
+              }}
+              disabled={unreadCount === 0}
             >
-              <List.Item.Meta
-                avatar={getNotificationIcon(item.type)}
-                title={
-                  <div style={{ display: "flex", alignItems: "center" }}>
-                    <span
-                      style={{ fontWeight: item.is_read ? "normal" : "bold" }}
+              Đọc tất cả
+            </Button>
+            <Button
+              icon={<DeleteOutlined />}
+              onClick={handleDeleteRead}
+              danger
+              style={{
+                background: isDarkMode ? "#7f1d1d" : undefined,
+              }}
+            >
+              Xóa đã đọc
+            </Button>
+          </Space>
+        </div>
+
+        {notifications.length === 0 ? (
+          <div
+            style={{
+              borderRadius: 16,
+              padding: 40,
+            }}
+          >
+            <Empty
+              description="Không có thông báo"
+              image={Empty.PRESENTED_IMAGE_SIMPLE}
+              style={{ color: isDarkMode ? "#e5e7eb" : undefined }}
+            />
+          </div>
+        ) : (
+          <div
+            style={{
+              borderRadius: 16,
+              overflow: "hidden",
+              padding: 8,
+            }}
+          >
+            <List
+              itemLayout="horizontal"
+              dataSource={notifications}
+              renderItem={(item) => (
+                <List.Item
+                  onClick={() => handleNotificationClick(item)}
+                  style={{
+                    cursor: "pointer",
+                    padding: 16,
+                    marginBottom: 8,
+                    borderRadius: 12,
+                    border: isDarkMode
+                      ? "1px solid #374151"
+                      : "1px solid #f0f0f0",
+                    backgroundColor: item.is_read
+                      ? isDarkMode
+                        ? "#111827"
+                        : "#fff"
+                      : isDarkMode
+                      ? "#312e81"
+                      : "#f0f8ff",
+                    transition: "all 0.3s ease",
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.transform = "translateX(4px)";
+                    e.currentTarget.style.background = isDarkMode
+                      ? "linear-gradient(135deg, #1e293b 0%, #111827 100%)"
+                      : "linear-gradient(135deg, #f8f9ff 0%, #e3f2fd 100%)";
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.transform = "translateX(0px)";
+                    e.currentTarget.style.backgroundColor = item.is_read
+                      ? isDarkMode
+                        ? "#111827"
+                        : "#fff"
+                      : isDarkMode
+                      ? "#312e81"
+                      : "#f0f8ff";
+                  }}
+                  actions={[
+                    <Button
+                      type="text"
+                      danger
+                      icon={<DeleteOutlined />}
+                      onClick={(e) => handleDelete(item.id, e)}
+                      size="small"
+                      style={{
+                        color: isDarkMode ? "#fca5a5" : undefined,
+                      }}
                     >
-                      {item.title}
-                    </span>
-                    {!item.is_read && (
-                      <Badge status="processing" style={{ marginLeft: 8 }} />
-                    )}
-                  </div>
-                }
-                description={
-                  <div>
-                    <div style={{ marginBottom: 4 }}>{item.message}</div>
-                    <div style={{ fontSize: 12, color: "#999" }}>
-                      {new Date(item.created_at).toLocaleString("vi-VN")}
-                    </div>
-                  </div>
-                }
-              />
-            </List.Item>
-          )}
-        />
-      )}
+                      Xóa
+                    </Button>,
+                  ]}
+                >
+                  <List.Item.Meta
+                    avatar={getNotificationIcon(item.type)}
+                    title={
+                      <div
+                        style={{
+                          display: "flex",
+                          alignItems: "center",
+                          color: isDarkMode ? "#f3f4f6" : "#000",
+                        }}
+                      >
+                        <span
+                          style={{
+                            fontWeight: item.is_read ? "normal" : "bold",
+                          }}
+                        >
+                          {item.title}
+                        </span>
+                        {!item.is_read && (
+                          <Badge
+                            status="processing"
+                            style={{ marginLeft: 8 }}
+                            color={isDarkMode ? "#818cf8" : "#1890ff"}
+                          />
+                        )}
+                      </div>
+                    }
+                    description={
+                      <div>
+                        <div
+                          style={{
+                            marginBottom: 4,
+                            color: isDarkMode ? "#d1d5db" : "#555",
+                          }}
+                        >
+                          {item.message}
+                        </div>
+                        <div
+                          style={{
+                            fontSize: 12,
+                            color: isDarkMode ? "#9ca3af" : "#999",
+                          }}
+                        >
+                          {new Date(item.created_at).toLocaleString("vi-VN")}
+                        </div>
+                      </div>
+                    }
+                  />
+                </List.Item>
+              )}
+            />
+          </div>
+        )}
+      </div>
     </div>
   );
 };

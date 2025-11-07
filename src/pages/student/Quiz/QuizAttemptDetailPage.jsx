@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback } from "react";
+import React, { useEffect, useState, useCallback, useContext } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import {
   Card,
@@ -7,13 +7,11 @@ import {
   Button,
   Space,
   Tag,
-  Divider,
   message,
   Empty,
   Progress,
   Row,
   Col,
-  Avatar,
   Badge,
 } from "antd";
 import {
@@ -25,15 +23,17 @@ import {
   PauseCircleOutlined,
   ClockCircleOutlined,
   TrophyOutlined,
-  BulbOutlined,
 } from "@ant-design/icons";
 import { getQuizAttemptDetail } from "../../../services/api_quiz";
+import { ThemeContext } from "../../../context/useTheme";
 
 const { Title, Text } = Typography;
 
 const QuizAttemptDetailPage = () => {
   const { attemptId } = useParams();
   const navigate = useNavigate();
+  const { isDarkMode } = useContext(ThemeContext);
+
   const [loading, setLoading] = useState(true);
   const [attempt, setAttempt] = useState(null);
   const [playingQuestion, setPlayingQuestion] = useState(null);
@@ -42,7 +42,6 @@ const QuizAttemptDetailPage = () => {
     setLoading(true);
     try {
       const res = await getQuizAttemptDetail(attemptId);
-      console.log("Detail API response:", res);
       setAttempt(res.attempt);
     } catch (err) {
       console.error(err);
@@ -58,11 +57,9 @@ const QuizAttemptDetailPage = () => {
 
   const handleAudioPlay = (questionId) => {
     if (playingQuestion === questionId) {
-      // Pause logic would go here
       setPlayingQuestion(null);
     } else {
       setPlayingQuestion(questionId);
-      // Audio play logic would go here
     }
   };
 
@@ -72,7 +69,9 @@ const QuizAttemptDetailPage = () => {
         style={{
           textAlign: "center",
           padding: "100px 0",
-          background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+          background: isDarkMode
+            ? "linear-gradient(135deg, #0f172a 0%, #1e293b 100%)"
+            : "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
           minHeight: "100vh",
           display: "flex",
           alignItems: "center",
@@ -91,12 +90,17 @@ const QuizAttemptDetailPage = () => {
     return (
       <div
         style={{
-          background: "linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%)",
+          background: isDarkMode
+            ? "linear-gradient(135deg, #1e293b 0%, #0f172a 100%)"
+            : "linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%)",
           minHeight: "100vh",
           padding: "24px",
         }}
       >
-        <Empty description="Chưa có dữ liệu câu hỏi nào" />
+        <Empty
+          description="Chưa có dữ liệu câu hỏi nào"
+          style={{ color: isDarkMode ? "white" : undefined }}
+        />
       </div>
     );
 
@@ -108,9 +112,9 @@ const QuizAttemptDetailPage = () => {
   return (
     <div
       style={{
-        background: "linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%)",
         minHeight: "100vh",
         padding: "24px",
+        color: isDarkMode ? "#e5e7eb" : "#000",
       }}
     >
       <div style={{ maxWidth: 1200, margin: "0 auto" }}>
@@ -206,8 +210,9 @@ const QuizAttemptDetailPage = () => {
               style={{
                 textAlign: "center",
                 borderRadius: 12,
-                background: "#f0f9ff",
+                background: isDarkMode ? "#052e16" : "#f0f9ff",
                 border: "none",
+                color: isDarkMode ? "#bbf7d0" : undefined,
               }}
             >
               <div
@@ -223,8 +228,9 @@ const QuizAttemptDetailPage = () => {
               style={{
                 textAlign: "center",
                 borderRadius: 12,
-                background: "#fff2f0",
+                background: isDarkMode ? "#450a0a" : "#fff2f0",
                 border: "none",
+                color: isDarkMode ? "#fecaca" : undefined,
               }}
             >
               <div
@@ -239,7 +245,11 @@ const QuizAttemptDetailPage = () => {
 
         {/* Questions List */}
         <div
-          style={{ background: "white", borderRadius: 16, overflow: "hidden" }}
+          style={{
+            background: isDarkMode ? "#1f2937" : "white",
+            borderRadius: 16,
+            overflow: "hidden",
+          }}
         >
           {histories.map((history, index) => {
             const question = history.question || history.Question;
@@ -254,11 +264,19 @@ const QuizAttemptDetailPage = () => {
                 key={index}
                 style={{
                   padding: 24,
-                  borderBottom: "1px solid #f0f0f0",
+                  borderBottom: isDarkMode
+                    ? "1px solid #374151"
+                    : "1px solid #f0f0f0",
                   background: isCorrect
-                    ? "#f6ffed"
+                    ? isDarkMode
+                      ? "#064e3b"
+                      : "#f6ffed"
                     : isBlank
-                    ? "#fffbe6"
+                    ? isDarkMode
+                      ? "#78350f"
+                      : "#fffbe6"
+                    : isDarkMode
+                    ? "#7f1d1d"
                     : "#fff2f0",
                   transition: "all 0.3s ease",
                 }}
@@ -266,7 +284,6 @@ const QuizAttemptDetailPage = () => {
                 <div
                   style={{ display: "flex", gap: 16, alignItems: "flex-start" }}
                 >
-                  {/* Question Number with Status */}
                   <Badge
                     count={isCorrect ? "✓" : isBlank ? "−" : "✗"}
                     style={{
@@ -282,7 +299,6 @@ const QuizAttemptDetailPage = () => {
                         width: 40,
                         height: 40,
                         borderRadius: "50%",
-                        background: "white",
                         display: "flex",
                         alignItems: "center",
                         justifyContent: "center",
@@ -300,7 +316,6 @@ const QuizAttemptDetailPage = () => {
                     </div>
                   </Badge>
 
-                  {/* Question Content */}
                   <div style={{ flex: 1 }}>
                     <div
                       style={{
@@ -317,12 +332,12 @@ const QuizAttemptDetailPage = () => {
                           fontWeight: 500,
                           margin: 0,
                           flex: 1,
+                          color: isDarkMode ? "#e5e7eb" : "#000",
                         }}
                       >
                         {question?.question}
                       </Typography.Paragraph>
 
-                      {/* Audio Play Button (Podcast-style) */}
                       {question?.audio_url && (
                         <Button
                           type="text"
@@ -342,7 +357,6 @@ const QuizAttemptDetailPage = () => {
                       )}
                     </div>
 
-                    {/* Difficulty Tag */}
                     <Tag
                       color={
                         question?.difficulty === "hard"
@@ -351,12 +365,15 @@ const QuizAttemptDetailPage = () => {
                           ? "orange"
                           : "blue"
                       }
-                      style={{ marginBottom: 16, borderRadius: 12 }}
+                      style={{
+                        marginBottom: 16,
+                        borderRadius: 12,
+                        textTransform: "capitalize",
+                      }}
                     >
                       {question?.difficulty}
                     </Tag>
 
-                    {/* Options */}
                     <Space
                       direction="vertical"
                       style={{ width: "100%", marginBottom: 16 }}
@@ -368,8 +385,10 @@ const QuizAttemptDetailPage = () => {
                         let optionStyle = {
                           padding: "12px 16px",
                           borderRadius: 8,
-                          backgroundColor: "#fafafa",
-                          border: "1px solid #d9d9d9",
+                          backgroundColor: isDarkMode ? "#374151" : "#fafafa",
+                          border: isDarkMode
+                            ? "1px solid #4b5563"
+                            : "1px solid #d9d9d9",
                           width: "100%",
                           display: "flex",
                           justifyContent: "space-between",
@@ -378,16 +397,24 @@ const QuizAttemptDetailPage = () => {
                         };
 
                         if (isCorrectOption) {
-                          optionStyle.backgroundColor = "#f6ffed";
+                          optionStyle.backgroundColor = isDarkMode
+                            ? "#064e3b"
+                            : "#f6ffed";
                           optionStyle.borderColor = "#b7eb8f";
                         } else if (isSelected && !isCorrectOption) {
-                          optionStyle.backgroundColor = "#fff2f0";
+                          optionStyle.backgroundColor = isDarkMode
+                            ? "#7f1d1d"
+                            : "#fff2f0";
                           optionStyle.borderColor = "#ffccc7";
                         }
 
                         return (
                           <div key={opt.id} style={optionStyle}>
-                            <Text>{opt.option_text}</Text>
+                            <Text
+                              style={{ color: isDarkMode ? "#f3f4f6" : "#000" }}
+                            >
+                              {opt.option_text}
+                            </Text>
                             {isCorrectOption ? (
                               <CheckCircleOutlined
                                 style={{ color: "#52c41a" }}
@@ -402,23 +429,34 @@ const QuizAttemptDetailPage = () => {
                       })}
                     </Space>
 
-                    {/* Result Status */}
                     <div style={{ marginBottom: 8 }}>
                       {isBlank ? (
-                        <Text type="warning" style={{ fontWeight: 500 }}>
+                        <Text
+                          type="warning"
+                          style={{
+                            fontWeight: 500,
+                            color: isDarkMode ? "#facc15" : undefined,
+                          }}
+                        >
                           <MinusCircleOutlined /> Bạn chưa chọn đáp án
                         </Text>
                       ) : (
                         <Text
                           type={isCorrect ? "success" : "danger"}
-                          style={{ fontWeight: 500 }}
+                          style={{
+                            fontWeight: 500,
+                            color: isCorrect
+                              ? "#22c55e"
+                              : isDarkMode
+                              ? "#f87171"
+                              : "#ff4d4f",
+                          }}
                         >
                           {isCorrect ? "✓ Trả lời đúng" : "✗ Trả lời sai"}
                         </Text>
                       )}
                     </div>
 
-                    {/* Correct Answer */}
                     {correctOption && (
                       <Text
                         style={{
@@ -439,6 +477,7 @@ const QuizAttemptDetailPage = () => {
                           display: "block",
                           marginTop: 8,
                           fontSize: 12,
+                          color: isDarkMode ? "#9ca3af" : undefined,
                         }}
                       >
                         Nguồn: {question.source_text}

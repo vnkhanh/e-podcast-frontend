@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import {
   Input,
   Row,
@@ -9,7 +9,6 @@ import {
   Space,
   Select,
   Pagination,
-  Spin,
   message,
   Tag,
   Tooltip,
@@ -17,14 +16,14 @@ import {
   Button,
   Avatar,
   Divider,
-  Badge,
+  Skeleton,
 } from "antd";
 import {
   SearchOutlined,
   BookOutlined,
   FilterOutlined,
   PlayCircleOutlined,
-  UserOutlined,
+  AppstoreOutlined,
   ArrowRightOutlined,
   CheckCircleOutlined,
   ClockCircleOutlined,
@@ -33,8 +32,145 @@ import {
 import { getAllSubjectsUser } from "../../../services/api_subject";
 import { useNavigate } from "react-router-dom";
 
-const { Title, Text, Paragraph } = Typography;
+const { Title, Text } = Typography;
 const { Option } = Select;
+
+// Component hiển thị card môn học riêng, được memo để tránh render lại
+const SubjectCard = React.memo(({ subject, progress, navigate }) => {
+  const percent = progress ? Math.round(progress.progress_percent) : 0;
+  const getProgressColor = (percent) => {
+    if (percent === 100)
+      return { color: "#52c41a", bg: "rgba(82, 196, 26, 0.1)" };
+    if (percent > 0) return { color: "#1890ff", bg: "rgba(24, 144, 255, 0.1)" };
+    return { color: "#d9d9d9", bg: "rgba(217, 217, 217, 0.1)" };
+  };
+  const getProgressIcon = (percent) => {
+    if (percent === 100) return <CheckCircleOutlined />;
+    if (percent > 0) return <ClockCircleOutlined />;
+    return <RocketOutlined />;
+  };
+  const getProgressText = (percent, p) => {
+    if (percent === 100) return " Hoàn thành";
+    if (percent > 0) return ` Đang học • ${p.completed}/${p.total_podcasts}`;
+    return " Bắt đầu học";
+  };
+
+  const info = getProgressColor(percent);
+
+  return (
+    <Col xs={24} sm={12} md={8} lg={6} key={subject.id}>
+      <Card
+        hoverable
+        style={{
+          borderRadius: 16,
+          border: "none",
+          transition: "all 0.3s ease",
+          overflow: "hidden",
+          height: "100%",
+        }}
+        onClick={() => navigate(`/subjects/${subject.slug}`)}
+        onMouseEnter={(e) => {
+          e.currentTarget.style.transform = "translateY(-8px)";
+          e.currentTarget.style.boxShadow = "0 12px 32px rgba(0,0,0,0.15)";
+        }}
+        onMouseLeave={(e) => {
+          e.currentTarget.style.transform = "translateY(0)";
+          e.currentTarget.style.boxShadow = "0 4px 16px rgba(0,0,0,0.08)";
+        }}
+        cover={
+          <div style={{ position: "relative" }}>
+            <div
+              style={{
+                background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+                color: "white",
+                height: 140,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                position: "relative",
+              }}
+            >
+              <BookOutlined style={{ fontSize: 48, opacity: 0.9 }} />
+              <div style={{ position: "absolute", bottom: 12, right: 12 }}>
+                <Tag
+                  style={{
+                    background: "rgba(255,255,255,0.2)",
+                    color: "white",
+                    border: "none",
+                    borderRadius: 12,
+                    backdropFilter: "blur(10px)",
+                  }}
+                >
+                  {subject.chapters?.length || 0} chương
+                </Tag>
+              </div>
+            </div>
+          </div>
+        }
+        bodyStyle={{ padding: 20 }}
+      >
+        <Space direction="vertical" size="small" style={{ width: "100%" }}>
+          <Tooltip title={subject.name}>
+            <Title
+              level={5}
+              ellipsis={{ rows: 2 }}
+              style={{ margin: 0, lineHeight: 1.4, minHeight: 44 }}
+            >
+              {subject.name}
+            </Title>
+          </Tooltip>
+
+          {/* Tiến độ */}
+          <div>
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "space-between",
+                marginBottom: 8,
+              }}
+            >
+              <Text type="secondary" style={{ fontSize: 12 }}>
+                {getProgressIcon(percent)}
+                {getProgressText(
+                  percent,
+                  progress || { completed: 0, total_podcasts: 0 }
+                )}
+              </Text>
+              <Text strong style={{ fontSize: 12, color: info.color }}>
+                {percent}%
+              </Text>
+            </div>
+            <Progress
+              percent={percent}
+              size="small"
+              strokeColor={info.color}
+              trailColor="#f0f0f0"
+              showInfo={false}
+            />
+          </div>
+
+          <Button
+            type="text"
+            icon={<PlayCircleOutlined />}
+            style={{
+              color: "#667eea",
+              padding: 0,
+              height: "auto",
+              fontWeight: 600,
+              marginTop: 8,
+            }}
+            onClick={(e) => {
+              e.stopPropagation();
+              navigate(`/subjects/${subject.slug}`);
+            }}
+          >
+            Bắt đầu học
+          </Button>
+        </Space>
+      </Card>
+    </Col>
+  );
+});
 
 const SubjectListPage = () => {
   const navigate = useNavigate();
@@ -47,23 +183,25 @@ const SubjectListPage = () => {
     pages: 1,
   });
   const [search, setSearch] = useState("");
+  const [debouncedSearch, setDebouncedSearch] = useState("");
   const [sort, setSort] = useState("az");
   const [filterProgress, setFilterProgress] = useState("all");
   const [loading, setLoading] = useState(false);
 
-  const fetchSubjects = async (
-    page = 1,
-    limit = 8,
-    searchText = "",
-    sortType = "az"
-  ) => {
+  // debounce input search (400ms)
+  useEffect(() => {
+    const timeout = setTimeout(() => setDebouncedSearch(search), 400);
+    return () => clearTimeout(timeout);
+  }, [search]);
+
+  const fetchSubjects = useCallback(async () => {
     try {
       setLoading(true);
       const data = await getAllSubjectsUser({
-        page,
-        limit,
-        search: searchText,
-        sort: sortType,
+        page: pagination.page,
+        limit: pagination.limit,
+        search: debouncedSearch,
+        sort,
       });
       if (data) {
         setSubjects(data.subjects || []);
@@ -76,29 +214,11 @@ const SubjectListPage = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [debouncedSearch, sort, pagination.page, pagination.limit]);
 
   useEffect(() => {
-    fetchSubjects(pagination.page, pagination.limit, search, sort);
-    // eslint-disable-next-line
-  }, [sort]);
-
-  const handleSearch = (value) => {
-    setSearch(value);
-    fetchSubjects(1, pagination.limit, value, sort);
-  };
-
-  const handleSortChange = (value) => {
-    setSort(value);
-  };
-
-  const handlePageChange = (page) => {
-    fetchSubjects(page, pagination.limit, search, sort);
-  };
-
-  const handleFilterChange = (value) => {
-    setFilterProgress(value);
-  };
+    fetchSubjects();
+  }, [fetchSubjects]);
 
   const getProgress = (subjectId) =>
     progress?.find((p) => p.subject_id === subjectId) || null;
@@ -119,35 +239,10 @@ const SubjectListPage = () => {
     }
   });
 
-  const getProgressColor = (percent) => {
-    if (percent === 100)
-      return { color: "#52c41a", bg: "rgba(82, 196, 26, 0.1)" };
-    if (percent > 0) return { color: "#1890ff", bg: "rgba(24, 144, 255, 0.1)" };
-    return { color: "#d9d9d9", bg: "rgba(217, 217, 217, 0.1)" };
-  };
-
-  const getProgressIcon = (percent) => {
-    if (percent === 100) return <CheckCircleOutlined />;
-    if (percent > 0) return <ClockCircleOutlined />;
-    return <RocketOutlined />;
-  };
-
-  const getProgressText = (percent, progressData) => {
-    if (percent === 100) return " Hoàn thành";
-    if (percent > 0)
-      return ` Đang học • ${progressData.completed}/${progressData.total_podcasts}`;
-    return " Bắt đầu học";
-  };
-
   return (
-    <div
-      style={{
-        minHeight: "100vh",
-        padding: 24,
-      }}
-    >
+    <div style={{ minHeight: "100vh", padding: 24 }}>
       <div style={{ maxWidth: 1200, margin: "0 auto" }}>
-        {/* HEADER SECTION */}
+        {/* HEADER */}
         <Card
           style={{
             marginBottom: 32,
@@ -157,22 +252,9 @@ const SubjectListPage = () => {
             color: "white",
             boxShadow: "0 8px 32px rgba(102, 126, 234, 0.3)",
             overflow: "hidden",
-            position: "relative",
           }}
         >
-          <div
-            style={{
-              position: "absolute",
-              top: 0,
-              right: 0,
-              bottom: 0,
-              left: 0,
-              background:
-                "radial-gradient(circle at top right, rgba(120, 119, 198, 0.3), transparent 50%)",
-            }}
-          />
-
-          <div style={{ padding: 32, position: "relative" }}>
+          <div style={{ padding: 32 }}>
             <div
               style={{
                 display: "flex",
@@ -201,7 +283,6 @@ const SubjectListPage = () => {
                 </Text>
               </div>
             </div>
-
             <Space wrap>
               <Tag
                 style={{
@@ -214,7 +295,7 @@ const SubjectListPage = () => {
                 }}
               >
                 <BookOutlined style={{ marginRight: 4 }} />
-                {pagination.total} môn học
+                {subjects?.length || 0} môn học
               </Tag>
               <Tag
                 style={{
@@ -226,22 +307,21 @@ const SubjectListPage = () => {
                   backdropFilter: "blur(10px)",
                 }}
               >
-                Trang {pagination.page}
+                Trang {pagination.page || 1}
               </Tag>
             </Space>
           </div>
         </Card>
 
-        {/* FILTER SECTION */}
+        {/* FILTER */}
         <Card
           style={{
             marginBottom: 32,
             borderRadius: 20,
-            border: "none",
-            boxShadow: "0 8px 32px rgba(0, 0, 0, 0.08)",
             background: "inherit",
+            border: "none",
           }}
-          bodyStyle={{ padding: 24 }}
+          styles={{ body: { padding: 24 } }}
         >
           <Row gutter={[24, 16]} align="middle">
             <Col xs={24} md={8}>
@@ -252,10 +332,7 @@ const SubjectListPage = () => {
                 allowClear
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
-                onPressEnter={(e) => handleSearch(e.target.value)}
-                style={{
-                  borderRadius: 12,
-                }}
+                style={{ borderRadius: 12 }}
               />
             </Col>
             <Col xs={24} md={8}>
@@ -265,10 +342,9 @@ const SubjectListPage = () => {
                 </Text>
                 <Select
                   value={sort}
-                  onChange={handleSortChange}
+                  onChange={(v) => setSort(v)}
                   size="large"
-                  style={{ width: 160, borderRadius: 12 }}
-                  suffixIcon={<ArrowRightOutlined />}
+                  style={{ width: 160 }}
                 >
                   <Option value="az">A → Z</Option>
                   <Option value="za">Z → A</Option>
@@ -283,12 +359,12 @@ const SubjectListPage = () => {
                 </Text>
                 <Select
                   value={filterProgress}
-                  onChange={handleFilterChange}
+                  onChange={(v) => setFilterProgress(v)}
                   size="large"
-                  style={{ width: 180, borderRadius: 12 }}
+                  style={{ width: 180 }}
                 >
-                  <Option value="all">Tất cả môn học</Option>
-                  <Option value="completed">Đã hoàn thành</Option>
+                  <Option value="all">Tất cả</Option>
+                  <Option value="completed">Hoàn thành</Option>
                   <Option value="inprogress">Đang học</Option>
                   <Option value="notstarted">Chưa học</Option>
                 </Select>
@@ -297,279 +373,52 @@ const SubjectListPage = () => {
           </Row>
         </Card>
 
-        {/* SUBJECTS LIST */}
+        {/* LIST */}
         <Card
           style={{
             borderRadius: 20,
             border: "none",
+            background: "inherit",
             overflow: "hidden",
             marginBottom: 32,
-            background: "inherit",
           }}
-          bodyStyle={{ padding: 0 }}
+          styles={{ body: { padding: 0 } }}
         >
           <div style={{ padding: 24 }}>
-            <Title
-              level={3}
-              style={{
-                margin: 0,
-                display: "flex",
-                alignItems: "center",
-                gap: 8,
-              }}
-            >
-              Danh sách môn học
+            <Title level={3}>
+              <AppstoreOutlined style={{ color: "#667eea" }} /> Danh sách môn
+              học
             </Title>
             <Divider style={{ margin: "16px 0" }} />
           </div>
-
           {loading ? (
-            <div style={{ padding: 80, textAlign: "center" }}>
-              <Spin
-                size="large"
-                tip={
-                  <Text style={{ fontSize: 16, marginTop: 16 }}>
-                    Đang tải danh sách môn học...
-                  </Text>
-                }
-              />
-            </div>
+            <Row gutter={[24, 24]} style={{ padding: 24 }}>
+              {[...Array(8)].map((_, i) => (
+                <Col key={i} xs={24} sm={12} md={8} lg={6}>
+                  <Card style={{ borderRadius: 16 }}>
+                    <Skeleton active paragraph={{ rows: 2 }} />
+                  </Card>
+                </Col>
+              ))}
+            </Row>
           ) : filteredSubjects.length === 0 ? (
-            <div style={{ padding: 60 }}>
-              <Empty
-                description={
-                  <div>
-                    <Title level={4} style={{ color: "#666", marginBottom: 8 }}>
-                      Không tìm thấy môn học phù hợp
-                    </Title>
-                    <Text type="secondary">
-                      Hãy thử điều chỉnh bộ lọc hoặc từ khóa tìm kiếm
-                    </Text>
-                  </div>
-                }
-                imageStyle={{ height: 120 }}
-              >
-                <Button
-                  type="primary"
-                  onClick={() => {
-                    setSearch("");
-                    setFilterProgress("all");
-                    fetchSubjects(1, pagination.limit, "", sort);
-                  }}
-                  style={{
-                    background:
-                      "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
-                    border: "none",
-                    borderRadius: 8,
-                  }}
-                >
-                  Xóa bộ lọc
-                </Button>
-              </Empty>
-            </div>
+            <Empty
+              description="Không tìm thấy môn học phù hợp"
+              style={{ padding: 60 }}
+            />
           ) : (
             <Row gutter={[24, 24]} style={{ padding: 24 }}>
-              {filteredSubjects.map((subject) => {
-                const subjProgress = getProgress(subject.id);
-                const percent = subjProgress
-                  ? Math.round(subjProgress.progress_percent)
-                  : 0;
-                const progressInfo = getProgressColor(percent);
-
-                return (
-                  <Col xs={24} sm={12} md={8} lg={6} key={subject.id}>
-                    {/*Môn học*/}
-                    <Card
-                      hoverable
-                      style={{
-                        borderRadius: 16,
-                        border: "none",
-                        transition: "all 0.3s ease",
-                        overflow: "hidden",
-                        height: "100%",
-                      }}
-                      onClick={() => navigate(`/subjects/${subject.slug}`)}
-                      cover={
-                        <div style={{ position: "relative" }}>
-                          <div
-                            style={{
-                              background:
-                                "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
-                              color: "white",
-                              height: 140,
-                              display: "flex",
-                              alignItems: "center",
-                              justifyContent: "center",
-                              position: "relative",
-                            }}
-                          >
-                            <BookOutlined
-                              style={{ fontSize: 48, opacity: 0.9 }}
-                            />
-                            <div
-                              style={{
-                                position: "absolute",
-                                bottom: 12,
-                                right: 12,
-                              }}
-                            >
-                              <Tag
-                                style={{
-                                  background: "rgba(255,255,255,0.2)",
-                                  color: "white",
-                                  border: "none",
-                                  borderRadius: 12,
-                                  backdropFilter: "blur(10px)",
-                                }}
-                              >
-                                {subject.chapters?.length || 0} chương
-                              </Tag>
-                            </div>
-                          </div>
-                        </div>
-                      }
-                      bodyStyle={{ padding: 20 }}
-                      onMouseEnter={(e) => {
-                        e.currentTarget.style.transform = "translateY(-8px)";
-                        e.currentTarget.style.boxShadow =
-                          "0 12px 32px rgba(0,0,0,0.15)";
-                      }}
-                      onMouseLeave={(e) => {
-                        e.currentTarget.style.transform = "translateY(0)";
-                        e.currentTarget.style.boxShadow =
-                          "0 4px 16px rgba(0,0,0,0.08)";
-                      }}
-                    >
-                      <Space
-                        direction="vertical"
-                        size="small"
-                        style={{ width: "100%" }}
-                      >
-                        <Tooltip title={subject.name}>
-                          <Title
-                            level={5}
-                            ellipsis={{ rows: 2 }}
-                            style={{
-                              margin: 0,
-                              lineHeight: 1.4,
-                              minHeight: 44,
-                              color: "#2c3e50",
-                            }}
-                          >
-                            {subject.name}
-                          </Title>
-                        </Tooltip>
-
-                        {/* PROGRESS SECTION */}
-                        <div>
-                          <div
-                            style={{
-                              display: "flex",
-                              justifyContent: "space-between",
-                              marginBottom: 8,
-                            }}
-                          >
-                            <Text type="secondary" style={{ fontSize: 12 }}>
-                              {getProgressIcon(percent)}
-                              {getProgressText(
-                                percent,
-                                subjProgress || {
-                                  completed: 0,
-                                  total_podcasts: 0,
-                                }
-                              )}
-                            </Text>
-                            <Text
-                              strong
-                              style={{
-                                fontSize: 12,
-                                color: progressInfo.color,
-                              }}
-                            >
-                              {percent}%
-                            </Text>
-                          </div>
-                          <Progress
-                            percent={percent}
-                            size="small"
-                            strokeColor={{
-                              "0%": progressInfo.color,
-                              "100%": progressInfo.color,
-                            }}
-                            trailColor="#f0f0f0"
-                            showInfo={false}
-                          />
-                        </div>
-
-                        <Button
-                          type="text"
-                          icon={<PlayCircleOutlined />}
-                          style={{
-                            color: "#667eea",
-                            padding: 0,
-                            height: "auto",
-                            fontWeight: 600,
-                            marginTop: 8,
-                          }}
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            navigate(`/subjects/${subject.slug}`);
-                          }}
-                        >
-                          Bắt đầu học
-                        </Button>
-                      </Space>
-                    </Card>
-                  </Col>
-                );
-              })}
+              {filteredSubjects.map((s) => (
+                <SubjectCard
+                  key={s.id}
+                  subject={s}
+                  progress={progress.find((p) => p.subject_id === s.id)}
+                  navigate={navigate}
+                />
+              ))}
             </Row>
           )}
         </Card>
-
-        {/* PAGINATION */}
-        {pagination.total > pagination.limit && (
-          <div style={{ display: "flex", justifyContent: "center" }}>
-            <Pagination
-              current={pagination.page}
-              pageSize={pagination.limit}
-              total={pagination.total}
-              onChange={handlePageChange}
-              showSizeChanger={false}
-              style={{
-                background: "white",
-                padding: "16px 24px",
-                borderRadius: 16,
-                boxShadow: "0 4px 16px rgba(0,0,0,0.08)",
-              }}
-              itemRender={(current, type, originalElement) => {
-                if (type === "page") {
-                  return (
-                    <div
-                      style={{
-                        background:
-                          current === pagination.page
-                            ? "linear-gradient(135deg, #667eea 0%, #764ba2 100%)"
-                            : "transparent",
-                        color: current === pagination.page ? "white" : "#666",
-                        borderRadius: 8,
-                        minWidth: 32,
-                        height: 32,
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "center",
-                        fontWeight: current === pagination.page ? 600 : 400,
-                      }}
-                    >
-                      {current}
-                    </div>
-                  );
-                }
-                return originalElement;
-              }}
-            />
-          </div>
-        )}
       </div>
     </div>
   );

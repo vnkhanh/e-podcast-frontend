@@ -91,3 +91,15 @@ export async function listCategoriesUser() {
   });
   return res.data.categories; // Backend trả về { categories: [...]  }
 }
+
+export const getCategoriesUser = async (params = {}) => {
+  try {
+    const res = await axios.get(`${API_BASE_URL}/user/categories`, {
+      params,
+    });
+    return res.data;
+  } catch (err) {
+    console.error("Lỗi khi lấy danh mục:", err);
+    throw err;
+  }
+};

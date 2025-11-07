@@ -1,4 +1,10 @@
-import React, { useState, useRef, useEffect, useCallback } from "react";
+import React, {
+  useState,
+  useRef,
+  useEffect,
+  useCallback,
+  useContext,
+} from "react";
 import {
   Row,
   Col,
@@ -32,10 +38,14 @@ import {
 } from "../../services/api_note";
 import { formatTime } from "../../utils/helpers";
 import { useNavigate } from "react-router-dom";
+import { ThemeContext } from "../../context/useTheme";
+
 const { Text } = Typography;
 
 const NowPlayingBar = ({ playerState, userToken }) => {
   const navigate = useNavigate();
+  const { isDarkMode } = useContext(ThemeContext);
+
   const {
     currentPodcast,
     isPlaying,
@@ -56,7 +66,7 @@ const NowPlayingBar = ({ playerState, userToken }) => {
   const audioRef = useRef(null);
   const isMobile = window.innerWidth <= 768;
 
-  // Cập nhật tiến trình + thời gian thực
+  // Cập nhật tiến trình
   useEffect(() => {
     if (!currentPodcast || !audioRef.current) return;
     const audio = audioRef.current.querySelector("audio");
@@ -68,7 +78,7 @@ const NowPlayingBar = ({ playerState, userToken }) => {
         setProgress(percent);
         setCurrentTime(audio.currentTime);
         setDuration(audio.duration);
-        setLocalDuration(audio.duration); // set duration cho mini player
+        setLocalDuration(audio.duration);
       }
     };
 
@@ -148,15 +158,18 @@ const NowPlayingBar = ({ playerState, userToken }) => {
 
   if (!currentPodcast) return null;
 
-  // Dropdown nội dung notes + form tạo note
+  // Dropdown nội dung notes
   const noteMenu = (
     <div
       style={{
         padding: 12,
         width: 320,
-        background: "#fff",
+        background: isDarkMode ? "#1f2937" : "#fff",
         borderRadius: 8,
-        boxShadow: "0 4px 12px rgba(0,0,0,0.15)",
+        boxShadow: isDarkMode
+          ? "0 4px 12px rgba(255,255,255,0.1)"
+          : "0 4px 12px rgba(0,0,0,0.15)",
+        color: isDarkMode ? "#e5e7eb" : "#000",
       }}
     >
       <Input.TextArea
@@ -164,6 +177,11 @@ const NowPlayingBar = ({ playerState, userToken }) => {
         value={noteText}
         onChange={(e) => setNoteText(e.target.value)}
         placeholder={`Nhập ghi chú tại ${formatTime(currentTime)}`}
+        style={{
+          background: isDarkMode ? "#111827" : "#fff",
+          color: isDarkMode ? "#e5e7eb" : "#000",
+          borderColor: isDarkMode ? "#374151" : "#d9d9d9",
+        }}
       />
       <Button
         type="primary"
@@ -180,13 +198,19 @@ const NowPlayingBar = ({ playerState, userToken }) => {
         dataSource={notes.sort((a, b) => a.position - b.position)}
         renderItem={(note) => (
           <List.Item
-            style={{ cursor: "pointer", padding: "4px 8px" }}
+            style={{
+              cursor: "pointer",
+              padding: "4px 8px",
+              background: isDarkMode ? "#111827" : undefined,
+            }}
             onClick={() => jumpToNote(note)}
           >
             <Space>
               <ClockCircleOutlined style={{ color: "#1DB954" }} />
               <Tag color="green">{formatTime(note.position)}</Tag>
-              <Text>{note.content}</Text>
+              <Text style={{ color: isDarkMode ? "#f9fafb" : "#000" }}>
+                {note.content}
+              </Text>
               <Button
                 type="text"
                 danger
@@ -207,16 +231,21 @@ const NowPlayingBar = ({ playerState, userToken }) => {
         bottom: 0,
         left: 0,
         right: 0,
-        background: "rgba(255, 255, 255, 0.95)",
-        borderTop: "1px solid #f0f0f0",
+        background: isDarkMode
+          ? "rgba(17, 24, 39, 0.95)"
+          : "rgba(255, 255, 255, 0.95)",
+        borderTop: isDarkMode ? "1px solid #374151" : "1px solid #f0f0f0",
         padding: isCollapsed
           ? "6px 16px"
           : isMobile
           ? "12px 16px"
           : "16px 24px",
         zIndex: 1000,
-        boxShadow: "0 -4px 20px rgba(0, 0, 0, 0.1)",
+        boxShadow: isDarkMode
+          ? "0 -4px 20px rgba(255, 255, 255, 0.05)"
+          : "0 -4px 20px rgba(0, 0, 0, 0.1)",
         transition: "all 0.3s ease",
+        color: isDarkMode ? "#f3f4f6" : "#000",
       }}
     >
       {/* Full Player */}
@@ -236,9 +265,12 @@ const NowPlayingBar = ({ playerState, userToken }) => {
                 direction="vertical"
                 size={0}
                 onClick={() => navigate(`/podcast/${currentPodcast?.id}`)}
-                style={{ cursor: "pointer", borderRadius: 8 }}
+                style={{
+                  cursor: "pointer",
+                  borderRadius: 8,
+                }}
               >
-                <Text strong>
+                <Text strong style={{ color: isDarkMode ? "#f9fafb" : "#000" }}>
                   {currentPodcast?.title || "Không có tiêu đề"}
                 </Text>
               </Space>
@@ -268,14 +300,27 @@ const NowPlayingBar = ({ playerState, userToken }) => {
                 trigger={["click"]}
                 placement="topRight"
               >
-                <Button icon={<PlusOutlined />}>Ghi chú</Button>
+                <Button
+                  icon={<PlusOutlined />}
+                  style={{
+                    background: isDarkMode ? "#1f2937" : undefined,
+                    color: isDarkMode ? "#f3f4f6" : undefined,
+                  }}
+                >
+                  Ghi chú
+                </Button>
               </Dropdown>
-              <Button type="text" icon={<UnorderedListOutlined />} />
+              <Button
+                type="text"
+                icon={<UnorderedListOutlined />}
+                style={{ color: isDarkMode ? "#f3f4f6" : undefined }}
+              />
 
               <Button
                 type="text"
                 icon={<DownOutlined />}
                 onClick={() => setIsCollapsed(true)}
+                style={{ color: isDarkMode ? "#f3f4f6" : undefined }}
               />
             </Space>
           </Col>
@@ -300,7 +345,10 @@ const NowPlayingBar = ({ playerState, userToken }) => {
                 <Space direction="vertical" size={0}>
                   <Text
                     strong
-                    style={{ fontSize: 13 }}
+                    style={{
+                      fontSize: 13,
+                      color: isDarkMode ? "#f9fafb" : "#000",
+                    }}
                     onClick={() => navigate(`/podcast/${currentPodcast?.id}`)}
                   >
                     {currentPodcast?.title}
@@ -315,11 +363,17 @@ const NowPlayingBar = ({ playerState, userToken }) => {
                   icon={
                     isPlaying ? (
                       <PauseCircleFilled
-                        style={{ fontSize: 22, color: "#1890ff" }}
+                        style={{
+                          fontSize: 22,
+                          color: isDarkMode ? "#60a5fa" : "#1890ff",
+                        }}
                       />
                     ) : (
                       <PlayCircleFilled
-                        style={{ fontSize: 22, color: "#1890ff" }}
+                        style={{
+                          fontSize: 22,
+                          color: isDarkMode ? "#60a5fa" : "#1890ff",
+                        }}
                       />
                     )
                   }
@@ -329,12 +383,13 @@ const NowPlayingBar = ({ playerState, userToken }) => {
                   type="text"
                   icon={<UpOutlined />}
                   onClick={() => setIsCollapsed(false)}
+                  style={{ color: isDarkMode ? "#f3f4f6" : undefined }}
                 />
               </Space>
             </Col>
           </Row>
 
-          {/* Progress bar với notes */}
+          {/* Progress bar */}
           <div
             style={{
               position: "relative",
@@ -348,23 +403,22 @@ const NowPlayingBar = ({ playerState, userToken }) => {
                 width: "100%",
                 height: 4,
                 borderRadius: 2,
-                background: "#e0e0e0",
                 overflow: "hidden",
                 position: "relative",
                 top: 8,
+                background: isDarkMode ? "#374151" : "#e5e7eb",
               }}
             >
               <div
                 style={{
                   width: `${progress}%`,
                   height: "100%",
-                  background: "#1890ff",
+                  background: isDarkMode ? "#60a5fa" : "#1890ff",
                   transition: "width 0.2s linear",
                 }}
               />
             </div>
 
-            {/* Marker notes */}
             {duration > 0 &&
               notes.map((note) => {
                 const leftPercent = (note.position / duration) * 100;

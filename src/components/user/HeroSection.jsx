@@ -12,12 +12,16 @@ import {
 import { PlayCircleOutlined } from "@ant-design/icons";
 import FeaturedPodcastCard from "./FeaturedPodcasts";
 import { getFeaturedPodcasts } from "../../services/api_podcast";
+import { useNavigate } from "react-router-dom";
+import { usePlayer } from "../../context/usePlayer";
 
-const { Title, Paragraph, Text } = Typography;
+const { Title, Paragraph } = Typography;
 
 const HeroSection = ({ playerState }) => {
+  const nav = useNavigate();
   const [featuredPodcasts, setFeaturedPodcasts] = useState([]);
   const [loading, setLoading] = useState(true);
+  const { audioRef, setCurrentPodcast, setIsPlaying } = usePlayer();
 
   useEffect(() => {
     const fetchFeatured = async () => {
@@ -33,6 +37,25 @@ const HeroSection = ({ playerState }) => {
     };
     fetchFeatured();
   }, []);
+
+  const handleRandomPlay = () => {
+    if (!featuredPodcasts || featuredPodcasts.length === 0) {
+      message.warning("Không có podcast nào để phát.");
+      return;
+    }
+
+    const randomIndex = Math.floor(Math.random() * featuredPodcasts.length);
+    const randomPodcast = featuredPodcasts[randomIndex];
+
+    // cập nhật global player
+    setCurrentPodcast(randomPodcast);
+    audioRef.current.src = randomPodcast.audio_url;
+    audioRef.current.currentTime = 0;
+    audioRef.current.play();
+    setIsPlaying(true);
+
+    message.success(`🎧 Đang phát: ${randomPodcast.title}`);
+  };
 
   const isMobile = window.innerWidth <= 768;
 
@@ -53,12 +76,7 @@ const HeroSection = ({ playerState }) => {
 
   if (featuredPodcasts.length === 0) {
     return (
-      <div
-        style={{
-          textAlign: "center",
-          padding: "80px 0",
-        }}
-      >
+      <div style={{ textAlign: "center", padding: "80px 0" }}>
         <Title level={3}>
           Chưa có podcast nổi bật nào trong 7 ngày gần đây
         </Title>
@@ -137,6 +155,7 @@ const HeroSection = ({ playerState }) => {
                   background: "linear-gradient(90deg, #3b82f6, #60a5fa)",
                   boxShadow: "0 6px 20px rgba(59,130,246,0.3)",
                 }}
+                onClick={handleRandomPlay} // ✅ phát ngẫu nhiên
               >
                 Bắt đầu nghe
               </Button>
@@ -146,6 +165,7 @@ const HeroSection = ({ playerState }) => {
                   borderRadius: 30,
                   borderColor: "#64748b",
                 }}
+                onClick={() => nav("/podcasts")}
               >
                 Khám phá thêm
               </Button>

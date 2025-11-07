@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect, useContext } from "react";
 import {
   Button,
   Space,
@@ -20,6 +20,8 @@ import {
 import { increaseListenCount } from "../services/api_podcast";
 import { saveListeningHistory } from "../services/api_history";
 import { formatTime } from "../utils/helpers";
+import { ThemeContext } from "../context/useTheme";
+
 const { Text } = Typography;
 
 const CustomAudioPlayer = ({
@@ -29,14 +31,15 @@ const CustomAudioPlayer = ({
   podcastId,
   userToken,
   startTime = 0,
-  externalPlaying, // thêm prop
-  onPlayStateChange, // callback để sync lên trên
-  notes = [], // thêm prop notes
+  externalPlaying,
+  onPlayStateChange,
+  notes = [],
 }) => {
   const audioRef = useRef(null);
   const volumeSliderRef = useRef(null);
   const progressBarRef = useRef(null);
 
+  const { isDarkMode } = useContext(ThemeContext); // Lấy dark mode
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
@@ -54,14 +57,13 @@ const CustomAudioPlayer = ({
 
   const { icon: iconSize, spacing } = sizes[size];
 
-  // --- Update time & duration ---
+  // --- Time tracking ---
   useEffect(() => {
     const audio = audioRef.current;
     const updateTime = () => !isDragging && setCurrentTime(audio.currentTime);
     const updateDuration = () => setDuration(audio.duration);
     const handleEnd = () => {
       setIsPlaying(false);
-      // Khi nghe hết
       if (podcastId && userToken) {
         saveListeningHistory(
           podcastId,
@@ -83,7 +85,7 @@ const CustomAudioPlayer = ({
     };
   }, [isDragging, podcastId, userToken]);
 
-  // --- Khi nghe đủ 30s -> tăng lượt nghe ---
+  // --- Listen count ---
   useEffect(() => {
     if (currentTime >= 30 && !hasCounted && podcastId) {
       increaseListenCount(podcastId, audioRef.current?.currentTime);
@@ -91,49 +93,38 @@ const CustomAudioPlayer = ({
     }
   }, [currentTime, podcastId, hasCounted]);
 
-  // --- Cập nhật lịch sử nghe realtime mỗi 15 giây ---
+  // --- Save listening every 5s ---
   useEffect(() => {
     if (!podcastId || !userToken) return;
-
     const interval = setInterval(() => {
       if (isPlaying && audioRef.current && duration > 0) {
         const pos = Math.floor(audioRef.current.currentTime);
         const dur = Math.floor(audioRef.current.duration || 0);
         saveListeningHistory(podcastId, pos, false, userToken, dur);
-        console.log("Đã lưu lịch sử nghe:", pos, "/", dur);
       }
     }, 5000);
-
     return () => clearInterval(interval);
   }, [isPlaying, duration, podcastId, userToken]);
 
-  // --- Khi có startTime được truyền vào ---
+  // --- Jump to startTime ---
   useEffect(() => {
     const audio = audioRef.current;
     if (!audio || !startTime) return;
 
-    const seekToPosition = () => {
-      audio.currentTime = startTime;
-      console.log("Tua đến giây:", startTime);
-    };
-
-    // Nếu metadata chưa load thì chờ loadedmetadata
-    if (audio.readyState >= 1) {
-      seekToPosition();
-    } else {
+    const seekToPosition = () => (audio.currentTime = startTime);
+    if (audio.readyState >= 1) seekToPosition();
+    else
       audio.addEventListener("loadedmetadata", seekToPosition, { once: true });
-    }
 
     return () => {
       audio.removeEventListener("loadedmetadata", seekToPosition);
     };
   }, [startTime]);
 
-  // --- Đồng bộ trạng thái phát từ bên ngoài ---
+  // --- Sync external play state ---
   useEffect(() => {
     const audio = audioRef.current;
     if (!audio) return;
-
     if (externalPlaying) {
       audio.play();
       setIsPlaying(true);
@@ -143,7 +134,7 @@ const CustomAudioPlayer = ({
     }
   }, [externalPlaying]);
 
-  // --- Giao diện điều khiển ---
+  // --- Functions ---
   const handleRateChange = (value) => {
     setPlaybackRate(value);
     if (audioRef.current) audioRef.current.playbackRate = value;
@@ -152,12 +143,12 @@ const CustomAudioPlayer = ({
   const handleProgressClick = (e) => {
     const rect = progressBarRef.current.getBoundingClientRect();
     let percent = (e.clientX - rect.left) / rect.width;
-    // Giới hạn trong khoảng 0–1
     percent = Math.max(0, Math.min(1, percent));
     const newTime = percent * duration;
     audioRef.current.currentTime = newTime;
     setCurrentTime(newTime);
   };
+
   const handleProgressMouseDown = (e) => {
     setIsDragging(true);
     handleProgressClick(e);
@@ -198,7 +189,7 @@ const CustomAudioPlayer = ({
     if (newState) audio.play();
     else audio.pause();
     setIsPlaying(newState);
-    onPlayStateChange && onPlayStateChange(newState); // báo lên trên
+    onPlayStateChange && onPlayStateChange(newState);
   };
 
   const skip = (seconds) => {
@@ -213,7 +204,7 @@ const CustomAudioPlayer = ({
     if (isPlaying) audio.play();
   };
 
-  // --- Giao diện ProgressBar + Volume ---
+  // --- Components ---
   const ProgressBar = () => (
     <div style={{ marginBottom: spacing }}>
       <div
@@ -223,17 +214,16 @@ const CustomAudioPlayer = ({
           borderRadius: 3,
           cursor: "pointer",
           position: "relative",
-          backgroundColor: "#e7e7e7ff",
+          backgroundColor: isDarkMode ? "#374151" : "#e7e7e7",
           marginBottom: 4,
         }}
         onClick={handleProgressClick}
         onMouseDown={handleProgressMouseDown}
       >
-        {/* Thanh progress hiện tại */}
         <div
           style={{
             height: "100%",
-            background: "#1890ff",
+            background: isDarkMode ? "#60a5fa" : "#1890ff",
             borderRadius: 3,
             width: `${(currentTime / duration) * 100}%`,
             transition: isDragging ? "none" : "width 0.1s ease",
@@ -254,12 +244,12 @@ const CustomAudioPlayer = ({
                   width: 6,
                   height: 6,
                   borderRadius: "50%",
-                  background: "#1DB954",
+                  background: isDarkMode ? "#10b981" : "#1DB954",
                   transform: "translateX(-50%)",
                   cursor: "pointer",
                 }}
                 onClick={(e) => {
-                  e.stopPropagation(); // tránh trigger progress click
+                  e.stopPropagation();
                   audioRef.current.currentTime = note.position;
                   setCurrentTime(note.position);
                 }}
@@ -276,10 +266,22 @@ const CustomAudioPlayer = ({
           marginTop: spacing / 2,
         }}
       >
-        <Text type="secondary" style={{ fontSize: iconSize - 6 }}>
+        <Text
+          type="secondary"
+          style={{
+            fontSize: iconSize - 6,
+            color: isDarkMode ? "#e5e7eb" : "#666",
+          }}
+        >
           {formatTime(currentTime)}
         </Text>
-        <Text type="secondary" style={{ fontSize: iconSize - 6 }}>
+        <Text
+          type="secondary"
+          style={{
+            fontSize: iconSize - 6,
+            color: isDarkMode ? "#e5e7eb" : "#666",
+          }}
+        >
           {formatTime(duration)}
         </Text>
       </div>
@@ -294,9 +296,10 @@ const CustomAudioPlayer = ({
         height: 80,
         borderRadius: 12,
         padding: "8px 4px",
-        border: "1px solid #d9d9d9",
+        border: isDarkMode ? "1px solid #4b5563" : "1px solid #d9d9d9",
         cursor: "pointer",
         position: "relative",
+        background: isDarkMode ? "#1f2937" : "#fff",
       }}
       onClick={handleVolumeClick}
       onMouseDown={handleVolumeMouseDown}
@@ -319,7 +322,7 @@ const CustomAudioPlayer = ({
             left: 0,
             width: "100%",
             height: `${volume * 100}%`,
-            background: volume === 0 ? "#ff4d4f" : "#52c41a",
+            background: volume === 0 ? "#ef4444" : "#52c41a",
             borderRadius: 2,
           }}
         />
@@ -337,6 +340,10 @@ const CustomAudioPlayer = ({
         { label: "1.5x", key: "1.5" },
         { label: "2.0x", key: "2.0" },
       ]}
+      style={{
+        background: isDarkMode ? "#1f2937" : "#fff",
+        color: isDarkMode ? "#f3f4f6" : "#000",
+      }}
     />
   );
 
@@ -345,6 +352,7 @@ const CustomAudioPlayer = ({
       style={{
         borderRadius: 12,
         padding: spacing,
+        color: isDarkMode ? "#f3f4f6" : "#000",
         ...style,
       }}
     >
@@ -362,10 +370,15 @@ const CustomAudioPlayer = ({
           <Tooltip title="10s">
             <Button
               type="text"
-              icon={<StepBackwardFilled />}
+              icon={
+                <StepBackwardFilled
+                  style={{ color: isDarkMode ? "#93c5fd" : "#666" }}
+                />
+              }
               onClick={() => skip(-10)}
             />
           </Tooltip>
+
           <Button
             type="text"
             icon={
@@ -381,15 +394,29 @@ const CustomAudioPlayer = ({
             }
             onClick={togglePlay}
           />
+
           <Tooltip title="10s">
             <Button
               type="text"
-              icon={<StepForwardFilled />}
+              icon={
+                <StepForwardFilled
+                  style={{ color: isDarkMode ? "#93c5fd" : "#666" }}
+                />
+              }
               onClick={() => skip(10)}
             />
           </Tooltip>
+
           <Tooltip title="Tải lại">
-            <Button type="text" icon={<ReloadOutlined />} onClick={reset} />
+            <Button
+              type="text"
+              icon={
+                <ReloadOutlined
+                  style={{ color: isDarkMode ? "#facc15" : "#666" }}
+                />
+              }
+              onClick={reset}
+            />
           </Tooltip>
         </Space>
 
@@ -398,7 +425,10 @@ const CustomAudioPlayer = ({
             type="text"
             icon={
               <ThunderboltOutlined
-                style={{ fontSize: iconSize - 6, color: "#666" }}
+                style={{
+                  fontSize: iconSize - 6,
+                  color: isDarkMode ? "#60a5fa" : "#666",
+                }}
               />
             }
           >
@@ -413,7 +443,7 @@ const CustomAudioPlayer = ({
               <SoundFilled
                 style={{
                   fontSize: iconSize - 4,
-                  color: isMuted ? "#ff4d4f" : "#666",
+                  color: isMuted ? "#ef4444" : isDarkMode ? "#a5b4fc" : "#666",
                 }}
               />
             }

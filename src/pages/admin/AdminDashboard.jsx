@@ -18,6 +18,10 @@ import {
   CustomerServiceOutlined,
   PlayCircleOutlined,
   CheckCircleOutlined,
+  BarChartOutlined,
+  LineChartOutlined,
+  TableOutlined,
+  PieChartOutlined,
 } from "@ant-design/icons";
 import axios from "axios";
 import moment from "moment";
@@ -88,7 +92,7 @@ const AdminDashboard = () => {
       }
     };
     init();
-  }, []);
+  }, [API, dateRange]);
 
   if (loading)
     return (
@@ -98,12 +102,12 @@ const AdminDashboard = () => {
     );
 
   const COLORS = [
-    "#1890ff",
-    "#13c2c2",
-    "#faad14",
-    "#f5222d",
-    "#722ed1",
-    "#52c41a",
+    "#8bc5fcff",
+    "#7bf1f1ff",
+    "#f7ce7eff",
+    "#f08186ff",
+    "#b990f3ff",
+    "#a9f185ff",
   ];
 
   const columns = [
@@ -163,7 +167,9 @@ const AdminDashboard = () => {
       <Card
         title={
           <Space>
-            <span>Lượt nghe theo ngày</span>
+            <span>
+              <LineChartOutlined /> Lượt nghe theo ngày
+            </span>
             <DatePicker.RangePicker
               value={dateRange}
               onChange={setDateRange}
@@ -208,7 +214,15 @@ const AdminDashboard = () => {
       </Card>
 
       {/* Lượt nghe theo tháng */}
-      <Card title="Lượt nghe theo tháng" style={{ marginBottom: 24 }}>
+      <Card
+        title={
+          <Space>
+            <LineChartOutlined />
+            <span>Lượt nghe theo tháng</span>
+          </Space>
+        }
+        style={{ marginBottom: 24 }}
+      >
         {monthlyListens?.length ? (
           <ResponsiveContainer width="100%" height={300}>
             <LineChart data={monthlyListens || []}>
@@ -225,7 +239,15 @@ const AdminDashboard = () => {
       </Card>
 
       {/* Người dùng mới */}
-      <Card title="Người dùng mới (30 ngày)" style={{ marginBottom: 24 }}>
+      <Card
+        title={
+          <Space>
+            <BarChartOutlined />
+            <span>"Người dùng mới (30 ngày)"</span>
+          </Space>
+        }
+        style={{ marginBottom: 24 }}
+      >
         {newUsers?.length ? (
           <ResponsiveContainer width="100%" height={300}>
             <BarChart data={newUsers || []}>
@@ -245,7 +267,15 @@ const AdminDashboard = () => {
       </Card>
 
       {/* Top podcast */}
-      <Card title="Top Podcast" style={{ marginBottom: 24 }}>
+      <Card
+        title={
+          <Space>
+            <TableOutlined />
+            <span>Top Podcast</span>
+          </Space>
+        }
+        style={{ marginBottom: 24 }}
+      >
         <Table
           dataSource={overview?.top_podcasts || []}
           columns={columns}
@@ -255,7 +285,14 @@ const AdminDashboard = () => {
       </Card>
 
       {/* Phân bố theo môn học */}
-      <Card title="Phân bố lượt nghe theo môn học">
+      <Card
+        title={
+          <Space>
+            <PieChartOutlined />
+            <span>Phân bố lượt nghe theo môn học</span>
+          </Space>
+        }
+      >
         {subjectData?.length ? (
           <ResponsiveContainer width="100%" height={300}>
             <PieChart>

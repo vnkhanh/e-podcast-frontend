@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback } from "react";
+import React, { useEffect, useState, useCallback, useContext } from "react";
 import {
   Table,
   Button,
@@ -13,12 +13,16 @@ import {
   Typography,
   Select,
   Form,
+  Row,
+  Col,
 } from "antd";
 import {
   PlusOutlined,
   DeleteOutlined,
   EditOutlined,
   EyeOutlined,
+  BookOutlined,
+  ReloadOutlined,
 } from "@ant-design/icons";
 import {
   listSubjects,
@@ -30,6 +34,7 @@ import {
 } from "../../../services/api_subject";
 import SubjectForm from "./SubjectForm";
 import SubjectFormEdit from "./SubjectFormEdit";
+import { ThemeContext } from "../../../context/useTheme";
 
 const { Option } = Select;
 const { Title, Text } = Typography;
@@ -38,11 +43,12 @@ const { RangePicker } = DatePicker;
 const SubjectPage = () => {
   const [form] = Form.useForm();
   const user = JSON.parse(localStorage.getItem("user"));
+  const { isDarkMode } = useContext(ThemeContext); // dùng context dark mode
 
   const [subjects, setSubjects] = useState([]);
   const [loading, setLoading] = useState(false);
 
-  // create
+  // modal
   const [modalVisible, setModalVisible] = useState(false);
   const [creating, setCreating] = useState(false);
 
@@ -66,7 +72,6 @@ const SubjectPage = () => {
   const [detailData, setDetailData] = useState(null);
   const [detailLoading, setDetailLoading] = useState(false);
 
-  // load list
   const loadSubjects = useCallback(async () => {
     setLoading(true);
     try {
@@ -89,7 +94,7 @@ const SubjectPage = () => {
   }, [searchText, statusFilter, dateRange, lecturerFilter, page, limit]);
 
   useEffect(() => {
-    setPage(1); // reset page về 1 khi filter/search thay đổi
+    setPage(1);
   }, [searchText, statusFilter, dateRange, lecturerFilter]);
 
   useEffect(() => {
@@ -103,65 +108,52 @@ const SubjectPage = () => {
       message.success("Thêm môn học thành công");
       setModalVisible(false);
       loadSubjects();
-      form.resetFields(); // nếu dùng form AntD
+      form.resetFields();
     } catch (err) {
       const errorMsg = err.response?.data?.error || "Lỗi khi thêm môn học";
       if (errorMsg.includes("đã tồn tại")) {
-        // hiển thị lỗi trực tiếp dưới input
-        form.setFields([
-          {
-            name: "name",
-            errors: [errorMsg],
-          },
-        ]);
-      } else {
-        message.error(errorMsg);
-      }
+        form.setFields([{ name: "name", errors: [errorMsg] }]);
+      } else message.error(errorMsg);
     } finally {
       setCreating(false);
     }
   };
 
-  // delete
   const handleDelete = async (id) => {
     try {
       await deleteSubject(id);
       message.success("Đã xoá môn học");
       loadSubjects();
-    } catch (err) {
+    } catch {
       message.error("Không thể xoá môn học");
-      console.error(err);
     }
   };
 
-  // detail
   const fetchSubjectDetail = async (id) => {
     setDetailLoading(true);
     try {
       const data = await getSubjectDetail(id);
       setDetailData(data);
       setDetailVisible(true);
-    } catch (err) {
+    } catch {
       message.error("Không thể lấy chi tiết môn học");
-      console.error(err);
     } finally {
       setDetailLoading(false);
     }
   };
+
   const handleEdit = async (record) => {
     try {
       setUpdating(true);
-      const data = await getSubjectDetail(record.id); // gọi API chi tiết
-      setEditingSubject(data); // có cả chapters
-    } catch (err) {
+      const data = await getSubjectDetail(record.id);
+      setEditingSubject(data);
+    } catch {
       message.error("Không thể tải chi tiết môn học");
-      console.error(err);
     } finally {
       setUpdating(false);
     }
   };
 
-  // update
   const handleUpdate = async (values) => {
     try {
       setUpdating(true);
@@ -173,15 +165,12 @@ const SubjectPage = () => {
       const msg = err.response?.data?.error;
       if (msg?.includes("tồn tại")) {
         form.setFields([{ name: "name", errors: [msg] }]);
-      } else {
-        message.error(msg || "Lỗi khi cập nhật môn học");
-      }
+      } else message.error(msg || "Lỗi khi cập nhật môn học");
     } finally {
       setUpdating(false);
     }
   };
 
-  // toggle
   const handleToggle = async (id) => {
     try {
       const res = await toggleSubjectStatus(id);
@@ -198,7 +187,6 @@ const SubjectPage = () => {
       dataIndex: "name",
       key: "name",
       sorter: (a, b) => a.name.localeCompare(b.name),
-      sortDirections: ["ascend", "descend"],
     },
     {
       title: "Trạng thái",
@@ -219,7 +207,6 @@ const SubjectPage = () => {
       key: "created_at",
       render: (text) => new Date(text).toLocaleString(),
       sorter: (a, b) => new Date(a.created_at) - new Date(b.created_at),
-      sortDirections: ["ascend", "descend"],
     },
     ...(user?.role === "admin"
       ? [
@@ -227,13 +214,11 @@ const SubjectPage = () => {
             title: "Người tạo",
             dataIndex: ["user", "full_name"],
             key: "creator",
-            width: 180,
             render: (_, record) =>
               record.user?.full_name || record.user?.email || "—",
           },
         ]
       : []),
-
     {
       title: "Thao tác",
       key: "action",
@@ -247,9 +232,7 @@ const SubjectPage = () => {
           >
             <Button danger icon={<DeleteOutlined />} />
           </Popconfirm>
-
           <Button icon={<EditOutlined />} onClick={() => handleEdit(record)} />
-
           <Button
             icon={<EyeOutlined />}
             type="primary"
@@ -261,15 +244,38 @@ const SubjectPage = () => {
   ];
 
   return (
-    <div style={{ padding: 24 }}>
-      <div style={{ marginBottom: 24 }}>
-        <Title level={2} style={{ margin: 0 }}>
-          Quản lý Môn học
-        </Title>
-        <Text type="secondary">Tạo và quản lý các môn học của bạn</Text>
-      </div>
+    <div
+      style={{
+        padding: 24,
+        minHeight: "100vh",
+        transition: "all 0.3s ease",
+      }}
+    >
+      {/* Header */}
+      <Row justify="space-between" align="middle" style={{ marginBottom: 24 }}>
+        <Col>
+          <Title level={2} style={{ marginBottom: 0 }}>
+            Quản lý Môn học
+          </Title>
+          <Text type="secondary">Tạo, chỉnh sửa và quản lý môn học</Text>
+        </Col>
+        <Col>
+          <Space>
+            <Button icon={<ReloadOutlined />} onClick={() => loadSubjects()}>
+              Làm mới
+            </Button>
+            <Button
+              type="primary"
+              icon={<PlusOutlined />}
+              onClick={() => setModalVisible(true)}
+            >
+              Thêm môn học
+            </Button>
+          </Space>
+        </Col>
+      </Row>
 
-      <Space style={{ marginBottom: 16 }}>
+      <Space style={{ marginBottom: 16, flexWrap: "wrap" }}>
         <Input.Search
           placeholder="Tìm kiếm môn học"
           enterButton
@@ -277,7 +283,11 @@ const SubjectPage = () => {
           value={searchText}
           onChange={(e) => setSearchText(e.target.value)}
           onSearch={() => loadSubjects()}
-          style={{ width: 250 }}
+          style={{
+            width: 250,
+            background: isDarkMode ? "#1f2937" : undefined,
+            color: isDarkMode ? "#e5e7eb" : undefined,
+          }}
         />
         <RangePicker
           style={{ width: 250 }}
@@ -285,10 +295,7 @@ const SubjectPage = () => {
           onChange={(dates) => {
             setDateRange(dates || [null, null]);
             setPage(1);
-            loadSubjects({
-              from_date: dates?.[0]?.format("YYYY-MM-DD"),
-              to_date: dates?.[1]?.format("YYYY-MM-DD"),
-            });
+            loadSubjects();
           }}
           format="YYYY-MM-DD"
           allowClear
@@ -303,7 +310,7 @@ const SubjectPage = () => {
           <Option value="true">Kích hoạt</Option>
           <Option value="false">Ngừng</Option>
         </Select>
-        {JSON.parse(localStorage.getItem("user"))?.role === "admin" && (
+        {user?.role === "admin" && (
           <Input
             placeholder="Lọc theo giảng viên"
             allowClear
@@ -312,39 +319,30 @@ const SubjectPage = () => {
             style={{ width: 200 }}
           />
         )}
-
-        <Button
-          type="primary"
-          icon={<PlusOutlined />}
-          onClick={() => setModalVisible(true)}
-        >
-          Thêm môn học
-        </Button>
       </Space>
 
       <Table
         rowKey="id"
-        columns={columns.filter((col) => !col.hidden)}
+        columns={columns}
         dataSource={subjects}
         loading={loading}
-        rowClassName={(record) =>
-          record.status ? "row-active" : "row-inactive"
-        }
-        onRow={(record) => ({
-          style: {
-            backgroundColor: record.status ? "#c7f5edff" : "#ffd0cdff",
-          },
-        })}
         pagination={{
           current: page,
           pageSize: limit,
-          total: total,
+          total,
           showSizeChanger: true,
           onChange: (p, l) => {
             setPage(p);
             setLimit(l);
           },
         }}
+        style={{
+          background: isDarkMode ? "#1f2937" : "white",
+          color: isDarkMode ? "#e5e7eb" : "#000",
+          borderRadius: 12,
+          overflow: "hidden",
+        }}
+        rowClassName={() => (isDarkMode ? "dark-row" : "")}
       />
 
       {/* Modal thêm */}
@@ -353,7 +351,13 @@ const SubjectPage = () => {
         title="Thêm môn học"
         onCancel={() => setModalVisible(false)}
         footer={null}
-        destroyOnHidden
+        centered
+        styles={{
+          content: {
+            background: isDarkMode ? "#1f2937" : "#fff",
+            color: isDarkMode ? "#e5e7eb" : "#000",
+          },
+        }}
       >
         <SubjectForm form={form} onFinish={handleCreate} loading={creating} />
       </Modal>
@@ -364,7 +368,13 @@ const SubjectPage = () => {
         title="Cập nhật môn học"
         onCancel={() => setEditingSubject(null)}
         footer={null}
-        destroyOnHidden
+        centered
+        styles={{
+          content: {
+            background: isDarkMode ? "#1f2937" : "#fff",
+            color: isDarkMode ? "#e5e7eb" : "#000",
+          },
+        }}
       >
         {editingSubject && (
           <SubjectFormEdit
@@ -382,11 +392,29 @@ const SubjectPage = () => {
         open={detailVisible}
         onCancel={() => setDetailVisible(false)}
         footer={null}
+        centered
+        styles={{
+          content: {
+            background: isDarkMode ? "#1f2937" : "#fff",
+            color: isDarkMode ? "#e5e7eb" : "#000",
+          },
+        }}
       >
         {detailLoading ? (
           <p>Đang tải...</p>
         ) : detailData ? (
-          <Descriptions bordered column={1}>
+          <Descriptions
+            bordered
+            column={1}
+            labelStyle={{
+              background: isDarkMode ? "#374151" : "#fafafa",
+              color: isDarkMode ? "#f9fafb" : "#000",
+            }}
+            contentStyle={{
+              background: isDarkMode ? "#1f2937" : "#fff",
+              color: isDarkMode ? "#e5e7eb" : "#000",
+            }}
+          >
             <Descriptions.Item label="ID">{detailData.id}</Descriptions.Item>
             <Descriptions.Item label="Tên">{detailData.name}</Descriptions.Item>
             <Descriptions.Item label="Slug">
@@ -400,6 +428,9 @@ const SubjectPage = () => {
             </Descriptions.Item>
             <Descriptions.Item label="Ngày cập nhật">
               {new Date(detailData.updated_at).toLocaleString()}
+            </Descriptions.Item>
+            <Descriptions.Item label="Người cập nhật">
+              {detailData.updated_by_user?.full_name || "—"}
             </Descriptions.Item>
           </Descriptions>
         ) : (

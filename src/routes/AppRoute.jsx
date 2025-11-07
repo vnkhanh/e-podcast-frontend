@@ -19,7 +19,8 @@ import QuizHistoryPage from "../pages/student/Quiz/QuizHistoryPage";
 import QuizAttemptDetailPage from "../pages/student/Quiz/QuizAttemptDetailPage";
 import SubjectDetailPage from "../pages/student/Subject/SubjectDetailPage";
 import SearchPage from "../pages/student/SearchPage";
-
+import CategoryList from "../pages/student/Category/CategoryList";
+import PodcastLibrary from "../pages/student/PodcastLibrary";
 // Admin & Teacher dùng chung layout
 import AdminLayout from "../layouts/AdminLayout";
 import AdminDashboard from "../pages/admin/AdminDashboard";
@@ -86,6 +87,8 @@ const AppRoute = () => {
         <Route path="/subjects" element={<SubjectListPage />} />
         <Route path="/search" element={<SearchPage />} />
         <Route path="notifications" element={<NotificationList />} />
+        <Route path="/categories" element={<CategoryList />} />
+        <Route path="/podcasts" element={<PodcastLibrary />} />
       </Route>
 
       {/* Teacher & Admin dùng chung layout */}

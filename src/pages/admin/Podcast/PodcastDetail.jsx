@@ -158,7 +158,6 @@ export default function PodcastDetailPage() {
                       column={1}
                       bordered
                       labelStyle={{ fontWeight: 500, width: "30%" }}
-                      contentStyle={{ background: "#fafafa" }}
                     >
                       <Descriptions.Item label="Tên file">
                         {podcast.document.original_name}
@@ -248,6 +247,12 @@ export default function PodcastDetailPage() {
                 <Descriptions.Item label="Ngày cập nhật mới nhất">
                   <CalendarOutlined />{" "}
                   {dayjs(podcast.updated_at).format("DD/MM/YYYY HH:mm")}
+                </Descriptions.Item>
+              )}
+
+              {podcast.updated_by && (
+                <Descriptions.Item label="Người cập nhật mới nhất">
+                  {podcast.updated_by}
                 </Descriptions.Item>
               )}
 

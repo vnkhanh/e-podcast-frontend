@@ -118,6 +118,25 @@ export const getLatestPodcasts = async () => {
     return [];
   }
 };
+/* =================*/
+export const getAllPublishedPodcasts = async (params) => {
+  const res = await axios.get(`${API_BASE_URL}/user/podcasts`, { params });
+  return res.data;
+};
+export const listAllTags = async () => {
+  const res = await axios.get(`${API_BASE_URL}/user/tagsget`);
+  return res.data || [];
+};
+export const listAllCategories = async () => {
+  const res = await axios.get(`${API_BASE_URL}/user/categoriesget`);
+  return res.data || [];
+};
+export const listAllSubjects = async () => {
+  const res = await axios.get(`${API_BASE_URL}/user/subjectsget`);
+  return res.data || [];
+};
+/* =================*/
+
 export const getPodcastById = async (id) => {
   const res = await axios.get(`${API_BASE_URL}/user/podcasts/${id}`);
   return res.data || null;

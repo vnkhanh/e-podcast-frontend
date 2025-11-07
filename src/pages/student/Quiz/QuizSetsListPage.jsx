@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useContext } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import {
   Card,
@@ -14,7 +14,6 @@ import {
   Col,
   Modal,
   Avatar,
-  Badge,
   Statistic,
 } from "antd";
 import {
@@ -22,9 +21,7 @@ import {
   FileTextOutlined,
   ClockCircleOutlined,
   PlayCircleOutlined,
-  BulbOutlined,
   RocketOutlined,
-  StarOutlined,
   CrownOutlined,
   BookOutlined,
   UserOutlined,
@@ -35,22 +32,21 @@ import {
   createQuizFromDocument,
 } from "../../../services/api_quiz";
 import { getPodcastById } from "../../../services/api_podcast";
+import { ThemeContext } from "../../../context/useTheme";
 
 const { Title, Text, Paragraph } = Typography;
 
 const QuizSetsListPage = () => {
   const { id } = useParams(); // podcast_id
   const navigate = useNavigate();
+  const { isDarkMode } = useContext(ThemeContext);
+
   const [loading, setLoading] = useState(true);
   const [generating, setGenerating] = useState(false);
   const [quizSets, setQuizSets] = useState([]);
   const [podcast, setPodcast] = useState(null);
 
-  useEffect(() => {
-    fetchData();
-  }, [id]);
-
-  const fetchData = async () => {
+  const fetchData = React.useCallback(async () => {
     setLoading(true);
     try {
       const podcastRes = await getPodcastById(id);
@@ -64,7 +60,11 @@ const QuizSetsListPage = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [id]);
+
+  useEffect(() => {
+    fetchData();
+  }, [fetchData]);
 
   const handleGenerateQuiz = () => {
     Modal.confirm({
@@ -112,19 +112,6 @@ const QuizSetsListPage = () => {
     navigate(`/quiz-sets/${quizSetId}/take`);
   };
 
-  const getDifficultyColor = (difficulty) => {
-    switch (difficulty) {
-      case "hard":
-        return "#ff4d4f";
-      case "medium":
-        return "#faad14";
-      case "easy":
-        return "#52c41a";
-      default:
-        return "#d9d9d9";
-    }
-  };
-
   const calculateStats = () => {
     if (quizSets.length === 0) return null;
 
@@ -151,7 +138,9 @@ const QuizSetsListPage = () => {
         style={{
           textAlign: "center",
           padding: "100px 0",
-          background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+          background: isDarkMode
+            ? "linear-gradient(135deg, #0f172a 0%, #1e293b 100%)"
+            : "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
           minHeight: "100vh",
           display: "flex",
           alignItems: "center",
@@ -168,9 +157,9 @@ const QuizSetsListPage = () => {
   return (
     <div
       style={{
-        background: "linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%)",
         minHeight: "100vh",
         padding: 24,
+        color: isDarkMode ? "#e5e7eb" : "#000",
       }}
     >
       <div style={{ maxWidth: 1200, margin: "0 auto" }}>
@@ -260,8 +249,9 @@ const QuizSetsListPage = () => {
                 style={{
                   textAlign: "center",
                   borderRadius: 12,
-                  background:
-                    "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+                  background: isDarkMode
+                    ? "#312e81"
+                    : "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
                   border: "none",
                   color: "white",
                 }}
@@ -281,8 +271,9 @@ const QuizSetsListPage = () => {
                 style={{
                   textAlign: "center",
                   borderRadius: 12,
-                  background:
-                    "linear-gradient(135deg, #ff6b6b 0%, #ee5a24 100%)",
+                  background: isDarkMode
+                    ? "#7f1d1d"
+                    : "linear-gradient(135deg, #ff6b6b 0%, #ee5a24 100%)",
                   border: "none",
                   color: "white",
                 }}
@@ -302,8 +293,7 @@ const QuizSetsListPage = () => {
                 style={{
                   textAlign: "center",
                   borderRadius: 12,
-                  background:
-                    "linear-gradient(135deg, #ffeaa7 0%, #fdcb6e 100%)",
+                  background: isDarkMode ? "#78350f" : "#fffbe6",
                   border: "none",
                 }}
               >
@@ -314,9 +304,18 @@ const QuizSetsListPage = () => {
                       : "--"
                   }
                   prefix={<ClockCircleOutlined />}
-                  valueStyle={{ color: "#faad14" }}
+                  valueStyle={{
+                    color: isDarkMode ? "#facc15" : "#faad14",
+                  }}
                 />
-                <Text type="secondary">Cập nhật gần nhất</Text>
+                <Text
+                  type="secondary"
+                  style={{
+                    color: isDarkMode ? "#fef9c3" : undefined,
+                  }}
+                >
+                  Cập nhật gần nhất
+                </Text>
               </Card>
             </Col>
           </Row>
@@ -324,10 +323,17 @@ const QuizSetsListPage = () => {
 
         {/* QUIZ LIST */}
         {quizSets.length === 0 ? (
-          <Card style={{ borderRadius: 16, border: "none" }}>
+          <Card
+            style={{
+              borderRadius: 16,
+              border: "none",
+              background: isDarkMode ? "#1f2937" : "white",
+            }}
+          >
             <Empty
               description="Chưa có bộ trắc nghiệm nào cho podcast này"
               image={Empty.PRESENTED_IMAGE_SIMPLE}
+              style={{ color: isDarkMode ? "#e5e7eb" : undefined }}
             >
               <Button
                 type="primary"
@@ -348,7 +354,7 @@ const QuizSetsListPage = () => {
         ) : (
           <div
             style={{
-              background: "white",
+              background: isDarkMode ? "#1f2937" : "white",
               borderRadius: 16,
               overflow: "hidden",
             }}
@@ -363,8 +369,11 @@ const QuizSetsListPage = () => {
                     className="quiz-set-item"
                     style={{
                       padding: "16px 24px",
-                      borderBottom: "1px solid #f0f0f0",
+                      borderBottom: isDarkMode
+                        ? "1px solid #374151"
+                        : "1px solid #f0f0f0",
                       transition: "all 0.3s ease",
+                      cursor: "pointer",
                     }}
                   >
                     <Row
@@ -378,9 +387,13 @@ const QuizSetsListPage = () => {
                             width: 40,
                             height: 40,
                             borderRadius: "50%",
-                            background: "rgba(102, 126, 234, 0.2)",
-                            color: "#667eea",
-                            border: "2px solid #667eea",
+                            background: isDarkMode
+                              ? "rgba(129, 140, 248, 0.2)"
+                              : "rgba(102, 126, 234, 0.2)",
+                            color: isDarkMode ? "#c7d2fe" : "#667eea",
+                            border: `2px solid ${
+                              isDarkMode ? "#818cf8" : "#667eea"
+                            }`,
                             display: "flex",
                             alignItems: "center",
                             justifyContent: "center",
@@ -405,8 +418,18 @@ const QuizSetsListPage = () => {
                               gap: 8,
                             }}
                           >
-                            <FileTextOutlined style={{ color: "#1890ff" }} />
-                            <Text strong style={{ fontSize: 16 }}>
+                            <FileTextOutlined
+                              style={{
+                                color: isDarkMode ? "#60a5fa" : "#1890ff",
+                              }}
+                            />
+                            <Text
+                              strong
+                              style={{
+                                fontSize: 16,
+                                color: isDarkMode ? "#f3f4f6" : undefined,
+                              }}
+                            >
                               {quizSet.title}
                             </Text>
                             {index === 0 && (
@@ -416,22 +439,29 @@ const QuizSetsListPage = () => {
 
                           <Paragraph
                             ellipsis={{ rows: 2 }}
-                            style={{ margin: 0, color: "#666", fontSize: 14 }}
+                            style={{
+                              margin: 0,
+                              color: isDarkMode ? "#9ca3af" : "#666",
+                              fontSize: 14,
+                            }}
                           >
                             {quizSet.description ||
                               "Bộ câu hỏi được tạo tự động từ nội dung podcast"}
                           </Paragraph>
 
                           <Space wrap>
-                            <Tag icon={<FileTextOutlined />} color="blue">
+                            <Tag
+                              icon={<FileTextOutlined />}
+                              color={isDarkMode ? "blue" : "blue"}
+                            >
                               {questionCount} câu hỏi
-                            </Tag>
-                            <Tag color={getDifficultyColor(quizSet.difficulty)}>
-                              {quizSet.difficulty || "medium"}
                             </Tag>
                             <Tag
                               icon={<ClockCircleOutlined />}
-                              style={{ background: "#f0f0f0" }}
+                              style={{
+                                background: isDarkMode ? "#374151" : "#f0f0f0",
+                                color: isDarkMode ? "#e5e7eb" : "#000",
+                              }}
                             >
                               {new Date(quizSet.created_at).toLocaleDateString(
                                 "vi-VN"
@@ -479,7 +509,9 @@ const QuizSetsListPage = () => {
 
         <style jsx>{`
           .quiz-set-item:hover {
-            background: linear-gradient(135deg, #f8f9ff 0%, #e3f2fd 100%);
+            background: ${isDarkMode
+              ? "linear-gradient(135deg, #111827 0%, #1f2937 100%)"
+              : "linear-gradient(135deg, #f8f9ff 0%, #e3f2fd 100%)"};
             transform: translateX(4px);
           }
         `}</style>

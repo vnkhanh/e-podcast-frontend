@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useContext } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import {
   Card,
@@ -15,7 +15,6 @@ import {
   Statistic,
   Progress,
   Avatar,
-  Badge,
 } from "antd";
 import {
   ArrowLeftOutlined,
@@ -26,23 +25,20 @@ import {
   PlayCircleOutlined,
   UserOutlined,
   CalendarOutlined,
-  FireOutlined,
-  StarOutlined,
 } from "@ant-design/icons";
 import { getQuizAttemptsBySet } from "../../../services/api_quiz";
+import { ThemeContext } from "../../../context/useTheme";
 
 const { Title, Text } = Typography;
 
 const QuizHistoryPage = () => {
   const { id } = useParams(); // quizSetId
   const navigate = useNavigate();
+  const { isDarkMode } = useContext(ThemeContext);
+
   const [loading, setLoading] = useState(true);
   const [attempts, setAttempts] = useState([]);
   const [quizSetInfo, setQuizSetInfo] = useState(null);
-
-  useEffect(() => {
-    fetchAttempts();
-  }, [id]);
 
   const fetchAttempts = async () => {
     setLoading(true);
@@ -57,6 +53,11 @@ const QuizHistoryPage = () => {
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    fetchAttempts();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [id]);
 
   const getScoreColor = (score) => {
     if (score >= 8) return "#52c41a";
@@ -85,7 +86,7 @@ const QuizHistoryPage = () => {
       totalAttempts,
       bestScore: Math.round(bestScore),
       averageScore: Math.round(averageScore),
-      totalTime: Math.round(totalTime / 60), // in minutes
+      totalTime: Math.round(totalTime / 60),
     };
   };
 
@@ -95,7 +96,6 @@ const QuizHistoryPage = () => {
         style={{
           textAlign: "center",
           padding: "100px 0",
-          background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
           minHeight: "100vh",
           display: "flex",
           alignItems: "center",
@@ -112,13 +112,13 @@ const QuizHistoryPage = () => {
   return (
     <div
       style={{
-        background: "linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%)",
         minHeight: "100vh",
         padding: "24px",
+        color: isDarkMode ? "#e5e7eb" : "#000",
       }}
     >
       <div style={{ maxWidth: 1200, margin: "0 auto" }}>
-        {/* Header Section */}
+        {/* Header */}
         <Card
           style={{
             marginBottom: 24,
@@ -126,7 +126,6 @@ const QuizHistoryPage = () => {
             border: "none",
             borderRadius: 16,
             color: "white",
-            overflow: "hidden",
           }}
         >
           <div style={{ padding: 24 }}>
@@ -177,12 +176,11 @@ const QuizHistoryPage = () => {
                   <div style={{ textAlign: "center" }}>
                     <Progress
                       type="circle"
-                      percent={stats.averageScore * 10} // vòng hiển thị tỉ lệ (0–100)
+                      percent={stats.averageScore * 10}
                       format={() => (
                         <div style={{ color: "white" }}>
                           <div style={{ fontSize: 20, fontWeight: "bold" }}>
-                            Điểm TB: {parseFloat(stats.averageScore.toFixed(2))}
-                            /10
+                            TB: {parseFloat(stats.averageScore.toFixed(2))}/10
                           </div>
                         </div>
                       )}
@@ -196,7 +194,7 @@ const QuizHistoryPage = () => {
           </div>
         </Card>
 
-        {/* Statistics Overview */}
+        {/* Stats */}
         {stats && (
           <Row gutter={[16, 16]} style={{ marginBottom: 24 }} justify="center">
             <Col xs={12} md={6}>
@@ -204,8 +202,9 @@ const QuizHistoryPage = () => {
                 style={{
                   textAlign: "center",
                   borderRadius: 12,
-                  background:
-                    "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+                  background: isDarkMode
+                    ? "#312e81"
+                    : "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
                   border: "none",
                   color: "white",
                 }}
@@ -220,19 +219,21 @@ const QuizHistoryPage = () => {
                 </Text>
               </Card>
             </Col>
+
             <Col xs={12} md={6}>
               <Card
                 style={{
                   textAlign: "center",
                   borderRadius: 12,
-                  background:
-                    "linear-gradient(135deg, #ff6b6b 0%, #ee5a24 100%)",
+                  background: isDarkMode
+                    ? "#7f1d1d"
+                    : "linear-gradient(135deg, #ff6b6b 0%, #ee5a24 100%)",
                   border: "none",
                   color: "white",
                 }}
               >
                 <Statistic
-                  value={parseFloat(stats.bestScore.toFixed(2))}
+                  value={stats.bestScore}
                   prefix={<TrophyOutlined />}
                   suffix="/10"
                   valueStyle={{ color: "white" }}
@@ -242,13 +243,13 @@ const QuizHistoryPage = () => {
                 </Text>
               </Card>
             </Col>
+
             <Col xs={12} md={6}>
               <Card
                 style={{
                   textAlign: "center",
                   borderRadius: 12,
-                  background:
-                    "linear-gradient(135deg, #ffeaa7 0%, #fdcb6e 100%)",
+                  background: isDarkMode ? "#78350f" : "#fffbe6",
                   border: "none",
                 }}
               >
@@ -256,26 +257,42 @@ const QuizHistoryPage = () => {
                   value={stats.totalTime}
                   suffix="phút"
                   prefix={<ClockCircleOutlined />}
-                  valueStyle={{ color: "#faad14" }}
+                  valueStyle={{
+                    color: isDarkMode ? "#facc15" : "#faad14",
+                  }}
                 />
-                <Text type="secondary">Tổng thời gian</Text>
+                <Text
+                  type="secondary"
+                  style={{
+                    color: isDarkMode ? "#fef9c3" : undefined,
+                  }}
+                >
+                  Tổng thời gian
+                </Text>
               </Card>
             </Col>
           </Row>
         )}
 
-        {/* Attempts List */}
+        {/* Attempts list */}
         {attempts.length === 0 ? (
-          <Card style={{ borderRadius: 16, border: "none" }}>
+          <Card
+            style={{
+              borderRadius: 16,
+              border: "none",
+              background: isDarkMode ? "#1f2937" : "white",
+            }}
+          >
             <Empty
               description="Chưa có lần làm nào cho bộ trắc nghiệm này"
               image={Empty.PRESENTED_IMAGE_SIMPLE}
+              style={{ color: isDarkMode ? "#e5e7eb" : undefined }}
             />
           </Card>
         ) : (
           <div
             style={{
-              background: "white",
+              background: isDarkMode ? "#1f2937" : "white",
               borderRadius: 16,
               overflow: "hidden",
             }}
@@ -292,118 +309,130 @@ const QuizHistoryPage = () => {
                       cursor: "pointer",
                       transition: "all 0.3s ease",
                       padding: "16px 24px",
-                      borderBottom: "1px solid #f0f0f0",
+                      borderBottom: isDarkMode
+                        ? "1px solid #374151"
+                        : "1px solid #f0f0f0",
                     }}
                     className="quiz-history-item"
                   >
-                    <div style={{ width: "100%" }}>
-                      <Row gutter={[16, 16]} align="middle">
-                        <Col xs={2} style={{ textAlign: "center" }}>
+                    <Row
+                      gutter={[16, 16]}
+                      align="middle"
+                      style={{ width: "100%" }}
+                    >
+                      <Col xs={2} style={{ textAlign: "center" }}>
+                        <div
+                          style={{
+                            width: 40,
+                            height: 40,
+                            borderRadius: "50%",
+                            border: `2px solid ${
+                              isDarkMode ? "#818cf8" : "#667eea"
+                            }`,
+                            color: isDarkMode ? "#c7d2fe" : "#667eea",
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "center",
+                            fontWeight: 600,
+                            fontSize: 16,
+                          }}
+                        >
+                          {index + 1}
+                        </div>
+                      </Col>
+
+                      <Col xs={16} md={14}>
+                        <Space
+                          direction="vertical"
+                          size="small"
+                          style={{ width: "100%" }}
+                        >
                           <div
                             style={{
-                              width: 40,
-                              height: 40,
-                              borderRadius: "50%",
-                              background: "rgba(102, 126, 234, 0.2)",
-                              color: "#667eea",
-                              border: "2px solid #667eea",
                               display: "flex",
                               alignItems: "center",
-                              justifyContent: "center",
-                              fontWeight: 600,
-                              fontSize: 16,
+                              gap: 8,
                             }}
                           >
-                            {index + 1}
+                            <CalendarOutlined
+                              style={{
+                                color: isDarkMode ? "#93c5fd" : "#1890ff",
+                              }}
+                            />
+                            <Text
+                              strong
+                              style={{ color: isDarkMode ? "#f3f4f6" : "#000" }}
+                            >
+                              Ngày làm:{" "}
+                              {new Date(attempt.taken_at).toLocaleString(
+                                "vi-VN"
+                              )}
+                            </Text>
                           </div>
-                        </Col>
 
-                        <Col xs={16} md={14}>
-                          <Space
-                            direction="vertical"
-                            size="small"
-                            style={{ width: "100%" }}
-                          >
-                            <div
-                              style={{
-                                display: "flex",
-                                alignItems: "center",
-                                gap: 8,
-                              }}
-                            >
-                              <CalendarOutlined style={{ color: "#1890ff" }} />
-                              <Text strong>
-                                Ngày làm:{" "}
-                                {new Date(attempt.taken_at).toLocaleString(
-                                  "vi-VN"
-                                )}
-                              </Text>
-                            </div>
-
-                            <Space wrap>
-                              <Tag
-                                icon={<CheckCircleOutlined />}
-                                color="green"
-                                style={{ borderRadius: 12, margin: 0 }}
-                              >
-                                Đúng: {attempt.correct_count}
-                              </Tag>
-                              <Tag
-                                icon={<CloseCircleOutlined />}
-                                color="red"
-                                style={{ borderRadius: 12, margin: 0 }}
-                              >
-                                Sai: {attempt.incorrect_count}
-                              </Tag>
-                              <Tag
-                                icon={<ClockCircleOutlined />}
-                                style={{
-                                  borderRadius: 12,
-                                  margin: 0,
-                                  background: "#f0f0f0",
-                                }}
-                              >
-                                Thời gian làm: {attempt.duration_sec}s
-                              </Tag>
-                            </Space>
-                          </Space>
-                        </Col>
-
-                        <Col xs={6} md={8} style={{ textAlign: "right" }}>
-                          <Space direction="vertical" size="small">
-                            <div>
-                              <Progress
-                                type="circle"
-                                percent={attempt.score * 10} // 0–10 → 0–100 cho vòng tròn
-                                width={60}
-                                strokeColor={getScoreColor(attempt.score)}
-                                format={() => (
-                                  <Text
-                                    strong
-                                    style={{
-                                      color: getScoreColor(attempt.score),
-                                      fontSize: 12,
-                                    }}
-                                  >
-                                    {parseFloat(attempt.score.toFixed(2))}
-                                  </Text>
-                                )}
-                              />
-                            </div>
+                          <Space wrap>
                             <Tag
-                              color={performance.color}
+                              icon={<CheckCircleOutlined />}
+                              color="green"
+                              style={{ borderRadius: 12, margin: 0 }}
+                            >
+                              Đúng: {attempt.correct_count}
+                            </Tag>
+                            <Tag
+                              icon={<CloseCircleOutlined />}
+                              color="red"
+                              style={{ borderRadius: 12, margin: 0 }}
+                            >
+                              Sai: {attempt.incorrect_count}
+                            </Tag>
+                            <Tag
+                              icon={<ClockCircleOutlined />}
                               style={{
-                                margin: 0,
                                 borderRadius: 12,
-                                border: "none",
+                                margin: 0,
+                                background: isDarkMode ? "#374151" : "#f0f0f0",
+                                color: isDarkMode ? "#e5e7eb" : "#000",
                               }}
                             >
-                              {performance.text}
+                              Thời gian: {attempt.duration_sec}s
                             </Tag>
                           </Space>
-                        </Col>
-                      </Row>
-                    </div>
+                        </Space>
+                      </Col>
+
+                      <Col xs={6} md={8} style={{ textAlign: "right" }}>
+                        <Space direction="vertical" size="small">
+                          <Progress
+                            type="circle"
+                            percent={attempt.score * 10}
+                            width={60}
+                            strokeColor={getScoreColor(attempt.score)}
+                            trailColor={isDarkMode ? "#374151" : undefined}
+                            format={() => (
+                              <Text
+                                strong
+                                style={{
+                                  color: getScoreColor(attempt.score),
+                                  fontSize: 12,
+                                }}
+                              >
+                                {parseFloat(attempt.score.toFixed(2))}
+                              </Text>
+                            )}
+                          />
+                          <Tag
+                            color={performance.color}
+                            style={{
+                              borderRadius: 12,
+                              border: "none",
+                              margin: 0,
+                            }}
+                          >
+                            {performance.text}
+                          </Tag>
+                        </Space>
+                      </Col>
+                    </Row>
                   </List.Item>
                 );
               }}
@@ -411,10 +440,11 @@ const QuizHistoryPage = () => {
           </div>
         )}
 
-        {/* CSS for hover effects */}
         <style jsx>{`
           .quiz-history-item:hover {
-            background: linear-gradient(135deg, #f8f9ff 0%, #e3f2fd 100%);
+            background: ${isDarkMode
+              ? "linear-gradient(135deg, #111827 0%, #1f2937 100%)"
+              : "linear-gradient(135deg, #f8f9ff 0%, #e3f2fd 100%)"};
             transform: translateX(4px);
           }
         `}</style>

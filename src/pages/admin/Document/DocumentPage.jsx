@@ -11,7 +11,8 @@ import {
   Modal,
   Popconfirm,
   Spin,
-  // notification,
+  Row,
+  Col,
   Tag,
   Progress,
   Typography,
@@ -283,12 +284,15 @@ const DocumentPage = () => {
   // === Giao diện chính ===
   return (
     <div style={{ padding: 24 }}>
-      <div style={{ marginBottom: 24 }}>
-        <Title level={2} style={{ margin: 0 }}>
-          Quản lý Tài liệu
-        </Title>
-        <Text type="secondary">Quản lý các tài liệu của bạn</Text>
-      </div>
+      {/* Header */}
+      <Row justify="space-between" align="middle" style={{ marginBottom: 24 }}>
+        <Col>
+          <Title level={2} style={{ marginBottom: 0 }}>
+            Quản lý Tài liệu
+          </Title>
+          <Text type="secondary">Xem và quản lý trạng thái tài liệu</Text>
+        </Col>
+      </Row>
 
       <Space style={{ marginBottom: 16 }} wrap>
         <Input.Search
