@@ -236,6 +236,11 @@ export default function PodcastDetailPage() {
                 <CalendarOutlined />{" "}
                 {dayjs(podcast.created_at).format("DD/MM/YYYY HH:mm")}
               </Descriptions.Item>
+              {podcast.created_by && (
+                <Descriptions.Item label="Người tạo">
+                  {podcast.created_by}
+                </Descriptions.Item>
+              )}
               {podcast.published_at && (
                 <Descriptions.Item label="Ngày xuất bản">
                   <CalendarOutlined />{" "}

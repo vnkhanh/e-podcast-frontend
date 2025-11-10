@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useContext } from "react";
 import { Layout, Menu, Dropdown, Avatar } from "antd";
 import { Link, Outlet, useNavigate, useLocation } from "react-router-dom";
 import {
@@ -10,13 +10,18 @@ import {
   BlockOutlined,
   DockerOutlined,
   HomeOutlined,
-  ContainerFilled,
+  MoonOutlined,
+  BulbOutlined,
+  CustomerServiceOutlined,
+  PaperClipOutlined,
 } from "@ant-design/icons";
 import RealtimeNotification from "../../components/RealtimeNotification";
+import { ThemeContext } from "../../context/useTheme";
 
 const { Header, Sider, Content } = Layout;
 
 const AdminLayout = () => {
+  const { isDarkMode, toggleTheme } = useContext(ThemeContext);
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -50,6 +55,13 @@ const AdminLayout = () => {
       >
         E-Podcast
       </Menu.Item>
+      <Menu.Item
+        key="theme"
+        icon={isDarkMode ? <BulbOutlined /> : <MoonOutlined />}
+        onClick={toggleTheme}
+      >
+        {isDarkMode ? "Chế độ sáng" : "Chế độ tối"}
+      </Menu.Item>
       <Menu.Item key="logout" icon={<LogoutOutlined />} onClick={handleLogout}>
         Đăng xuất
       </Menu.Item>
@@ -71,17 +83,18 @@ const AdminLayout = () => {
     },
     {
       key: "document",
-      icon: <DockerOutlined />,
+      icon: <PaperClipOutlined />,
       label: "Tài liệu",
       link: user?.role === "admin" ? "/admin/document" : "/teacher/document",
     },
     {
       key: "podcast",
-      icon: <BookOutlined />,
+      icon: <CustomerServiceOutlined />,
       label: "Podcast",
       link: user?.role === "admin" ? "/admin/podcast" : "/teacher/podcast",
     },
   ];
+
   if (user?.role === "admin") {
     menuItems.unshift({
       key: "dashboard",
@@ -89,8 +102,6 @@ const AdminLayout = () => {
       label: "Dashboard",
       link: "/admin/dashboard",
     });
-  }
-  if (user?.role === "admin") {
     menuItems.push({
       key: "user",
       icon: <UserOutlined />,
@@ -100,14 +111,20 @@ const AdminLayout = () => {
   }
 
   return (
-    <Layout style={{ minHeight: "100vh" }}>
-      <Sider collapsible>
+    <Layout
+      style={{
+        minHeight: "100vh",
+        background: isDarkMode ? "#141414" : "#f0f2f5",
+        color: isDarkMode ? "#fff" : "#000",
+      }}
+    >
+      <Sider theme={isDarkMode ? "dark" : "light"} collapsible>
         <div
           style={{
             height: 40,
             margin: 16,
-            background: "rgba(255,255,255,0.2)",
-            color: "#fff",
+            background: isDarkMode ? "rgba(255,255,255,0.2)" : "#1890ff20",
+            color: isDarkMode ? "#fff" : "#000",
             textAlign: "center",
             lineHeight: "40px",
             fontWeight: "bold",
@@ -116,7 +133,7 @@ const AdminLayout = () => {
           {user?.role === "admin" ? "Admin" : "Teacher"}
         </div>
         <Menu
-          theme="dark"
+          theme={isDarkMode ? "dark" : "light"}
           mode="inline"
           selectedKeys={[
             menuItems.find((item) => location.pathname.startsWith(item.link))
@@ -137,23 +154,29 @@ const AdminLayout = () => {
             display: "flex",
             justifyContent: "space-between",
             alignItems: "center",
-            background: "white",
+            background: isDarkMode ? "#1f1f1f" : "#fff",
+            color: isDarkMode ? "#fff" : "#000",
           }}
         >
-          <h3 style={{ margin: 0 }}>Hệ thống quản trị</h3>
+          <h3 style={{ margin: 0, color: isDarkMode ? "#fff" : "#000" }}>
+            Hệ thống quản trị
+          </h3>
 
-          <div style={{ display: "flex", alignItems: "center", gap: 20 }}>
-            <RealtimeNotification navigate={navigate} />
-
-            <Dropdown overlay={userMenu} placement="bottomRight">
+          <div style={{ display: "flex", alignItems: "center" }}>
+            <Dropdown
+              overlay={userMenu}
+              placement="bottomRight"
+              trigger={["click"]}
+            >
               <div
                 style={{
                   display: "flex",
                   alignItems: "center",
                   cursor: "pointer",
+                  color: isDarkMode ? "#fff" : "#000",
                 }}
               >
-                <span>Xin chào, {user?.full_name || "Admin"}!</span>{" "}
+                <span>Xin chào, {user?.full_name || "Admin"}!</span>
                 &nbsp;&nbsp;&nbsp;
                 <Avatar
                   style={{ backgroundColor: "#87d068", marginRight: 8 }}
@@ -161,10 +184,17 @@ const AdminLayout = () => {
                 />
               </div>
             </Dropdown>
+            <RealtimeNotification navigate={navigate} />
           </div>
         </Header>
 
-        <Content style={{ margin: "16px" }}>
+        <Content
+          style={{
+            margin: "16px",
+            background: isDarkMode ? "#141414" : "#fff",
+            color: isDarkMode ? "#fff" : "#000",
+          }}
+        >
           <div style={{ padding: 24, minHeight: 360 }}>
             <Outlet />
           </div>

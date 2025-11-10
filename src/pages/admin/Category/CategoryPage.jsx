@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback } from "react";
+import React, { useEffect, useState, useCallback, useContext } from "react";
 import {
   Row,
   Col,
@@ -32,6 +32,7 @@ import {
   getCategoryDetail,
 } from "../../../services/api_category";
 import CategoryFormEdit from "./CategoryFormEdit";
+import { ThemeContext } from "../../../context/useTheme";
 
 const { Title, Text } = Typography;
 const { Option } = Select;
@@ -45,6 +46,7 @@ const CategoryPage = () => {
   const [page, setPage] = useState(1);
   const [limit, setLimit] = useState(8);
   const [total, setTotal] = useState(0);
+  const { isDarkMode } = useContext(ThemeContext); // dùng context dark mode
 
   // Modal
   const [visibleAdd, setVisibleAdd] = useState(false);
@@ -131,7 +133,6 @@ const CategoryPage = () => {
       dataIndex: "name",
       key: "name",
       sorter: (a, b) => a.name.localeCompare(b.name),
-      render: (text) => <Text strong>{text}</Text>,
     },
     {
       title: "Trạng thái",
@@ -274,6 +275,13 @@ const CategoryPage = () => {
             setLimit(l);
           },
         }}
+        style={{
+          background: isDarkMode ? "#1f2937" : "white",
+          color: isDarkMode ? "#e5e7eb" : "#000",
+          borderRadius: 12,
+          overflow: "hidden",
+        }}
+        rowClassName={() => (isDarkMode ? "dark-row" : "")}
       />
 
       {/* Modal thêm */}

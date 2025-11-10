@@ -82,6 +82,13 @@ export async function resetPassword(token, newPassword) {
     throw err.response?.data || err;
   }
 }
+//Kiểm tra token
+export const verifyResetToken = async (token) => {
+  const res = await axios.get(`${API_BASE_URL}/auth/verify-reset-token`, {
+    params: { token },
+  });
+  return res.data;
+};
 
 export const getUserProfile = async (token) => {
   const res = await axios.get(`${API_BASE_URL}/user/account/me`, {

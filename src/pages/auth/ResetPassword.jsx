@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
-import { Form, Input, Button, message, Typography } from "antd";
+import { Form, Input, Button, message, Typography, Result } from "antd";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { resetPassword } from "../../services/api_auth";
+import { resetPassword, verifyResetToken } from "../../services/api_auth";
 import { jwtDecode } from "jwt-decode";
 
 const { Title, Text, Link } = Typography;
@@ -18,58 +18,63 @@ const formatTime = (seconds) => {
 const ResetPassword = () => {
   const [loading, setLoading] = useState(false);
   const [timeLeft, setTimeLeft] = useState(null);
+  const [status, setStatus] = useState("checking"); // 👈 checking | valid | used | expired | invalid
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const token = searchParams.get("token");
 
+  // =======================
+  // Kiểm tra token hợp lệ
+  // =======================
   useEffect(() => {
     if (!token) {
-      message.error("Token không hợp lệ!");
-      navigate("/auth/forgot-password");
+      setStatus("invalid");
       return;
     }
 
+    verifyResetToken(token)
+      .then(() => setStatus("valid"))
+      .catch((err) => {
+        const msg = err?.error?.toLowerCase?.() || "";
+        if (msg.includes("hết hạn")) setStatus("expired");
+        else if (msg.includes("được sử dụng")) setStatus("used");
+        else setStatus("invalid");
+      });
+
+    // Decode JWT để tính đếm ngược
     try {
       const decoded = jwtDecode(token);
       const now = Date.now() / 1000;
       if (decoded.exp && decoded.exp < now) {
-        message.error(
-          "Token đã hết hạn, vui lòng gửi yêu cầu quên mật khẩu mới."
-        );
-        navigate("/auth/forgot-password");
+        setStatus("expired");
         return;
       }
-
       setTimeLeft(Math.floor(decoded.exp - now));
-
       const interval = setInterval(() => {
         setTimeLeft((prev) => {
           if (prev <= 1) {
             clearInterval(interval);
-            message.error(
-              "Token đã hết hạn, vui lòng gửi yêu cầu quên mật khẩu mới."
-            );
-            navigate("/auth/forgot-password");
+            setStatus("expired");
             return 0;
           }
           return prev - 1;
         });
       }, 1000);
-
       return () => clearInterval(interval);
     } catch (err) {
-      message.error("Token không hợp lệ!");
       console.error("JWT Decode error:", err);
-      navigate("/auth/forgot-password");
+      setStatus("invalid");
     }
-  }, [token, navigate]);
+  }, [token]);
 
+  // =======================
+  // Xử lý đổi mật khẩu
+  // =======================
   const onFinish = async ({ newPassword, confirmPassword }) => {
     if (newPassword !== confirmPassword) {
       message.error("Mật khẩu xác nhận không khớp!");
       return;
     }
-
     setLoading(true);
     try {
       const data = await resetPassword(token, newPassword);
@@ -77,17 +82,63 @@ const ResetPassword = () => {
       navigate("/auth/login");
     } catch (err) {
       message.error(err?.error || "Token đã hết hạn hoặc có lỗi xảy ra!");
-      navigate("/auth/forgot-password");
-      console.error("ResetPassword error:", err);
+      setStatus("expired");
     } finally {
       setLoading(false);
     }
   };
 
+  // =======================
+  // Giao diện theo trạng thái
+  // =======================
+
+  if (status === "checking") {
+    return (
+      <div style={{ textAlign: "center", marginTop: 100 }}>
+        <Text type="secondary" style={{ fontSize: 16 }}>
+          Đang kiểm tra liên kết đặt lại mật khẩu...
+        </Text>
+      </div>
+    );
+  }
+
+  if (status === "expired" || status === "used" || status === "invalid") {
+    return (
+      <Result
+        status="404"
+        title="Không khả dụng"
+        subTitle="Liên kết này đã được sử dụng hoặc đã hết hạn. Vui lòng yêu cầu gửi lại liên kết mới."
+        extra={
+          <Button
+            type="primary"
+            htmlType="submit"
+            onClick={() => navigate("/auth/forgot-password")}
+            block
+            size="large"
+            style={{
+              background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+              border: "none",
+              borderRadius: 12,
+              height: 48,
+              fontSize: 16,
+              fontWeight: 600,
+              boxShadow: "0 4px 16px rgba(102, 126, 234, 0.3)",
+            }}
+          >
+            Yêu cầu lại liên kết
+          </Button>
+        }
+      />
+    );
+  }
+
+  // Giao diện đổi mật khẩu hợp lệ
   return (
     <div style={{ maxWidth: 400, margin: "40px auto" }}>
-      <div style={{ textAlign: "center", marginBottom: 24 }}>
-        <Title level={3}>Đặt lại mật khẩu</Title>
+      <div style={{ textAlign: "center", marginBottom: 32 }}>
+        <Title level={2} style={{ margin: 0, fontWeight: 700, fontSize: 28 }}>
+          Đặt lại mật khẩu
+        </Title>
         <Text type="secondary">Nhập mật khẩu mới cho tài khoản của bạn.</Text>
         {timeLeft !== null && timeLeft > 0 && (
           <Text
@@ -99,14 +150,13 @@ const ResetPassword = () => {
         )}
       </div>
 
-      <Form
-        name="reset-password"
-        layout="vertical"
-        onFinish={onFinish}
-        autoComplete="off"
-      >
+      <Form name="reset-password" layout="vertical" onFinish={onFinish}>
         <Form.Item
-          label="Mật khẩu mới"
+          label={
+            <Text strong style={{ fontSize: 14 }}>
+              Mật khẩu mới
+            </Text>
+          }
           name="newPassword"
           rules={[
             { required: true, message: "Vui lòng nhập mật khẩu mới!" },
@@ -115,18 +165,30 @@ const ResetPassword = () => {
         >
           <Input.Password
             placeholder="Nhập mật khẩu mới"
-            disabled={timeLeft === 0}
+            style={{
+              borderRadius: 12,
+              padding: "12px 16px",
+              fontSize: 16,
+            }}
           />
         </Form.Item>
 
         <Form.Item
-          label="Xác nhận mật khẩu"
+          label={
+            <Text strong style={{ fontSize: 14 }}>
+              Xác nhận mật khẩu
+            </Text>
+          }
           name="confirmPassword"
           rules={[{ required: true, message: "Vui lòng xác nhận mật khẩu!" }]}
         >
           <Input.Password
             placeholder="Xác nhận mật khẩu"
-            disabled={timeLeft === 0}
+            style={{
+              borderRadius: 12,
+              padding: "12px 16px",
+              fontSize: 16,
+            }}
           />
         </Form.Item>
 
@@ -134,16 +196,32 @@ const ResetPassword = () => {
           <Button
             type="primary"
             htmlType="submit"
-            block
             loading={loading}
-            disabled={timeLeft === 0}
+            block
+            size="large"
+            style={{
+              background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+              border: "none",
+              borderRadius: 12,
+              height: 48,
+              fontSize: 16,
+              fontWeight: 600,
+              boxShadow: "0 4px 16px rgba(102, 126, 234, 0.3)",
+            }}
           >
-            Đổi mật khẩu
+            {loading ? "Đang đổi mật khẩu..." : "Đổi mật khẩu"}
           </Button>
         </Form.Item>
 
         <div style={{ textAlign: "center" }}>
-          <Link onClick={() => navigate("/auth/login")}>
+          <Link
+            onClick={() => navigate("/auth/login")}
+            style={{
+              fontSize: 14,
+              fontWeight: 600,
+              color: "#667eea",
+            }}
+          >
             Quay lại đăng nhập
           </Link>
         </div>

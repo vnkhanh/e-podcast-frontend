@@ -119,3 +119,23 @@ export async function getQuizAttemptsBySet(quizSetId) {
     throw err;
   }
 }
+
+// ================== DELETE ==================
+export const deleteQuizSetByCurrentUser = async (quizSetId) => {
+  const token = localStorage.getItem("token");
+  const res = await axios.delete(
+    `${API_BASE_URL}/user/quiz-sets/${quizSetId}`,
+    {
+      headers: { Authorization: `Bearer ${token}` },
+    }
+  );
+  return res.data;
+};
+
+export const deleteAllQuizSetsByCurrentUser = async () => {
+  const token = localStorage.getItem("token");
+  const res = await axios.delete(`${API_BASE_URL}/user/quiz-sets`, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  return res.data;
+};

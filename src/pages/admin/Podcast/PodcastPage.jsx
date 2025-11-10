@@ -13,6 +13,7 @@ import {
   Spin,
   Typography,
   Pagination,
+  DatePicker,
 } from "antd";
 import {
   PlusOutlined,
@@ -29,6 +30,7 @@ import { listPodcasts, deletePodcast } from "../../../services/api_podcast";
 const { Search } = Input;
 const { Title, Text, Paragraph } = Typography;
 const { Option } = Select;
+const { RangePicker } = DatePicker;
 
 const PodcastPage = () => {
   const navigate = useNavigate();
@@ -36,28 +38,37 @@ const PodcastPage = () => {
   const [podcasts, setPodcasts] = useState([]);
   const [loading, setLoading] = useState(false);
   const [search, setSearch] = useState("");
-  const [status, setStatus] = useState(""); // "" | "published" | "draft"
+  const [status, setStatus] = useState("");
+  const [dateRange, setDateRange] = useState([]);
   const [pagination, setPagination] = useState({
     current: 1,
     pageSize: 12,
     total: 0,
   });
 
-  // Lấy danh sách podcast
+  // ==================== FETCH DATA ====================
   const fetchData = async (
     page = 1,
-    limit = 12,
-    searchText = "",
-    statusValue = status
+    limit = pagination.pageSize,
+    searchText = search,
+    statusValue = status,
+    range = dateRange
   ) => {
     setLoading(true);
     try {
-      const res = await listPodcasts({
+      const query = {
         page,
         limit,
         search: searchText,
         status: statusValue,
-      });
+      };
+
+      if (range?.length === 2) {
+        query.start_date = range[0].format("YYYY-MM-DD");
+        query.end_date = range[1].format("YYYY-MM-DD");
+      }
+
+      const res = await listPodcasts(query);
       setPodcasts(res.data);
       setPagination({
         current: res.page,
@@ -73,33 +84,31 @@ const PodcastPage = () => {
   };
 
   useEffect(() => {
-    fetchData(pagination.current, pagination.pageSize, search, status);
+    fetchData();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [status]);
+  }, [status, dateRange]);
 
-  // Tìm kiếm
   const handleSearch = (value) => {
     setSearch(value);
     fetchData(1, pagination.pageSize, value, status);
   };
 
-  // Xóa podcast
   const handleDelete = async (id) => {
     try {
       await deletePodcast(id);
       message.success("Xóa podcast thành công");
-      fetchData(pagination.current, pagination.pageSize, search);
+      fetchData(pagination.current);
     } catch (error) {
       console.error(error);
       message.error("Xóa podcast thất bại");
     }
   };
 
-  // Phân trang
-  const handlePageChange = (page) => {
-    fetchData(page, pagination.pageSize, search, status);
+  const handlePageChange = (page, pageSize) => {
+    fetchData(page, pageSize);
   };
 
+  // ==================== UI ====================
   return (
     <div style={{ padding: 24 }}>
       {/* Header */}
@@ -126,7 +135,7 @@ const PodcastPage = () => {
         </Col>
       </Row>
 
-      {/* Thanh công cụ */}
+      {/* Thanh công cụ lọc */}
       <div
         style={{
           display: "flex",
@@ -137,7 +146,8 @@ const PodcastPage = () => {
           gap: 10,
         }}
       >
-        <div>
+        <Space wrap>
+          {/* Ô tìm kiếm */}
           <Search
             placeholder="Tìm kiếm podcast..."
             value={search}
@@ -145,22 +155,30 @@ const PodcastPage = () => {
             onSearch={handleSearch}
             allowClear
             enterButton
-            style={{ width: 320, marginRight: 10 }}
+            style={{ width: 320 }}
           />
 
           {/* Lọc trạng thái */}
           <Select
             allowClear
             placeholder="Lọc theo trạng thái"
-            onChange={(value) => {
-              setStatus(value || "");
-            }}
+            value={status || undefined}
+            onChange={(value) => setStatus(value || "")}
             style={{ width: 160 }}
           >
             <Option value="published">Đã xuất bản</Option>
             <Option value="draft">Bản nháp</Option>
           </Select>
-        </div>
+
+          {/* Lọc theo ngày tạo */}
+          <RangePicker
+            allowClear
+            value={dateRange}
+            onChange={(range) => setDateRange(range || [])}
+            format="YYYY-MM-DD"
+            placeholder={["Từ ngày", "Đến ngày"]}
+          />
+        </Space>
       </div>
 
       {/* Danh sách podcast */}
@@ -215,7 +233,6 @@ const PodcastPage = () => {
                       </div>
                     )}
 
-                    {/* Tag status ở góc trên bên phải ảnh */}
                     <div
                       style={{
                         position: "absolute",
@@ -268,7 +285,6 @@ const PodcastPage = () => {
                       style={{ color: "#52c41a" }}
                     />
                   </Tooltip>,
-
                   <Tooltip title="Xóa">
                     <Button
                       type="text"
@@ -279,27 +295,24 @@ const PodcastPage = () => {
                   </Tooltip>,
                 ]}
               >
-                {/* Tiêu đề podcast */}
-                <div>
-                  <Paragraph
-                    strong
-                    ellipsis={{
-                      rows: 1, // Giới hạn 2 dòng
-                      expandable: false,
-                      tooltip: podcast.title, // Hiện tooltip tự động
-                    }}
-                    style={{ marginBottom: 0 }}
-                  >
-                    {podcast.title}
-                  </Paragraph>
-                </div>
+                <Paragraph
+                  strong
+                  ellipsis={{
+                    rows: 1,
+                    expandable: false,
+                    tooltip: podcast.title,
+                  }}
+                  style={{ marginBottom: 0 }}
+                >
+                  {podcast.title}
+                </Paragraph>
 
-                {/* Thống kê */}
                 <div
                   style={{
                     display: "flex",
                     alignItems: "center",
                     gap: 16,
+                    marginTop: 8,
                   }}
                 >
                   <div
@@ -329,41 +342,45 @@ const PodcastPage = () => {
             </Col>
           ))}
 
-          {/* Empty state */}
           {!loading && podcasts.length === 0 && (
             <Col span={24}>
               <div
                 style={{
                   textAlign: "center",
                   padding: 60,
-                  background: "#fafafa",
                   borderRadius: 8,
                   border: "1px dashed #d9d9d9",
                 }}
               >
                 <Text type="secondary" style={{ fontSize: 16 }}>
-                  {search
-                    ? "Không tìm thấy podcast nào"
-                    : "Chưa có podcast nào"}
+                  {
+                    (search,
+                    dateRange,
+                    status
+                      ? "Không tìm thấy podcast nào"
+                      : "Chưa có podcast nào")
+                  }
                 </Text>
                 <br />
-                {!search && (
-                  <Button
-                    type="primary"
-                    icon={<PlusOutlined />}
-                    onClick={() => navigate("/teacher/podcast/create")}
-                    style={{ marginTop: 16 }}
-                  >
-                    Tạo podcast đầu tiên
-                  </Button>
-                )}
+                {!search ||
+                  !dateRange ||
+                  (!status && (
+                    <Button
+                      type="primary"
+                      icon={<PlusOutlined />}
+                      onClick={() => navigate("/teacher/podcast/create")}
+                      style={{ marginTop: 16 }}
+                    >
+                      Tạo podcast đầu tiên
+                    </Button>
+                  ))}
               </div>
             </Col>
           )}
         </Row>
       </Spin>
 
-      {/* Phân trang */}
+      {/* Phân trang động */}
       {podcasts.length > 0 && (
         <div
           style={{
@@ -378,7 +395,8 @@ const PodcastPage = () => {
             pageSize={pagination.pageSize}
             total={pagination.total}
             onChange={handlePageChange}
-            showSizeChanger={false}
+            onShowSizeChange={handlePageChange}
+            showSizeChanger
             showQuickJumper
             showTotal={(total, range) =>
               `${range[0]}-${range[1]} của ${total} podcast`

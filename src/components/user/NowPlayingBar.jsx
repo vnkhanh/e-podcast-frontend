@@ -310,11 +310,6 @@ const NowPlayingBar = ({ playerState, userToken }) => {
                   Ghi chú
                 </Button>
               </Dropdown>
-              <Button
-                type="text"
-                icon={<UnorderedListOutlined />}
-                style={{ color: isDarkMode ? "#f3f4f6" : undefined }}
-              />
 
               <Button
                 type="text"

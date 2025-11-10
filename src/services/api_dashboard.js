@@ -3,32 +3,55 @@ import axios from "axios";
 const API_BASE_URL =
   import.meta.env.VITE_API_BASE_URL || "http://localhost:8080/api";
 
-const getAuthHeaders = () => {
+// Lấy headers chung
+const getHeaders = () => {
   const token = localStorage.getItem("token");
   return { Authorization: `Bearer ${token}` };
 };
 
-export const getOverview = () =>
-  axios.get(`${API_BASE_URL}/admin/stats/overview`, {
-    headers: getAuthHeaders(),
+// Tổng quan dashboard
+export const getOverviewStats = async () => {
+  const res = await axios.get(`${API_BASE_URL}/admin/stats/overview`, {
+    headers: getHeaders(),
   });
+  return res.data;
+};
 
-export const getDailyListens = (days = 7) =>
-  axios.get(`${API_BASE_URL}/admin/stats/daily-listens?days=${days}`, {
-    headers: getAuthHeaders(),
-  });
+// Lượt nghe theo ngày
+export const getDailyListens = async (from, to) => {
+  const res = await axios.get(
+    `${API_BASE_URL}/admin/stats/daily-listens?from=${from}&to=${to}`,
+    { headers: getHeaders() }
+  );
+  return res.data;
+};
 
-export const getMonthlyListens = (year = new Date().getFullYear()) =>
-  axios.get(`${API_BASE_URL}/admin/stats/monthly-listens?year=${year}`, {
-    headers: getAuthHeaders(),
-  });
+// Lượt nghe theo tháng
+export const getMonthlyListens = async (year = new Date().getFullYear()) => {
+  const res = await axios.get(
+    `${API_BASE_URL}/admin/stats/monthly-listens?year=${year}`,
+    {
+      headers: getHeaders(),
+    }
+  );
+  return res.data;
+};
 
-export const getNewUsers = (days = 30) =>
-  axios.get(`${API_BASE_URL}/admin/stats/new-users?days=${days}`, {
-    headers: getAuthHeaders(),
-  });
+// Người dùng mới
+export const getNewUsers = async (days = 30) => {
+  const res = await axios.get(
+    `${API_BASE_URL}/admin/stats/new-users?days=${days}`,
+    {
+      headers: getHeaders(),
+    }
+  );
+  return res.data;
+};
 
-export const getSubjectBreakdown = () =>
-  axios.get(`${API_BASE_URL}/admin/stats/subject-breakdown`, {
-    headers: getAuthHeaders(),
+// Phân bố theo môn học
+export const getSubjectBreakdown = async () => {
+  const res = await axios.get(`${API_BASE_URL}/admin/stats/subject-breakdown`, {
+    headers: getHeaders(),
   });
+  return res.data;
+};

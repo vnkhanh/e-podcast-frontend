@@ -23,8 +23,7 @@ import {
   TableOutlined,
   PieChartOutlined,
 } from "@ant-design/icons";
-import axios from "axios";
-import moment from "moment";
+import dayjs from "dayjs";
 import {
   LineChart,
   Line,
@@ -40,7 +39,13 @@ import {
   Legend,
   ResponsiveContainer,
 } from "recharts";
-
+import {
+  getOverviewStats,
+  getDailyListens,
+  getMonthlyListens,
+  getNewUsers,
+  getSubjectBreakdown,
+} from "../../services/api_dashboard";
 const { Title } = Typography;
 
 const AdminDashboard = () => {
@@ -50,40 +55,30 @@ const AdminDashboard = () => {
   const [newUsers, setNewUsers] = useState([]);
   const [subjectData, setSubjectData] = useState([]);
   const [dateRange, setDateRange] = useState([
-    moment().subtract(7, "days"),
-    moment(),
+    dayjs().subtract(7, "days"),
+    dayjs(),
   ]);
   const [loading, setLoading] = useState(true);
 
-  const API = import.meta.env.VITE_API_BASE_URL || "http://localhost:8080/api";
-
   useEffect(() => {
-    const token = localStorage.getItem("token");
-    const headers = { Authorization: `Bearer ${token}` };
-
     const init = async () => {
       try {
         const [ov, daily, monthly, users, subjects] = await Promise.all([
-          axios.get(`${API}/admin/stats/overview`, { headers }),
-          axios.get(
-            `${API}/admin/stats/daily-listens?from=${dateRange[0].format(
-              "YYYY-MM-DD"
-            )}&to=${dateRange[1].format("YYYY-MM-DD")}`,
-            { headers }
+          getOverviewStats(),
+          getDailyListens(
+            dateRange[0].format("YYYY-MM-DD"),
+            dateRange[1].format("YYYY-MM-DD")
           ),
-          axios.get(
-            `${API}/admin/stats/monthly-listens?year=${new Date().getFullYear()}`,
-            { headers }
-          ),
-          axios.get(`${API}/admin/stats/new-users?days=30`, { headers }),
-          axios.get(`${API}/admin/stats/subject-breakdown`, { headers }),
+          getMonthlyListens(),
+          getNewUsers(),
+          getSubjectBreakdown(),
         ]);
 
-        setOverview(ov.data || {});
-        setDailyListens(daily.data || []);
-        setMonthlyListens(monthly.data || []);
-        setNewUsers(users.data || []);
-        setSubjectData(subjects.data || []);
+        setOverview(ov || {});
+        setDailyListens(daily || []);
+        setMonthlyListens(monthly || []);
+        setNewUsers(users || []);
+        setSubjectData(subjects || []);
       } catch (err) {
         console.error(err);
         message.error("Không thể tải dữ liệu thống kê");
@@ -92,7 +87,26 @@ const AdminDashboard = () => {
       }
     };
     init();
-  }, [API, dateRange]);
+  }, [dateRange]);
+
+  const handleDateRangeChange = (dates) => {
+    if (dates && dates[0] && dates[1]) {
+      setDateRange(dates);
+    }
+  };
+
+  const handleFilterClick = async () => {
+    try {
+      const from = dateRange[0].format("YYYY-MM-DD");
+      const to = dateRange[1].format("YYYY-MM-DD");
+      const data = await getDailyListens(from, to);
+      setDailyListens(data || []);
+      message.success("Đã cập nhật dữ liệu");
+    } catch (err) {
+      console.error(err);
+      message.error("Không thể tải dữ liệu");
+    }
+  };
 
   if (loading)
     return (
@@ -102,12 +116,12 @@ const AdminDashboard = () => {
     );
 
   const COLORS = [
-    "#8bc5fcff",
-    "#7bf1f1ff",
-    "#f7ce7eff",
-    "#f08186ff",
-    "#b990f3ff",
-    "#a9f185ff",
+    "#70a7dbff",
+    "#5cccccff",
+    "#e7bb64ff",
+    "#e06369ff",
+    "#a470ecff",
+    "#81da55ff",
   ];
 
   const columns = [
@@ -172,23 +186,10 @@ const AdminDashboard = () => {
             </span>
             <DatePicker.RangePicker
               value={dateRange}
-              onChange={setDateRange}
+              onChange={handleDateRangeChange}
               format="YYYY-MM-DD"
             />
-            <Button
-              type="primary"
-              onClick={async () => {
-                const token = localStorage.getItem("token");
-                const headers = { Authorization: `Bearer ${token}` };
-                const from = dateRange[0].format("YYYY-MM-DD");
-                const to = dateRange[1].format("YYYY-MM-DD");
-                const resp = await axios.get(
-                  `${API}/admin/stats/daily-listens?from=${from}&to=${to}`,
-                  { headers }
-                );
-                setDailyListens(resp.data || []);
-              }}
-            >
+            <Button type="primary" onClick={handleFilterClick}>
               Lọc
             </Button>
           </Space>
@@ -201,7 +202,7 @@ const AdminDashboard = () => {
               <CartesianGrid strokeDasharray="3 3" />
               <XAxis
                 dataKey="date"
-                tickFormatter={(d) => moment(d).format("DD/MM")}
+                tickFormatter={(d) => dayjs(d).format("DD/MM")}
               />
               <YAxis />
               <Tooltip />
@@ -243,7 +244,7 @@ const AdminDashboard = () => {
         title={
           <Space>
             <BarChartOutlined />
-            <span>"Người dùng mới (30 ngày)"</span>
+            <span>Người dùng mới (30 ngày)</span>
           </Space>
         }
         style={{ marginBottom: 24 }}
@@ -254,7 +255,7 @@ const AdminDashboard = () => {
               <CartesianGrid strokeDasharray="3 3" />
               <XAxis
                 dataKey="date"
-                tickFormatter={(d) => moment(d).format("DD/MM")}
+                tickFormatter={(d) => dayjs(d).format("DD/MM")}
               />
               <YAxis />
               <Tooltip />
@@ -289,7 +290,7 @@ const AdminDashboard = () => {
         title={
           <Space>
             <PieChartOutlined />
-            <span>Phân bố lượt nghe theo môn học</span>
+            <span>Phân bố lượt nghe theo môn học (lượt nghe)</span>
           </Space>
         }
       >

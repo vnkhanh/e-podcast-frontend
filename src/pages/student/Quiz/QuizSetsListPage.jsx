@@ -21,6 +21,7 @@ import {
   FileTextOutlined,
   ClockCircleOutlined,
   PlayCircleOutlined,
+  DeleteOutlined,
   RocketOutlined,
   CrownOutlined,
   BookOutlined,
@@ -30,6 +31,8 @@ import {
 import {
   getQuizSetsByPodcast,
   createQuizFromDocument,
+  deleteQuizSetByCurrentUser,
+  deleteAllQuizSetsByCurrentUser,
 } from "../../../services/api_quiz";
 import { getPodcastById } from "../../../services/api_podcast";
 import { ThemeContext } from "../../../context/useTheme";
@@ -131,6 +134,51 @@ const QuizSetsListPage = () => {
       latestDate: latestQuiz.created_at,
     };
   };
+  // Xóa 1 quiz set
+  const handleDeleteQuizSet = (quizSetId) => {
+    Modal.confirm({
+      title: "Xác nhận xóa bộ câu hỏi",
+      icon: <DeleteOutlined />,
+      content:
+        "Bạn có chắc chắn muốn xóa bộ câu hỏi này không? Hành động không thể hoàn tác.",
+      okText: "Xóa",
+      okType: "danger",
+      cancelText: "Hủy",
+      async onOk() {
+        try {
+          await deleteQuizSetByCurrentUser(quizSetId);
+          message.success("Đã xóa bộ quiz thành công!");
+          fetchData(); // reload danh sách
+        } catch (err) {
+          console.error(err);
+          message.error("Xóa thất bại!");
+        }
+      },
+    });
+  };
+
+  // Xóa tất cả quiz set
+  const handleDeleteAllQuizSets = () => {
+    Modal.confirm({
+      title: "Xác nhận xóa tất cả bộ quiz",
+      icon: <DeleteOutlined />,
+      content:
+        "Bạn có chắc chắn muốn xóa tất cả bộ quiz? Hành động này không thể hoàn tác.",
+      okText: "Xóa tất cả",
+      okType: "danger",
+      cancelText: "Hủy",
+      async onOk() {
+        try {
+          await deleteAllQuizSetsByCurrentUser();
+          message.success("Đã xóa tất cả bộ quiz!");
+          fetchData(); // reload danh sách
+        } catch (err) {
+          console.error(err);
+          message.error("Xóa tất cả thất bại!");
+        }
+      },
+    });
+  };
 
   if (loading) {
     return (
@@ -138,9 +186,6 @@ const QuizSetsListPage = () => {
         style={{
           textAlign: "center",
           padding: "100px 0",
-          background: isDarkMode
-            ? "linear-gradient(135deg, #0f172a 0%, #1e293b 100%)"
-            : "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
           minHeight: "100vh",
           display: "flex",
           alignItems: "center",
@@ -320,7 +365,19 @@ const QuizSetsListPage = () => {
             </Col>
           </Row>
         )}
-
+        <Button
+          danger
+          icon={<DeleteOutlined />}
+          onClick={handleDeleteAllQuizSets}
+          style={{
+            marginTop: 16,
+            borderRadius: 8,
+            width: 180,
+            margin: "15px 0",
+          }}
+        >
+          Xóa tất cả bộ quiz
+        </Button>
         {/* QUIZ LIST */}
         {quizSets.length === 0 ? (
           <Card
@@ -481,7 +538,7 @@ const QuizSetsListPage = () => {
                               background:
                                 "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
                               border: "none",
-                              borderRadius: "8px 0 0 8px",
+                              margin: 5,
                             }}
                           >
                             Làm bài
@@ -492,10 +549,18 @@ const QuizSetsListPage = () => {
                               navigate(`/quiz-sets/${quizSet.id}/history`)
                             }
                             style={{
-                              borderRadius: "0 8px 8px 0",
+                              margin: 5,
                             }}
                           >
                             Lịch sử
+                          </Button>
+                          <Button
+                            danger
+                            icon={<DeleteOutlined />}
+                            onClick={() => handleDeleteQuizSet(quizSet.id)}
+                            style={{ margin: 5 }}
+                          >
+                            Xóa
                           </Button>
                         </Space.Compact>
                       </Col>

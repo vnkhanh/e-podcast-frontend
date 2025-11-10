@@ -37,19 +37,23 @@ export async function listTags() {
   return res.data; // trả về mảng tags
 }
 
-export async function listPodcasts({
-  page = 1,
-  limit = 10,
-  search = "",
-  status = "",
-} = {}) {
+export const listPodcasts = async (params = {}) => {
   const token = localStorage.getItem("token");
-  const res = await axios.get(`${API_BASE_URL}/admin/podcasts`, {
-    headers: { Authorization: `Bearer ${token}` },
-    params: { page, limit, search, status },
+  const headers = token ? { Authorization: `Bearer ${token}` } : {};
+
+  const query = new URLSearchParams();
+  if (params.page) query.append("page", params.page);
+  if (params.limit) query.append("limit", params.limit);
+  if (params.search) query.append("search", params.search);
+  if (params.status) query.append("status", params.status);
+  if (params.start_date) query.append("start_date", params.start_date);
+  if (params.end_date) query.append("end_date", params.end_date);
+
+  const res = await axios.get(`${API_BASE_URL}/admin/podcasts?${query}`, {
+    headers,
   });
   return res.data;
-}
+};
 
 export async function getPodcastDetail(id) {
   const token = localStorage.getItem("token");
