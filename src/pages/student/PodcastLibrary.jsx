@@ -619,7 +619,7 @@ const PodcastLibrary = () => {
             </div>
           ) : (
             <Row gutter={[24, 24]} style={{ padding: 24 }}>
-              {podcasts.map((p, index) => (
+              {podcasts.map((p) => (
                 <Col key={p.id} xs={24} sm={12} md={8} lg={6}>
                   <Card
                     hoverable
@@ -629,72 +629,74 @@ const PodcastLibrary = () => {
                       boxShadow: "0 4px 16px rgba(0,0,0,0.08)",
                       transition: "all 0.3s ease",
                       overflow: "hidden",
-                      height: "100%",
+                      height: 300,
+                      backgroundImage: `url(${
+                        p.cover_image || "/default_cover.jpg"
+                      })`,
+                      backgroundSize: "cover",
+                      backgroundPosition: "center",
+                      position: "relative",
+                      cursor: "pointer",
                     }}
                     onClick={() => navigate(`/podcast/${p.id}`)}
                     onMouseEnter={(e) => {
                       e.currentTarget.style.transform = "translateY(-8px)";
                       e.currentTarget.style.boxShadow =
-                        "0 12px 32px rgba(0,0,0,0.15)";
+                        "0 12px 32px rgba(0,0,0,0.2)";
                     }}
                     onMouseLeave={(e) => {
                       e.currentTarget.style.transform = "translateY(0)";
                       e.currentTarget.style.boxShadow =
                         "0 4px 16px rgba(0,0,0,0.08)";
                     }}
-                    cover={
-                      <div style={{ position: "relative" }}>
-                        <img
-                          alt={p.title}
-                          src={p.cover_image || "/default_cover.jpg"}
-                          style={{
-                            width: "100%",
-                            height: 180,
-                            objectFit: "cover",
-                          }}
-                        />
-                        <Badge
-                          count={index + 1}
-                          style={{
-                            position: "absolute",
-                            top: 12,
-                            left: 12,
-                            backgroundColor: "rgba(0,0,0,0.7)",
-                            boxShadow: "0 2px 8px rgba(0,0,0,0.3)",
-                          }}
-                        />
-                        <div
-                          style={{
-                            position: "absolute",
-                            bottom: 12,
-                            right: 12,
-                            background: "rgba(0,0,0,0.7)",
-                            color: "white",
-                            padding: "2px 8px",
-                            borderRadius: 12,
-                            fontSize: 11,
-                            fontWeight: 600,
-                          }}
-                        >
-                          {formatTime(p.duration_sec)}
-                        </div>
-                      </div>
-                    }
-                    styles={{ body: { padding: 20 } }}
                   >
-                    <Space
-                      direction="vertical"
-                      size="small"
-                      style={{ width: "100%" }}
+                    {/* Overlay mờ đen để dễ đọc chữ */}
+                    <div
+                      style={{
+                        position: "absolute",
+                        inset: 0,
+                        background:
+                          "linear-gradient(180deg, rgba(0,0,0,0.25) 30%, rgba(0,0,0,0.8) 100%)",
+                      }}
+                    />
+
+                    {/* Thời lượng ở góc phải dưới */}
+                    <div
+                      style={{
+                        position: "absolute",
+                        top: 12,
+                        right: 12,
+                        background: "rgba(0,0,0,0.6)",
+                        color: "white",
+                        padding: "2px 8px",
+                        borderRadius: 12,
+                        fontSize: 11,
+                        fontWeight: 600,
+                      }}
+                    >
+                      {formatTime(p.duration_sec)}
+                    </div>
+
+                    {/* Nội dung chữ hiển thị trên ảnh */}
+                    <div
+                      style={{
+                        position: "absolute",
+                        bottom: 0,
+                        left: 0,
+                        right: 0,
+                        padding: 16,
+                        color: "white",
+                        zIndex: 2,
+                      }}
                     >
                       <Tooltip title={p.title}>
                         <Title
                           level={5}
                           ellipsis={{ rows: 2 }}
                           style={{
+                            color: "white",
                             margin: 0,
                             lineHeight: 1.4,
-                            minHeight: 44,
                           }}
                         >
                           {p.title}
@@ -704,21 +706,21 @@ const PodcastLibrary = () => {
                       <Paragraph
                         ellipsis={{ rows: 2 }}
                         style={{
-                          margin: 0,
-                          color: "#666",
-                          fontSize: 14,
+                          margin: "4px 0 8px 0",
+                          color: "rgba(255,255,255,0.8)",
+                          fontSize: 13,
                           lineHeight: 1.5,
                         }}
                       >
                         {p.description || "Không có mô tả"}
                       </Paragraph>
 
-                      <Space wrap size={[8, 8]} style={{ marginTop: 8 }}>
+                      <Space size={[8, 8]} wrap>
                         <Tag
                           icon={<EyeOutlined />}
                           style={{
-                            background: "rgba(24, 144, 255, 0.1)",
-                            color: "#1890ff",
+                            background: "rgba(255,255,255,0.2)",
+                            color: "#fff",
                             border: "none",
                             borderRadius: 12,
                           }}
@@ -728,8 +730,8 @@ const PodcastLibrary = () => {
                         <Tag
                           icon={<HeartOutlined />}
                           style={{
-                            background: "rgba(255, 77, 79, 0.1)",
-                            color: "#ff4d4f",
+                            background: "rgba(255,255,255,0.2)",
+                            color: "#fff",
                             border: "none",
                             borderRadius: 12,
                           }}
@@ -741,9 +743,9 @@ const PodcastLibrary = () => {
                       <div style={{ marginTop: 8 }}>
                         <Space size="small">
                           <CalendarOutlined
-                            style={{ color: "#999", fontSize: 12 }}
+                            style={{ color: "#ddd", fontSize: 12 }}
                           />
-                          <Text type="secondary" style={{ fontSize: 12 }}>
+                          <Text style={{ fontSize: 12, color: "#ddd" }}>
                             {p.published_at
                               ? new Date(p.published_at).toLocaleDateString(
                                   "vi-VN"
@@ -752,7 +754,7 @@ const PodcastLibrary = () => {
                           </Text>
                         </Space>
                       </div>
-                    </Space>
+                    </div>
                   </Card>
                 </Col>
               ))}

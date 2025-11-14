@@ -337,8 +337,6 @@ const SubjectPage = () => {
           },
         }}
         style={{
-          background: isDarkMode ? "#1f2937" : "white",
-          color: isDarkMode ? "#e5e7eb" : "#000",
           borderRadius: 12,
           overflow: "hidden",
         }}
@@ -369,12 +367,6 @@ const SubjectPage = () => {
         onCancel={() => setEditingSubject(null)}
         footer={null}
         centered
-        styles={{
-          content: {
-            background: isDarkMode ? "#1f2937" : "#fff",
-            color: isDarkMode ? "#e5e7eb" : "#000",
-          },
-        }}
       >
         {editingSubject && (
           <SubjectFormEdit
@@ -393,28 +385,11 @@ const SubjectPage = () => {
         onCancel={() => setDetailVisible(false)}
         footer={null}
         centered
-        styles={{
-          content: {
-            background: isDarkMode ? "#1f2937" : "#fff",
-            color: isDarkMode ? "#e5e7eb" : "#000",
-          },
-        }}
       >
         {detailLoading ? (
           <p>Đang tải...</p>
         ) : detailData ? (
-          <Descriptions
-            bordered
-            column={1}
-            labelStyle={{
-              background: isDarkMode ? "#374151" : "#fafafa",
-              color: isDarkMode ? "#f9fafb" : "#000",
-            }}
-            contentStyle={{
-              background: isDarkMode ? "#1f2937" : "#fff",
-              color: isDarkMode ? "#e5e7eb" : "#000",
-            }}
-          >
+          <Descriptions bordered column={1}>
             <Descriptions.Item label="ID">{detailData.id}</Descriptions.Item>
             <Descriptions.Item label="Tên">{detailData.name}</Descriptions.Item>
             <Descriptions.Item label="Slug">

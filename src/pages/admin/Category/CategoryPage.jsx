@@ -276,8 +276,6 @@ const CategoryPage = () => {
           },
         }}
         style={{
-          background: isDarkMode ? "#1f2937" : "white",
-          color: isDarkMode ? "#e5e7eb" : "#000",
           borderRadius: 12,
           overflow: "hidden",
         }}
