@@ -10,6 +10,13 @@ const SubjectForm = ({ form, onFinish, loading }) => (
     >
       <Input placeholder="Ví dụ: Triết học Mác-Lênin" />
     </Form.Item>
+    <Form.Item
+      label="Mã môn học"
+      name="course_code"
+      rules={[{ required: true, message: "Vui lòng nhập mã môn học" }]}
+    >
+      <Input placeholder="Ví dụ: KTCH006" />
+    </Form.Item>
     <Form.Item>
       <Button type="primary" htmlType="submit" loading={loading}>
         Lưu

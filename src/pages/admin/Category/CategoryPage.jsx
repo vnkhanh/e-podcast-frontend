@@ -55,7 +55,8 @@ const CategoryPage = () => {
   const [detailData, setDetailData] = useState(null);
   const [detailLoading, setDetailLoading] = useState(false);
 
-  const [form] = Form.useForm();
+  const [createForm] = Form.useForm();
+  const [editForm] = Form.useForm();
 
   const fetchCategories = useCallback(async () => {
     setLoading(true);
@@ -80,7 +81,7 @@ const CategoryPage = () => {
       setLoading(true);
       await createCategory(values);
       message.success("Tạo danh mục thành công");
-      form.resetFields();
+      createForm.resetFields();
       setVisibleAdd(false);
       fetchCategories();
     } catch (err) {
@@ -291,7 +292,7 @@ const CategoryPage = () => {
         destroyOnHidden
       >
         <Form
-          form={form}
+          form={createForm}
           layout="vertical"
           onFinish={handleAdd}
           initialValues={{ status: true }}
@@ -331,7 +332,7 @@ const CategoryPage = () => {
       >
         {editingCategory && (
           <CategoryFormEdit
-            form={form}
+            form={editForm}
             initialValues={editingCategory}
             onFinish={handleUpdate}
             loading={loading}

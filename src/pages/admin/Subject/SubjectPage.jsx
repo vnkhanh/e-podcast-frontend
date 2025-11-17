@@ -41,7 +41,9 @@ const { Title, Text } = Typography;
 const { RangePicker } = DatePicker;
 
 const SubjectPage = () => {
-  const [form] = Form.useForm();
+  const [createForm] = Form.useForm();
+  const [editForm] = Form.useForm();
+
   const user = JSON.parse(localStorage.getItem("user"));
   const { isDarkMode } = useContext(ThemeContext); // dùng context dark mode
 
@@ -104,15 +106,15 @@ const SubjectPage = () => {
   const handleCreate = async (values) => {
     try {
       setCreating(true);
-      await createSubject(values.name);
+      await createSubject(values.name, values.course_code);
       message.success("Thêm môn học thành công");
       setModalVisible(false);
       loadSubjects();
-      form.resetFields();
+      createForm.resetFields();
     } catch (err) {
       const errorMsg = err.response?.data?.error || "Lỗi khi thêm môn học";
       if (errorMsg.includes("đã tồn tại")) {
-        form.setFields([{ name: "name", errors: [errorMsg] }]);
+        createForm.setFields([{ name: "name", errors: [errorMsg] }]);
       } else message.error(errorMsg);
     } finally {
       setCreating(false);
@@ -164,7 +166,7 @@ const SubjectPage = () => {
     } catch (err) {
       const msg = err.response?.data?.error;
       if (msg?.includes("tồn tại")) {
-        form.setFields([{ name: "name", errors: [msg] }]);
+        editForm.setFields([{ name: "name", errors: [msg] }]);
       } else message.error(msg || "Lỗi khi cập nhật môn học");
     } finally {
       setUpdating(false);
@@ -347,7 +349,10 @@ const SubjectPage = () => {
       <Modal
         open={modalVisible}
         title="Thêm môn học"
-        onCancel={() => setModalVisible(false)}
+        onCancel={() => {
+          setModalVisible(false);
+          createForm.resetFields(); // reset form khi đóng
+        }}
         footer={null}
         centered
         styles={{
@@ -357,20 +362,27 @@ const SubjectPage = () => {
           },
         }}
       >
-        <SubjectForm form={form} onFinish={handleCreate} loading={creating} />
+        <SubjectForm
+          form={createForm}
+          onFinish={handleCreate}
+          loading={creating}
+        />
       </Modal>
 
       {/* Modal sửa */}
       <Modal
         open={!!editingSubject}
         title="Cập nhật môn học"
-        onCancel={() => setEditingSubject(null)}
+        onCancel={() => {
+          setEditingSubject(null);
+          editForm.resetFields(); // reset form khi đóng
+        }}
         footer={null}
         centered
       >
         {editingSubject && (
           <SubjectFormEdit
-            form={form}
+            form={editForm}
             initialValues={editingSubject}
             onFinish={handleUpdate}
             loading={updating}

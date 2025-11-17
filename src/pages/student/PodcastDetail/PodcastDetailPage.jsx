@@ -10,11 +10,13 @@ import {
   Row,
   List,
   Avatar,
+  Progress,
   Button,
   Collapse,
   Space,
   Col,
   Badge,
+  Alert,
 } from "antd";
 import {
   PlayCircleOutlined,
@@ -44,7 +46,8 @@ import { getPodcastHistory } from "../../../services/api_history";
 import PodcastFavoriteButton from "../../../components/user/PodcastFavoriteButton";
 import SharePodcastButton from "../../../components/user/SharePodcastButton";
 import { usePlayer } from "../../../context/usePlayer";
-
+import { getAssignmentsByPodcast } from "../../../services/api_assignment";
+import PodcastAssignments from "../Assignment/PodcastAssignments";
 const { Title, Paragraph, Text } = Typography;
 const { Panel } = Collapse;
 
@@ -69,6 +72,7 @@ const PodcastDetailPageUser = () => {
   const query = new URLSearchParams(location.search);
   const queryStart = parseFloat(query.get("t")) || 0;
   const { isDarkMode } = useContext(ThemeContext);
+  const [assignments, setAssignments] = useState([]);
 
   const overlayGradient = isDarkMode
     ? "linear-gradient(to bottom, rgba(0,0,0,0.6), rgba(0,0,0,0.9))"
@@ -82,7 +86,14 @@ const PodcastDetailPageUser = () => {
       console.error(err);
     }
   };
-
+  const fetchAssignments = async (podcastId) => {
+    try {
+      const res = await getAssignmentsByPodcast(podcastId);
+      setAssignments(res.assignments || []);
+    } catch (err) {
+      console.error("Lỗi lấy bài tập:", err);
+    }
+  };
   useEffect(() => {
     const fetchPodcast = async () => {
       try {
@@ -100,7 +111,10 @@ const PodcastDetailPageUser = () => {
 
         setPodcast(podcastObj);
         setChapters(chapterList);
-        await fetchFlashcards(podcastObj.id);
+        await Promise.all([
+          fetchFlashcards(podcastObj.id),
+          fetchAssignments(podcastObj.id),
+        ]);
       } catch (err) {
         console.error("Lỗi fetchPodcast:", err);
         message.error("Không thể tải dữ liệu podcast");
@@ -783,6 +797,9 @@ const PodcastDetailPageUser = () => {
                   </Button>
                 </Space>
               </Card>
+
+              {/* ASSIGNMENT */}
+              <PodcastAssignments assignments={assignments} token={token} />
             </Space>
           </Col>
         </Row>

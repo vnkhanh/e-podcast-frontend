@@ -19,8 +19,8 @@ api.interceptors.request.use((config) => {
 // ------------------- SUBJECT API -------------------
 
 // Thêm môn học mới
-export async function createSubject(name) {
-  const res = await api.post("/admin/subjects", { name });
+export async function createSubject(name, course_code) {
+  const res = await api.post("/admin/subjects", { name, course_code });
   return res.data; // { message, subject }
 }
 

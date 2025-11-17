@@ -93,6 +93,13 @@ const AdminLayout = () => {
       label: "Podcast",
       link: user?.role === "admin" ? "/admin/podcast" : "/teacher/podcast",
     },
+    {
+      key: "assignment",
+      icon: <CustomerServiceOutlined />,
+      label: "Bài tập",
+      link:
+        user?.role === "admin" ? "/admin/assignment" : "/teacher/assignment",
+    },
   ];
 
   if (user?.role === "admin") {

@@ -21,6 +21,7 @@ import SubjectDetailPage from "../pages/student/Subject/SubjectDetailPage";
 import SearchPage from "../pages/student/SearchPage";
 import CategoryList from "../pages/student/Category/CategoryList";
 import PodcastLibrary from "../pages/student/PodcastLibrary";
+
 // Admin & Teacher dùng chung layout
 import AdminLayout from "../layouts/AdminLayout";
 import AdminDashboard from "../pages/admin/AdminDashboard";
@@ -35,7 +36,10 @@ import UserPage from "../pages/admin/User/UserPage";
 import ProtectedRoute from "./ProtectedRoute";
 import AdminProfile from "../pages/admin/AdminProfile";
 import SubjectListPage from "../pages/student/Subject/SubjectListPage";
-
+import TeacherAssignments from "../pages/admin/Assignment/TeacherAssignments";
+import AssignmentDetail from "../pages/student/Assignment/AssignmentDetail";
+import DoAssignmentPage from "../pages/student/Assignment/DoAssignmentPage";
+import AssignmentSubmissionsPage from "../pages/admin/Assignment/AssignmentSubmissionsPage";
 const AppRoute = () => {
   const token = localStorage.getItem("token");
   const user = token ? JSON.parse(localStorage.getItem("user")) : null;
@@ -89,6 +93,15 @@ const AppRoute = () => {
         <Route path="notifications" element={<NotificationList />} />
         <Route path="/categories" element={<CategoryList />} />
         <Route path="/podcasts" element={<PodcastLibrary />} />
+
+        <Route
+          path="/assignment/:id"
+          element={<AssignmentDetail key={token} token={token} />}
+        />
+        <Route
+          path="/assignment/:id/start"
+          element={<DoAssignmentPage key={token} token={token} />}
+        />
       </Route>
 
       {/* Teacher & Admin dùng chung layout */}
@@ -110,6 +123,11 @@ const AppRoute = () => {
         <Route path="podcast/:id/edit" element={<EditPodcast />} />
         <Route path="notifications" element={<NotificationList />} />
         <Route path="me" element={<AdminProfile />} />
+        <Route path="assignment" element={<TeacherAssignments />} />
+        <Route
+          path="assignments/:id/submissions"
+          element={<AssignmentSubmissionsPage />}
+        />
       </Route>
 
       <Route
@@ -131,6 +149,7 @@ const AppRoute = () => {
         <Route path="user" element={<UserPage />} />
         <Route path="notifications" element={<NotificationList />} />
         <Route path="me" element={<AdminProfile />} />
+        <Route path="assignment" element={<TeacherAssignments />} />
       </Route>
     </Routes>
   );

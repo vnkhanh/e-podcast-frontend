@@ -92,6 +92,7 @@ const SubjectFormEdit = ({ form, initialValues, onFinish, loading }) => {
     if (initialValues) {
       form.setFieldsValue({
         name: initialValues.name,
+        course_code: initialValues.course_code,
         chapters:
           initialValues.chapters?.map((ch) => ({
             id: ch.id,
@@ -132,7 +133,13 @@ const SubjectFormEdit = ({ form, initialValues, onFinish, loading }) => {
       >
         <Input placeholder="Nhập tên môn học" />
       </Form.Item>
-
+      <Form.Item
+        label="Mã môn học"
+        name="course_code"
+        rules={[{ required: true, message: "Vui lòng nhập mã môn học" }]}
+      >
+        <Input placeholder="Nhập mã môn học" />
+      </Form.Item>
       <Form.List name="chapters">
         {(fields, { add, remove }) => {
           const handleDragEnd = (event) => {
