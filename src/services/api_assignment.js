@@ -12,17 +12,30 @@ function getAuthHeader() {
 }
 
 // ================= ASSIGNMENTS LIST =================
-export async function fetchAssignments() {
+export async function fetchAssignments(params = {}) {
   try {
     const res = await axios.get(`${API_BASE_URL}/admin/assignments`, {
       headers: getAuthHeader(),
+      params,
     });
     return res.data;
   } catch (err) {
     throw err.response?.data || err;
   }
 }
-
+export async function fetchAssignmentDetail(assignmentId) {
+  try {
+    const res = await axios.get(
+      `${API_BASE_URL}/admin/assignments/${assignmentId}`,
+      {
+        headers: getAuthHeader(),
+      }
+    );
+    return res.data;
+  } catch (err) {
+    throw err.response?.data || err;
+  }
+}
 // ================= SUBJECTS FOR TEACHER =================
 export async function fetchSubjects() {
   try {
@@ -134,15 +147,20 @@ export async function createAssignmentFromGemini(payload) {
   }
 }
 // Lấy danh sách bài nộp của assignment (giảng viên)
-export async function fetchAssignmentSubmissions(assignmentId) {
+export async function fetchAssignmentSubmissions(assignmentId, params = {}) {
   const token = localStorage.getItem("token");
+
   return axios.get(
     `${API_BASE_URL}/admin/assignments/${assignmentId}/submissions`,
     {
-      headers: { Authorization: `Bearer ${token}` },
+      params,
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
     }
   );
 }
+
 // ========================= USER ==============================
 export const getAssignmentsByPodcast = async (podcastId) => {
   try {
@@ -186,9 +204,12 @@ export async function submitAssignment(id, answers, token) {
 // Verify assignment password
 export const verifyAssignmentPassword = async (assignmentId, password) => {
   const response = await axios.post(
-    `/user/assignments/${assignmentId}/verify-password`,
+    `${API_BASE_URL}/user/assignments/${assignmentId}/verify-password`,
     {
       password,
+    },
+    {
+      headers: getAuthHeader(),
     }
   );
   return response.data;

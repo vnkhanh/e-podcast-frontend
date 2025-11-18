@@ -14,6 +14,7 @@ import {
   BulbOutlined,
   CustomerServiceOutlined,
   PaperClipOutlined,
+  SubnodeOutlined,
 } from "@ant-design/icons";
 import RealtimeNotification from "../../components/RealtimeNotification";
 import { ThemeContext } from "../../context/useTheme";
@@ -95,7 +96,7 @@ const AdminLayout = () => {
     },
     {
       key: "assignment",
-      icon: <CustomerServiceOutlined />,
+      icon: <SubnodeOutlined />,
       label: "Bài tập",
       link:
         user?.role === "admin" ? "/admin/assignment" : "/teacher/assignment",

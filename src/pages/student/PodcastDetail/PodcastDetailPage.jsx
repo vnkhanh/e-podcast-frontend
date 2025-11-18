@@ -46,8 +46,6 @@ import { getPodcastHistory } from "../../../services/api_history";
 import PodcastFavoriteButton from "../../../components/user/PodcastFavoriteButton";
 import SharePodcastButton from "../../../components/user/SharePodcastButton";
 import { usePlayer } from "../../../context/usePlayer";
-import { getAssignmentsByPodcast } from "../../../services/api_assignment";
-import PodcastAssignments from "../Assignment/PodcastAssignments";
 const { Title, Paragraph, Text } = Typography;
 const { Panel } = Collapse;
 
@@ -72,7 +70,6 @@ const PodcastDetailPageUser = () => {
   const query = new URLSearchParams(location.search);
   const queryStart = parseFloat(query.get("t")) || 0;
   const { isDarkMode } = useContext(ThemeContext);
-  const [assignments, setAssignments] = useState([]);
 
   const overlayGradient = isDarkMode
     ? "linear-gradient(to bottom, rgba(0,0,0,0.6), rgba(0,0,0,0.9))"
@@ -84,14 +81,6 @@ const PodcastDetailPageUser = () => {
       setFlashcards(flashcards);
     } catch (err) {
       console.error(err);
-    }
-  };
-  const fetchAssignments = async (podcastId) => {
-    try {
-      const res = await getAssignmentsByPodcast(podcastId);
-      setAssignments(res.assignments || []);
-    } catch (err) {
-      console.error("Lỗi lấy bài tập:", err);
     }
   };
   useEffect(() => {
@@ -111,10 +100,7 @@ const PodcastDetailPageUser = () => {
 
         setPodcast(podcastObj);
         setChapters(chapterList);
-        await Promise.all([
-          fetchFlashcards(podcastObj.id),
-          fetchAssignments(podcastObj.id),
-        ]);
+        await fetchFlashcards(podcastObj.id);
       } catch (err) {
         console.error("Lỗi fetchPodcast:", err);
         message.error("Không thể tải dữ liệu podcast");
@@ -799,7 +785,47 @@ const PodcastDetailPageUser = () => {
               </Card>
 
               {/* ASSIGNMENT */}
-              <PodcastAssignments assignments={assignments} token={token} />
+              <Card
+                style={{
+                  borderRadius: 16,
+                  border: "none",
+                  boxShadow: "0 4px 16px rgba(0,0,0,0.08)",
+                }}
+                bodyStyle={{ padding: 24 }}
+              >
+                <Title
+                  level={4}
+                  style={{
+                    marginBottom: 16,
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 8,
+                  }}
+                >
+                  <ReadOutlined style={{ color: "#667eea" }} />
+                  Bài tập
+                </Title>
+
+                <Paragraph style={{ color: "#666", marginBottom: 20 }}>
+                  Xem danh sách bài tập của podcast này.
+                </Paragraph>
+
+                <Button
+                  type="primary"
+                  size="large"
+                  block
+                  onClick={() => navigate(`/podcast/${podcast.id}/assignments`)}
+                  style={{
+                    background:
+                      "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+                    border: "none",
+                    borderRadius: 8,
+                    height: 48,
+                  }}
+                >
+                  Xem danh sách bài tập
+                </Button>
+              </Card>
             </Space>
           </Col>
         </Row>
