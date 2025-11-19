@@ -2,189 +2,197 @@ import React, { useEffect, useState } from "react";
 import {
   Table,
   Tag,
-  Spin,
-  Alert,
-  Card,
-  Typography,
-  Descriptions,
-  Row,
-  Select,
-  Input,
-  Col,
   Button,
-  Divider,
-  Statistic,
   Space,
+  Input,
+  Select,
+  Typography,
+  message,
+  Row,
+  Col,
+  Card,
+  Statistic,
+  Spin,
 } from "antd";
+import {
+  ArrowLeftOutlined,
+  EyeOutlined,
+  SearchOutlined,
+  DownloadOutlined,
+  FileExcelOutlined,
+  LockOutlined,
+} from "@ant-design/icons";
 import { useParams, useNavigate } from "react-router-dom";
 import {
   fetchAssignmentSubmissions,
   fetchAssignmentDetail,
+  exportAssignmentSubmissions,
 } from "../../../services/api_assignment";
-import dayjs from "dayjs";
-import {
-  ArrowLeftOutlined,
-  FileTextOutlined,
-  CalendarOutlined,
-  ClockCircleOutlined,
-  CheckCircleOutlined,
-  CloseCircleOutlined,
-  NumberOutlined,
-  TeamOutlined,
-  ExportOutlined,
-} from "@ant-design/icons";
-const { Search } = Input;
-const { Option } = Select;
+
 const { Title, Text } = Typography;
+const { Option } = Select;
 
 const AssignmentSubmissionsPage = () => {
   const { id } = useParams();
   const navigate = useNavigate();
-  const [assignment, setAssignment] = useState(null);
+
   const [submissions, setSubmissions] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [assignment, setAssignment] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [exportLoading, setExportLoading] = useState(false);
+
   const [search, setSearch] = useState("");
-  const [status, setStatus] = useState(""); // passed | failed | ""
+  const [statusFilter, setStatusFilter] = useState("");
   const [page, setPage] = useState(1);
   const [limit, setLimit] = useState(10);
   const [total, setTotal] = useState(0);
 
+  // Statistics
+  const [stats, setStats] = useState({
+    totalSubmissions: 0,
+    passed: 0,
+    failed: 0,
+    avgScore: 0,
+  });
+
   useEffect(() => {
-    async function loadAssignment() {
-      try {
-        setLoading(true);
-        const res = await fetchAssignmentDetail(id);
-        setAssignment(res?.assignment || res?.data?.assignment);
-      } catch (err) {
-        console.error(err);
-      } finally {
-        setLoading(false);
-      }
-    }
-    loadAssignment();
+    loadAssignmentDetail();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id]);
 
   useEffect(() => {
-    async function loadSubmissions() {
-      try {
-        // chỉ bật loading nếu KHÔNG phải search hoặc filter
-        if (!search && !status) {
-          setLoading(true);
-        }
-
-        const res = await fetchAssignmentSubmissions(id, {
-          search,
-          status,
-          page,
-          limit,
-        });
-
-        const submissionsData =
-          res?.submissions || res?.data?.submissions || [];
-
-        setSubmissions(submissionsData);
-        setTotal(res.total || res.data?.total || 0);
-      } catch (err) {
-        console.error(err);
-      } finally {
-        setLoading(false);
-      }
-    }
-
     loadSubmissions();
-  }, [id, search, status, page, limit]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [id, search, statusFilter, page, limit]);
 
-  const handleExportSubmissions = () => {
-    // Logic export submissions
-    console.log("Export submissions data");
+  const loadAssignmentDetail = async () => {
+    try {
+      const res = await fetchAssignmentDetail(id);
+      setAssignment(res.assignment);
+    } catch (err) {
+      message.error("Không thể tải thông tin bài tập");
+      console.error(err);
+    }
+  };
+
+  const loadSubmissions = async () => {
+    try {
+      setLoading(true);
+      const res = await fetchAssignmentSubmissions(id, {
+        search,
+        status: statusFilter,
+        page,
+        limit,
+      });
+
+      setSubmissions(res.submissions || []);
+      setTotal(res.total || 0);
+
+      // Calculate statistics
+      const totalSubs = res.submissions?.length || 0;
+      const passedCount =
+        res.submissions?.filter((s) => s.is_passed).length || 0;
+      const failedCount = totalSubs - passedCount;
+      const avgScore =
+        totalSubs > 0
+          ? res.submissions.reduce((sum, s) => sum + s.score, 0) / totalSubs
+          : 0;
+
+      setStats({
+        totalSubmissions: totalSubs,
+        passed: passedCount,
+        failed: failedCount,
+        avgScore: avgScore.toFixed(2),
+      });
+    } catch (err) {
+      message.error("Không thể tải danh sách bài nộp");
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // EXPORT EXCEL
+  const handleExportExcel = async () => {
+    try {
+      setExportLoading(true);
+      await exportAssignmentSubmissions(id);
+      message.success("Xuất file Excel thành công!");
+    } catch (err) {
+      message.error("Không thể xuất file Excel");
+      console.error(err);
+    } finally {
+      setExportLoading(false);
+    }
   };
 
   const columns = [
     {
-      title: "Người nộp",
-      dataIndex: ["user", "full_name"],
+      title: "STT",
+      key: "index",
+      width: 60,
+      render: (_, __, index) => (page - 1) * limit + index + 1,
+    },
+    {
+      title: "Sinh viên",
       key: "user",
-      sorter: (a, b) => (a.score ?? 0) - (b.score ?? 0),
-      render: (text) => (
-        <Space>
-          <Text strong>{text}</Text>
-        </Space>
-      ),
-    },
-    {
-      title: "Email",
-      dataIndex: ["user", "email"],
-      key: "email",
-      render: (text) => <Space>{text}</Space>,
-    },
-    {
-      title: "Lần nộp",
-      dataIndex: "attempt_num",
-      key: "attempt_num",
-      width: 100,
-      align: "center",
-      render: (text) => (
-        <Tag style={{ margin: 0, minWidth: 50 }}>
-          <NumberOutlined style={{ marginRight: 4 }} />
-          {text}
-        </Tag>
-      ),
-    },
-    {
-      title: "Điểm số",
-      key: "score",
-      width: 120,
-      sorter: (a, b) => (a.score ?? 0) - (b.score ?? 0),
-      align: "center",
-      render: (_, row) => (
+      render: (_, record) => (
         <div>
-          <Text strong style={{ fontSize: "16px", color: "#1890ff" }}>
-            {row.score ?? 0}
-          </Text>
-          <Text style={{ fontSize: "12px", color: "#8c8c8c" }}>
-            /{row.max_score ?? 0}
+          <div style={{ fontWeight: 500 }}>
+            {record.user?.full_name || "N/A"}
+          </div>
+          <Text type="secondary" style={{ fontSize: 12 }}>
+            {record.user?.email || "N/A"}
           </Text>
         </div>
       ),
     },
     {
-      title: "Trạng thái",
-      key: "status",
+      title: "Lần làm",
+      dataIndex: "attempt_num",
+      key: "attempt_num",
+      width: 100,
+      align: "center",
+    },
+    {
+      title: "Điểm",
+      key: "score",
       width: 120,
       align: "center",
-      render: (row) =>
-        row.is_passed ? (
-          <Tag
-            icon={<CheckCircleOutlined />}
-            color="success"
-            style={{ margin: 0, border: "none" }}
+      render: (_, record) => (
+        <div>
+          <Text
+            strong
+            style={{
+              color: record.is_passed ? "#52c41a" : "#ff4d4f",
+              fontSize: 16,
+            }}
           >
-            Đạt
-          </Tag>
+            {record.score?.toFixed(2) || 0}
+          </Text>
+          <Text type="secondary"> / {record.max_score || 10}</Text>
+        </div>
+      ),
+    },
+    {
+      title: "Trạng thái",
+      key: "is_passed",
+      width: 120,
+      align: "center",
+      render: (_, record) =>
+        record.is_passed ? (
+          <Tag color="success">Đạt</Tag>
         ) : (
-          <Tag
-            icon={<CloseCircleOutlined />}
-            color="error"
-            style={{ margin: 0, border: "none" }}
-          >
-            Chưa đạt
-          </Tag>
+          <Tag color="error">Chưa đạt</Tag>
         ),
     },
     {
       title: "Thời gian nộp",
       dataIndex: "submitted_at",
-      sorter: (a, b) => (a.score ?? 0) - (b.score ?? 0),
       key: "submitted_at",
       width: 180,
-      render: (value) => (
-        <Space>
-          <CalendarOutlined style={{ color: "#8c8c8c" }} />
-          <Text type="secondary">
-            {value ? dayjs(value).format("DD/MM/YYYY HH:mm") : "-"}
-          </Text>
-        </Space>
-      ),
+      render: (date) =>
+        date ? new Date(date).toLocaleString("vi-VN") : "Chưa nộp",
     },
     {
       title: "Thao tác",
@@ -194,7 +202,7 @@ const AssignmentSubmissionsPage = () => {
       render: (_, record) => (
         <Button
           type="link"
-          size="small"
+          icon={<EyeOutlined />}
           onClick={() => navigate(`/teacher/submissions/${record.id}`)}
         >
           Chi tiết
@@ -203,228 +211,221 @@ const AssignmentSubmissionsPage = () => {
     },
   ];
 
-  if (loading)
+  if (!assignment) {
     return (
-      <div
-        style={{
-          display: "flex",
-          justifyContent: "center",
-          alignItems: "center",
-          minHeight: 400,
-        }}
-      >
-        <Spin size="large" />
+      <div style={{ textAlign: "center", padding: 100 }}>
+        <Spin size="large" tip="Đang tải..." />
       </div>
     );
+  }
 
   return (
-    <div style={{ padding: 24, maxWidth: 1400, margin: "0 auto" }}>
+    <div style={{ padding: 24 }}>
       {/* Header */}
-      <div style={{ marginBottom: 24 }}>
-        <Space>
-          <Button
-            type="text"
-            icon={<ArrowLeftOutlined />}
-            onClick={() => navigate(-1)}
-            style={{ padding: 0 }}
-          >
-            Quay lại
-          </Button>
-          <Divider type="vertical" />
+      <Row justify="space-between" align="middle" style={{ marginBottom: 24 }}>
+        <Col>
+          <Space direction="vertical" size={0}>
+            <Button
+              icon={<ArrowLeftOutlined />}
+              onClick={() => navigate(-1)}
+              type="text"
+            >
+              Quay lại
+            </Button>
+            <Title level={3} style={{ margin: 0 }}>
+              Danh sách bài nộp
+            </Title>
+            <Text type="secondary">{assignment.title}</Text>
+          </Space>
+        </Col>
+        <Col>
           <Button
             type="primary"
-            icon={<ExportOutlined />}
-            onClick={handleExportSubmissions}
+            icon={<FileExcelOutlined />}
+            onClick={handleExportExcel}
+            loading={exportLoading}
+            size="large"
+            style={{
+              background: "linear-gradient(135deg, #52c41a 0%, #389e0d 100%)",
+              border: "none",
+            }}
           >
-            Xuất báo cáo
+            Xuất Excel
           </Button>
-        </Space>
-      </div>
+        </Col>
+      </Row>
 
-      {/* Thông tin assignment */}
-      {assignment && (
-        <Card
-          variant="borderless"
-          style={{
-            marginBottom: 24,
-            border: "1px solid #f0f0f0",
-            borderRadius: 8,
-          }}
-          styles={{ body: { padding: 24 } }}
-        >
-          <div style={{ marginBottom: 16 }}>
-            <Title level={2} style={{ margin: 0 }}>
-              {assignment.title}
-            </Title>
-            <Text type="secondary" style={{ fontSize: 14 }}>
-              {assignment.description || "Không có mô tả"}
-            </Text>
-          </div>
-
-          <Row gutter={[32, 16]} style={{ marginBottom: 24 }}>
-            <Col xs={24} sm={8}>
-              <Statistic
-                title="Số lần làm tối đa"
-                value={assignment.max_attempts ?? 0}
-                prefix={<NumberOutlined />}
-                valueStyle={{ fontSize: 24 }}
-              />
-            </Col>
-            <Col xs={24} sm={8}>
-              <Statistic
-                title="Điểm đạt"
-                value={assignment.pass_score ?? 0}
-                prefix={<CheckCircleOutlined />}
-                valueStyle={{ fontSize: 24 }}
-              />
-            </Col>
-            <Col xs={24} sm={8}>
-              <Statistic
-                title="Bài đã nộp"
-                value={submissions.length}
-                prefix={<TeamOutlined />}
-                valueStyle={{ fontSize: 24 }}
-              />
-            </Col>
-          </Row>
-
-          <Divider style={{ margin: "16px 0" }} />
-
-          <Descriptions
-            column={{ xs: 1, sm: 2, md: 3 }}
-            size="middle"
-            style={{ marginBottom: 16 }}
-          >
-            <Descriptions.Item label="Podcast">
-              <Text strong>{assignment.podcast?.title || "-"}</Text>
-            </Descriptions.Item>
-            <Descriptions.Item label="Chương">
-              {assignment.podcast?.Chapter?.title || "-"}
-            </Descriptions.Item>
-            <Descriptions.Item label="Môn học">
-              {assignment.podcast?.Chapter?.Subject?.name || "-"}
-            </Descriptions.Item>
-            <Descriptions.Item
-              label={
-                <Space>
-                  <CalendarOutlined />
-                  Hạn nộp
-                </Space>
-              }
-            >
-              <Text
-                type={
-                  dayjs(assignment.due_date).isBefore(dayjs())
-                    ? "danger"
-                    : "secondary"
-                }
-              >
+      {/* Assignment Details Card */}
+      <Card
+        style={{
+          marginBottom: 24,
+          borderRadius: 12,
+        }}
+      >
+        <Row gutter={[24, 16]}>
+          <Col xs={24} md={12}>
+            <Space direction="vertical" size={8}>
+              <Text type="secondary">Tiêu đề bài tập</Text>
+              <Title level={4} style={{ margin: 0 }}>
+                {assignment.title}
+              </Title>
+            </Space>
+          </Col>
+          <Col xs={24} md={12}>
+            <Space direction="vertical" size={8}>
+              <Text type="secondary">Mô tả</Text>
+              <Text>{assignment.description || "Không có mô tả"}</Text>
+            </Space>
+          </Col>
+          <Col xs={24} md={6}>
+            <Space direction="vertical" size={8}>
+              <Text type="secondary">Số lượt làm tối đa</Text>
+              <Text strong>{assignment.max_attempts} lượt</Text>
+            </Space>
+          </Col>
+          <Col xs={24} md={6}>
+            <Space direction="vertical" size={8}>
+              <Text type="secondary">Thời gian làm bài</Text>
+              <Text strong>
+                {assignment.time_limit > 0
+                  ? `${assignment.time_limit} phút`
+                  : "Không giới hạn"}
+              </Text>
+            </Space>
+          </Col>
+          <Col xs={24} md={6}>
+            <Space direction="vertical" size={8}>
+              <Text type="secondary">Điểm đạt</Text>
+              <Text strong style={{ color: "#52c41a" }}>
+                {assignment.pass_score} / 10
+              </Text>
+            </Space>
+          </Col>
+          <Col xs={24} md={6}>
+            <Space direction="vertical" size={8}>
+              <Text type="secondary">Hạn nộp</Text>
+              <Text strong>
                 {assignment.due_date
-                  ? dayjs(assignment.due_date).format("DD/MM/YYYY HH:mm")
+                  ? new Date(assignment.due_date).toLocaleString("vi-VN")
                   : "Không có hạn"}
               </Text>
-            </Descriptions.Item>
-            <Descriptions.Item
-              label={
-                <Space>
-                  <ClockCircleOutlined />
-                  Giới hạn thời gian
-                </Space>
-              }
-            >
-              {assignment.time_limit > 0
-                ? `${assignment.time_limit} phút`
-                : "Không giới hạn"}
-            </Descriptions.Item>
-            <Descriptions.Item label="Trạng thái">
-              <Tag
-                color={assignment.is_published ? "green" : "orange"}
-                style={{ margin: 0 }}
-              >
-                {assignment.is_published ? "Đã công bố" : "Chưa công bố"}
-              </Tag>
-            </Descriptions.Item>
-          </Descriptions>
-        </Card>
-      )}
-
-      {/* Danh sách bài nộp */}
-      <Card
-        title={
-          <Space>
-            <FileTextOutlined />
-            <span>Danh sách bài nộp</span>
-            <Tag style={{ margin: 0 }}>{submissions.length}</Tag>
-          </Space>
-        }
-        variant="borderless"
-        style={{
-          border: "1px solid #f0f0f0",
-          borderRadius: 8,
-        }}
-        styles={{ body: { padding: 0 } }}
-      >
-        <div style={{ padding: 16 }}>
-          <Space size="large">
-            <Search
-              placeholder="Tìm theo tên người nộp"
-              enterButton
-              allowClear
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              onSearch={() => setPage(1)}
-              style={{ width: 260 }}
-            />
-
-            <Select
-              value={status}
-              onChange={(value) => {
-                setPage(1);
-                setStatus(value);
-              }}
-              style={{ width: 180 }}
-              allowClear
-              placeholder="Tất cả"
-            >
-              <Option value="">Tất cả</Option>
-              <Option value="passed">Đạt</Option>
-              <Option value="failed">Chưa đạt</Option>
-            </Select>
-          </Space>
-        </div>
-
-        {submissions.length === 0 ? (
-          <div style={{ padding: 40 }}>
-            <Alert
-              message="Chưa có bài nộp nào"
-              description="Hiện tại chưa có học viên nào nộp bài cho assignment này."
-              type="info"
-              showIcon
-            />
-          </div>
-        ) : (
-          <Table
-            dataSource={submissions}
-            columns={columns}
-            rowKey="id"
-            pagination={{
-              current: page,
-              pageSize: limit,
-              total: total,
-              showSizeChanger: true,
-              onChange: (p, pageSize) => {
-                setPage(p);
-                setLimit(pageSize);
-              },
-              showTotal: (total, range) =>
-                `${range[0]}-${range[1]} của ${total} bài nộp`,
-              style: { marginRight: 24 },
-            }}
-            scroll={{ x: 1000 }}
-            style={{ border: "none" }}
-          />
-        )}
+            </Space>
+          </Col>
+          <Col xs={24} md={12}>
+            <Space direction="vertical" size={8}>
+              <Text type="secondary">Trạng thái</Text>
+              <Space>
+                <Tag color={assignment.is_published ? "success" : "warning"}>
+                  {assignment.is_published ? "Đã công bố" : "Bản nháp"}
+                </Tag>
+                {assignment.has_password && (
+                  <Tag icon={<LockOutlined />} color="orange">
+                    Có mật khẩu
+                  </Tag>
+                )}
+                <Tag color={assignment.allow_review ? "blue" : "default"}>
+                  {assignment.allow_review
+                    ? "Cho phép xem đáp án"
+                    : "Không cho xem đáp án"}
+                </Tag>
+              </Space>
+            </Space>
+          </Col>
+          <Col xs={24} md={12}>
+            <Space direction="vertical" size={8}>
+              <Text type="secondary">Podcast liên kết</Text>
+              <Text strong>{assignment.podcast?.title || "N/A"}</Text>
+            </Space>
+          </Col>
+        </Row>
       </Card>
+
+      {/* Statistics */}
+      <Row gutter={[16, 16]} style={{ marginBottom: 24 }}>
+        <Col xs={24} sm={12} md={6}>
+          <Card>
+            <Statistic
+              title="Tổng số bài nộp"
+              value={stats.totalSubmissions}
+              valueStyle={{ color: "#1890ff" }}
+            />
+          </Card>
+        </Col>
+        <Col xs={24} sm={12} md={6}>
+          <Card>
+            <Statistic
+              title="Số bài đạt"
+              value={stats.passed}
+              valueStyle={{ color: "#52c41a" }}
+            />
+          </Card>
+        </Col>
+        <Col xs={24} sm={12} md={6}>
+          <Card>
+            <Statistic
+              title="Số bài không đạt"
+              value={stats.failed}
+              valueStyle={{ color: "#ff4d4f" }}
+            />
+          </Card>
+        </Col>
+        <Col xs={24} sm={12} md={6}>
+          <Card>
+            <Statistic
+              title="Điểm trung bình"
+              value={stats.avgScore}
+              suffix="/ 10"
+              valueStyle={{ color: "#faad14" }}
+            />
+          </Card>
+        </Col>
+      </Row>
+
+      {/* Filters */}
+      <Row gutter={12} style={{ marginBottom: 16 }}>
+        <Col span={12}>
+          <Input
+            placeholder="Tìm theo tên sinh viên..."
+            prefix={<SearchOutlined />}
+            allowClear
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+          />
+        </Col>
+        <Col span={12}>
+          <Select
+            placeholder="Lọc theo trạng thái"
+            allowClear
+            style={{ width: "100%" }}
+            value={statusFilter}
+            onChange={(value) => setStatusFilter(value || "")}
+          >
+            <Option value="passed">Đạt</Option>
+            <Option value="failed">Chưa đạt</Option>
+          </Select>
+        </Col>
+      </Row>
+
+      {/* Table */}
+      <Table
+        rowKey="id"
+        columns={columns}
+        dataSource={submissions}
+        loading={loading}
+        pagination={{
+          current: page,
+          pageSize: limit,
+          total: total,
+          showSizeChanger: true,
+          showTotal: (total, range) =>
+            `${range[0]}-${range[1]} của ${total} bài nộp`,
+          onChange: (p, l) => {
+            setPage(p);
+            setLimit(l);
+          },
+        }}
+        style={{ borderRadius: 12, overflow: "hidden" }}
+      />
     </div>
   );
 };

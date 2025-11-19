@@ -385,3 +385,41 @@ export async function getUserAssignmentSubmissions(id, token) {
     throw err.response?.data || err;
   }
 }
+
+// ================= EXPORT EXCEL =================
+export async function exportAssignmentSubmissions(assignmentId) {
+  try {
+    const res = await axios.get(
+      `${API_BASE_URL}/admin/assignments/${assignmentId}/export`,
+      {
+        headers: getAuthHeader(),
+        responseType: "blob", // IMPORTANT: để nhận file
+      }
+    );
+
+    // Tạo download link
+    const url = window.URL.createObjectURL(new Blob([res.data]));
+    const link = document.createElement("a");
+    link.href = url;
+
+    // Lấy tên file từ header hoặc tạo mới
+    const contentDisposition = res.headers["content-disposition"];
+    let fileName = "Ket_qua_bai_tap.xlsx";
+    if (contentDisposition) {
+      const fileNameMatch = contentDisposition.match(/filename=(.+)/);
+      if (fileNameMatch && fileNameMatch.length === 2) {
+        fileName = fileNameMatch[1];
+      }
+    }
+
+    link.setAttribute("download", fileName);
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    window.URL.revokeObjectURL(url);
+
+    return { success: true };
+  } catch (err) {
+    throw err.response?.data || err;
+  }
+}
