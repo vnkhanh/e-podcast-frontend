@@ -42,6 +42,7 @@ import DoAssignmentPage from "../pages/student/Assignment/DoAssignmentPage";
 import AssignmentSubmissionsPage from "../pages/admin/Assignment/AssignmentSubmissionsPage";
 import PodcastAssignments from "../pages/student/Assignment/PodcastAssignments";
 import AssignmentSubmissionDetailPage from "../pages/admin/Assignment/AssignmentSubmissionDetailPage";
+import EditAssignmentPage from "../pages/admin/Assignment/EditAssignmentPage";
 const AppRoute = () => {
   const token = localStorage.getItem("token");
   const user = token ? JSON.parse(localStorage.getItem("user")) : null;
@@ -138,6 +139,7 @@ const AppRoute = () => {
           path="assignments/:id/submissions"
           element={<AssignmentSubmissionsPage />}
         />
+        <Route path="assignments/:id/edit" element={<EditAssignmentPage />} />
       </Route>
 
       <Route

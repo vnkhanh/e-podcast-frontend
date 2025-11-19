@@ -5,6 +5,7 @@ import {
   Typography,
   Button,
   Radio,
+  Tag,
   Space,
   message,
   Alert,
@@ -154,7 +155,8 @@ const DoAssignmentPage = ({ token }) => {
               }}
             >
               <Title level={5}>
-                Câu {index + 1}: {q.question}
+                Câu {index + 1}: {q.question} <Tag>{q.points}</Tag>
+                <Tag>{q.difficulty}</Tag>
               </Title>
 
               <Radio.Group

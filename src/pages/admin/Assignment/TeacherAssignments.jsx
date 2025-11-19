@@ -8,6 +8,7 @@ import {
   Modal,
   Form,
   Input,
+  Progress,
   DatePicker,
   InputNumber,
   message,
@@ -15,7 +16,6 @@ import {
   Switch,
   Typography,
   Alert,
-  Card,
   Tooltip,
   Tag,
 } from "antd";
@@ -32,19 +32,20 @@ import {
   ReloadOutlined,
 } from "@ant-design/icons";
 import dayjs from "dayjs";
+
 import {
   fetchAssignments,
   fetchSubjects,
   fetchPodcastsByChapter,
   createAssignmentFromFile,
-  updateAssignment,
   deleteAssignment,
   togglePublish,
   createAssignmentFromGemini,
 } from "../../../services/api_assignment";
+
 import { useNavigate } from "react-router-dom";
+
 import CreateAssignmentModal from "./CreateAssignmentModal";
-import EditAssignmentModal from "./EditAssignmentModal";
 import { ThemeContext } from "../../../context/useTheme";
 
 const { TextArea } = Input;
@@ -61,25 +62,24 @@ const TeacherAssignments = () => {
   const [subjects, setSubjects] = useState([]);
   const [chapters, setChapters] = useState([]);
   const [podcasts, setPodcasts] = useState([]);
+
   const [subjectsLoading, setSubjectsLoading] = useState(false);
   const [error, setError] = useState(null);
 
   // Modals
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
-  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
-  const [editingItem, setEditingItem] = useState(null);
   const [isGeminiModalOpen, setIsGeminiModalOpen] = useState(false);
 
   // Forms
   const [formCreate] = Form.useForm();
-  const [formEdit] = Form.useForm();
   const [formGemini] = Form.useForm();
+  const [geminiProgress, setGeminiProgress] = useState(0);
 
   const [uploadLoading, setUploadLoading] = useState(false);
   const [geminiLoading, setGeminiLoading] = useState(false);
 
   const [search, setSearch] = useState("");
-  const [statusFilter, setStatusFilter] = useState("");
+  const [statusFilter] = useState("");
   const [page, setPage] = useState(1);
   const [limit, setLimit] = useState(10);
   const [total, setTotal] = useState(0);
@@ -106,6 +106,7 @@ const TeacherAssignments = () => {
         : Array.isArray(res.data)
         ? res.data
         : res;
+
       setAssignments(list);
       setTotal(res.total || list.length);
     } catch (err) {
@@ -135,8 +136,10 @@ const TeacherAssignments = () => {
         ? res.data
         : res;
       setSubjects(list);
-      if (list.length === 0)
+
+      if (list.length === 0) {
         setError("Không có môn học nào. Vui lòng tạo môn học trước.");
+      }
     } catch (err) {
       message.error("Không tải được danh sách môn học");
       setSubjects([]);
@@ -157,10 +160,9 @@ const TeacherAssignments = () => {
     try {
       const res = await fetchPodcastsByChapter(chapterId);
       setPodcasts(res.podcasts || []);
-    } catch (err) {
+    } catch {
       message.error("Không tải được podcast");
       setPodcasts([]);
-      console.error(err);
     }
   };
 
@@ -169,7 +171,7 @@ const TeacherAssignments = () => {
     loadSubjectsData();
   }, [loadAssignments, loadSubjectsData]);
 
-  // ================= MODALS =================
+  // ================= CREATE =================
   const openCreateModal = () => {
     setIsCreateModalOpen(true);
     formCreate.resetFields();
@@ -177,29 +179,11 @@ const TeacherAssignments = () => {
     setPodcasts([]);
   };
 
-  const openEditModal = (item) => {
-    setEditingItem(item);
-    setIsEditModalOpen(true);
-    formEdit.setFieldsValue({
-      ...item,
-      due_date: item.due_date ? dayjs(item.due_date) : null,
-    });
-  };
-
   const openGeminiModal = () => {
     setIsGeminiModalOpen(true);
     formGemini.resetFields();
     setChapters([]);
     setPodcasts([]);
-  };
-
-  const generatePassword = () => {
-    const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
-    let password = "";
-    for (let i = 0; i < 6; i++) {
-      password += chars.charAt(Math.floor(Math.random() * chars.length));
-    }
-    formGemini.setFieldsValue({ password });
   };
 
   // ================= CRUD =================
@@ -232,46 +216,24 @@ const TeacherAssignments = () => {
     }
   };
 
-  const handleViewSubmissions = (id) => {
-    navigate(`/teacher/assignments/${id}/submissions`);
-  };
-
   const handleCreateFromFile = async (values) => {
     try {
       setUploadLoading(true);
       const formData = new FormData();
+
       Object.entries(values).forEach(([key, val]) => {
         if (key === "due_date" && val) formData.append(key, val.toISOString());
         else if (key !== "file") formData.append(key, val);
       });
-      if (values.file && values.file.file)
-        formData.append("file", values.file.file);
+
+      if (values.file?.file) formData.append("file", values.file.file);
+
       await createAssignmentFromFile(formData);
       message.success("Tạo bài tập từ file thành công");
       setIsCreateModalOpen(false);
-      formCreate.resetFields();
       loadAssignments();
     } catch {
       message.error("Tạo bài tập thất bại");
-    } finally {
-      setUploadLoading(false);
-    }
-  };
-
-  const handleEditAssignment = async (values) => {
-    try {
-      setUploadLoading(true);
-      const payload = {
-        ...values,
-        due_date: values.due_date?.toISOString() || null,
-      };
-      await updateAssignment(editingItem.id, payload);
-      message.success("Cập nhật bài tập thành công");
-      setIsEditModalOpen(false);
-      formEdit.resetFields();
-      loadAssignments();
-    } catch {
-      message.error("Cập nhật thất bại");
     } finally {
       setUploadLoading(false);
     }
@@ -281,17 +243,31 @@ const TeacherAssignments = () => {
     try {
       const values = await formGemini.validateFields();
       setGeminiLoading(true);
+      setGeminiProgress(0);
+      // Simulate progress
+      const interval = setInterval(() => {
+        setGeminiProgress((prev) => {
+          if (prev >= 100) {
+            clearInterval(interval);
+            return 100;
+          }
+          return prev + Math.floor(Math.random() * 10) + 5; // tăng ngẫu nhiên
+        });
+      }, 300); // mỗi 0.3s tăng
+
       const payload = {
         ...values,
         due_date: values.due_date?.toISOString() || null,
       };
+
       await createAssignmentFromGemini(payload);
+      setGeminiProgress(99);
       message.success("Tạo bài tập từ AI thành công");
       setIsGeminiModalOpen(false);
-      formGemini.resetFields();
       loadAssignments();
     } catch {
       message.error("Tạo bài tập thất bại");
+      setGeminiProgress(0);
     } finally {
       setGeminiLoading(false);
     }
@@ -315,6 +291,7 @@ const TeacherAssignments = () => {
               </Tooltip>
             )}
           </div>
+
           {record.description && (
             <Text type="secondary" style={{ fontSize: 12 }}>
               {record.description.length > 50
@@ -340,6 +317,7 @@ const TeacherAssignments = () => {
           <Tag color={published ? "green" : "orange"}>
             {published ? "Đã công bố" : "Bản nháp"}
           </Tag>
+
           {record.has_password && (
             <Tag icon={<LockOutlined />} color="warning">
               Có mật khẩu
@@ -354,18 +332,22 @@ const TeacherAssignments = () => {
       key: "created_at",
       render: (date) => dayjs(date).format("DD/MM/YYYY"),
     },
+
     {
       title: "Thao tác",
       key: "actions",
+      width: 180,
       render: (_, record) => (
         <Space size="small">
+          {/* 🔥 EDIT → NAVIGATE */}
           <Tooltip title="Chỉnh sửa">
             <Button
               icon={<EditOutlined />}
               size="small"
-              onClick={() => openEditModal(record)}
+              onClick={() => navigate(`/teacher/assignments/${record.id}/edit`)}
             />
           </Tooltip>
+
           <Tooltip title={record.is_published ? "Ẩn bài tập" : "Công bố"}>
             <Button
               icon={
@@ -382,6 +364,7 @@ const TeacherAssignments = () => {
               }
             />
           </Tooltip>
+
           <Tooltip title="Xóa">
             <Button
               danger
@@ -390,11 +373,14 @@ const TeacherAssignments = () => {
               onClick={() => handleDelete(record.id)}
             />
           </Tooltip>
-          <Tooltip title="Xem bài nộp">
+
+          <Tooltip title="Xem chi tiết">
             <Button
               icon={<EyeOutlined />}
               size="small"
-              onClick={() => handleViewSubmissions(record.id)}
+              onClick={() =>
+                navigate(`/teacher/assignments/${record.id}/submissions`)
+              }
             />
           </Tooltip>
         </Space>
@@ -411,11 +397,13 @@ const TeacherAssignments = () => {
           </Typography.Title>
           <Text type="secondary">Tạo, chỉnh sửa và quản lý bài tập</Text>
         </Col>
+
         <Col>
           <Space>
             <Button icon={<ReloadOutlined />} onClick={loadAssignments}>
               Làm mới
             </Button>
+
             <Button
               type="primary"
               icon={<FileTextOutlined />}
@@ -423,6 +411,7 @@ const TeacherAssignments = () => {
             >
               Tạo từ File
             </Button>
+
             <Button
               type="primary"
               icon={<RobotOutlined />}
@@ -443,13 +432,14 @@ const TeacherAssignments = () => {
           style={{ marginBottom: 16 }}
         />
       )}
+
       <Row gutter={12} style={{ marginBottom: 16 }}>
         <Col span={6}>
           <Input
             placeholder="Tìm theo tên bài tập..."
+            allowClear
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            allowClear
           />
         </Col>
 
@@ -459,8 +449,8 @@ const TeacherAssignments = () => {
             allowClear
             style={{ width: "100%" }}
             onChange={(value) => {
-              setPage(1);
               setSubjectFilter(value);
+              setPage(1);
             }}
           >
             {subjects.map((sub) => (
@@ -477,8 +467,8 @@ const TeacherAssignments = () => {
             allowClear
             style={{ width: "100%" }}
             onChange={(value) => {
-              setPage(1);
               setChapterFilter(value);
+              setPage(1);
             }}
             disabled={!subjectFilter}
           >
@@ -495,9 +485,9 @@ const TeacherAssignments = () => {
         <Col span={6}>
           <Input
             placeholder="Tìm theo podcast..."
+            allowClear
             value={podcastSearch}
             onChange={(e) => setPodcastSearch(e.target.value)}
-            allowClear
           />
         </Col>
       </Row>
@@ -523,6 +513,7 @@ const TeacherAssignments = () => {
         style={{ borderRadius: 12, overflow: "hidden" }}
       />
 
+      {/* CREATE MODAL */}
       <CreateAssignmentModal
         open={isCreateModalOpen}
         onCancel={() => setIsCreateModalOpen(false)}
@@ -537,14 +528,7 @@ const TeacherAssignments = () => {
         loading={uploadLoading}
       />
 
-      <EditAssignmentModal
-        open={isEditModalOpen}
-        onCancel={() => setIsEditModalOpen(false)}
-        onSubmit={handleEditAssignment}
-        form={formEdit}
-        loading={uploadLoading}
-      />
-
+      {/* GEMINI MODAL */}
       <Modal
         title="Tạo bài tập từ AI (Gemini)"
         open={isGeminiModalOpen}
@@ -627,20 +611,11 @@ const TeacherAssignments = () => {
           </Form.Item>
 
           <Form.Item label="Số câu hỏi" name="num_questions" initialValue={10}>
-            <InputNumber
-              min={5}
-              max={50}
-              style={{ width: "100%" }}
-              placeholder="Số câu hỏi cần tạo"
-            />
+            <InputNumber min={5} max={50} style={{ width: "100%" }} />
           </Form.Item>
 
           <Form.Item label="Hạn nộp" name="due_date">
-            <DatePicker
-              style={{ width: "100%" }}
-              showTime
-              placeholder="Chọn hạn nộp"
-            />
+            <DatePicker showTime style={{ width: "100%" }} />
           </Form.Item>
 
           <Form.Item
@@ -666,13 +641,71 @@ const TeacherAssignments = () => {
           <Form.Item label="Điểm đạt" name="pass_score" initialValue={5}>
             <InputNumber min={1} max={10} style={{ width: "100%" }} />
           </Form.Item>
+          <Row gutter={12}>
+            <Col span={8}>
+              <Form.Item
+                label="% Câu dễ"
+                name={["difficulty_ratio", "easy"]}
+                initialValue={50}
+                rules={[
+                  { required: true, message: "Vui lòng nhập %" },
+                  {
+                    type: "number",
+                    min: 0,
+                    max: 100,
+                    message: "% từ 0 đến 100",
+                  },
+                ]}
+              >
+                <InputNumber min={0} max={100} style={{ width: "100%" }} />
+              </Form.Item>
+            </Col>
+
+            <Col span={8}>
+              <Form.Item
+                label="% Câu trung bình"
+                name={["difficulty_ratio", "medium"]}
+                initialValue={30}
+                rules={[
+                  { required: true, message: "Vui lòng nhập %" },
+                  {
+                    type: "number",
+                    min: 0,
+                    max: 100,
+                    message: "% từ 0 đến 100",
+                  },
+                ]}
+              >
+                <InputNumber min={0} max={100} style={{ width: "100%" }} />
+              </Form.Item>
+            </Col>
+
+            <Col span={8}>
+              <Form.Item
+                label="% Câu khó"
+                name={["difficulty_ratio", "hard"]}
+                initialValue={20}
+                rules={[
+                  { required: true, message: "Vui lòng nhập %" },
+                  {
+                    type: "number",
+                    min: 0,
+                    max: 100,
+                    message: "% từ 0 đến 100",
+                  },
+                ]}
+              >
+                <InputNumber min={0} max={100} style={{ width: "100%" }} />
+              </Form.Item>
+            </Col>
+          </Row>
 
           <Form.Item
             label="Có mật khẩu"
             name="has_password"
             valuePropName="checked"
           >
-            <Switch checked={hasGeminiPassword} onChange={generatePassword} />
+            <Switch onChange={() => {}} />
           </Form.Item>
 
           {hasGeminiPassword && (
@@ -681,30 +714,32 @@ const TeacherAssignments = () => {
               name="password"
               rules={[{ required: true }]}
             >
-              <Input
-                placeholder="Mật khẩu sẽ tự sinh khi bật switch"
-                readOnly
-              />
+              <Input placeholder="Mật khẩu tự sinh khi bật" readOnly />
             </Form.Item>
           )}
+
+          <Form.Item
+            label="Cho phép xem đáp án"
+            name="allow_review"
+            valuePropName="checked"
+          >
+            <Switch />
+          </Form.Item>
 
           <Form.Item
             label="Công bố ngay"
             name="is_published"
             valuePropName="checked"
-            initialValue={false}
           >
             <Switch />
           </Form.Item>
 
-          <Button
-            type="primary"
-            block
-            onClick={handleCreateFromGemini}
-            loading={geminiLoading}
-          >
-            Tạo bài tập
-          </Button>
+          {geminiLoading && (
+            <div style={{ marginBottom: 16 }}>
+              <Text>Đang tạo câu hỏi:</Text>
+              <Progress percent={geminiProgress} size="small" status="active" />
+            </div>
+          )}
         </Form>
       </Modal>
     </div>
