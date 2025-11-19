@@ -30,7 +30,11 @@ import {
   CalendarOutlined,
   EditOutlined,
 } from "@ant-design/icons";
-
+import {
+  getUserAssignmentDetail,
+  getUserAssignmentSubmissions,
+  checkDraftSubmission,
+} from "../../../services/api_assignment";
 const { Title, Paragraph, Text } = Typography;
 
 const AssignmentDetail = ({ token }) => {
@@ -65,44 +69,20 @@ const AssignmentDetail = ({ token }) => {
     async function loadData() {
       setLoading(true);
       try {
-        // API giả định - thay bằng API thực tế của bạn
-        const API_BASE_URL =
-          import.meta.env.VITE_API_BASE_URL || "http://localhost:8080/api";
-
         // 1. Lấy chi tiết assignment
-        const resDetail = await fetch(
-          `${API_BASE_URL}/user/assignments/${id}`,
-          {
-            headers: { Authorization: `Bearer ${token}` },
-          }
-        );
-        const detailData = await resDetail.json();
-
+        const detailData = await getUserAssignmentDetail(id, token);
         setAssignment(detailData.assignment);
         setAttemptsLeft(detailData.attempts_left || 0);
         setIsExpired(detailData.is_expired || false);
         setAllowReview(detailData.allow_review || false);
 
         // 2. Kiểm tra có submission draft không
-        const resDraft = await fetch(
-          `${API_BASE_URL}/user/assignments/${id}/check-draft`,
-          {
-            headers: { Authorization: `Bearer ${token}` },
-          }
-        );
-        const draftData = await resDraft.json();
-
+        const draftData = await checkDraftSubmission(id, token);
         setHasDraft(draftData.has_draft || false);
         setDraftSubmission(draftData.submission || null);
 
         // 3. Lấy lịch sử làm bài (chỉ lấy những bài đã nộp)
-        const resSubs = await fetch(
-          `${API_BASE_URL}/user/assignments/${id}/submissions`,
-          {
-            headers: { Authorization: `Bearer ${token}` },
-          }
-        );
-        const subsData = await resSubs.json();
+        const subsData = await getUserAssignmentSubmissions(id, token);
 
         // Filter chỉ lấy submissions đã nộp
         const completedSubs = (subsData.submissions || []).filter(
@@ -246,7 +226,6 @@ const AssignmentDetail = ({ token }) => {
         style={{
           textAlign: "center",
           padding: "100px 0",
-          background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
           minHeight: "100vh",
           display: "flex",
           alignItems: "center",

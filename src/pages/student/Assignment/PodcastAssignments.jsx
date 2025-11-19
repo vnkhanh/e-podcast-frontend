@@ -21,9 +21,7 @@ import {
   ArrowLeftOutlined,
   LockOutlined,
   UnlockOutlined,
-  PlayCircleOutlined,
   RocketOutlined,
-  EyeOutlined,
   CheckCircleOutlined,
   ClockCircleOutlined,
 } from "@ant-design/icons";
