@@ -195,7 +195,7 @@ const AssignmentSubmissionsPage = () => {
         <Button
           type="link"
           size="small"
-          onClick={() => navigate(`/submissions/${record.id}`)}
+          onClick={() => navigate(`/teacher/submissions/${record.id}`)}
         >
           Chi tiết
         </Button>

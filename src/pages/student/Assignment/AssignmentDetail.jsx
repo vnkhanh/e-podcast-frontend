@@ -9,7 +9,6 @@ import {
   Alert,
   Spin,
   message,
-  Tooltip,
   Row,
   Col,
   Avatar,
@@ -20,10 +19,6 @@ import {
 } from "antd";
 import { useParams, useNavigate } from "react-router-dom";
 import {
-  getAssignmentDetail,
-  getUserSubmissions,
-} from "../../../services/api_assignment";
-import {
   ReadOutlined,
   ArrowLeftOutlined,
   PlayCircleOutlined,
@@ -32,8 +27,8 @@ import {
   CheckCircleOutlined,
   CloseCircleOutlined,
   RocketOutlined,
-  ExclamationCircleOutlined,
   CalendarOutlined,
+  EditOutlined,
 } from "@ant-design/icons";
 
 const { Title, Paragraph, Text } = Typography;
@@ -47,13 +42,18 @@ const AssignmentDetail = ({ token }) => {
   const [loading, setLoading] = useState(true);
   const [attemptsLeft, setAttemptsLeft] = useState(0);
   const [isExpired, setIsExpired] = useState(false);
+  const [allowReview, setAllowReview] = useState(false);
+  const [hasDraft, setHasDraft] = useState(false);
+  const [draftSubmission, setDraftSubmission] = useState(null);
 
-  // Reset khi đổi tài khoản
   useEffect(() => {
     setAssignment(null);
     setSubmissions([]);
     setAttemptsLeft(0);
     setIsExpired(false);
+    setAllowReview(false);
+    setHasDraft(false);
+    setDraftSubmission(null);
   }, [token]);
 
   useEffect(() => {
@@ -65,25 +65,53 @@ const AssignmentDetail = ({ token }) => {
     async function loadData() {
       setLoading(true);
       try {
-        const res = await getAssignmentDetail(id, token);
-        const data = res.data.assignment;
-        setAssignment(data);
-        setAttemptsLeft(res.data.attempts_left);
+        // API giả định - thay bằng API thực tế của bạn
+        const API_BASE_URL =
+          import.meta.env.VITE_API_BASE_URL || "http://localhost:8080/api";
 
-        // ==== CHECK IF EXPIRED ====
-        if (data.due_date) {
-          const now = new Date();
-          const due = new Date(data.due_date);
-          if (now > due) {
-            setIsExpired(true);
+        // 1. Lấy chi tiết assignment
+        const resDetail = await fetch(
+          `${API_BASE_URL}/user/assignments/${id}`,
+          {
+            headers: { Authorization: `Bearer ${token}` },
           }
-        }
+        );
+        const detailData = await resDetail.json();
 
-        // Get submissions
-        const subs = await getUserSubmissions(id, token);
-        setSubmissions(subs.data.submissions || []);
+        setAssignment(detailData.assignment);
+        setAttemptsLeft(detailData.attempts_left || 0);
+        setIsExpired(detailData.is_expired || false);
+        setAllowReview(detailData.allow_review || false);
+
+        // 2. Kiểm tra có submission draft không
+        const resDraft = await fetch(
+          `${API_BASE_URL}/user/assignments/${id}/check-draft`,
+          {
+            headers: { Authorization: `Bearer ${token}` },
+          }
+        );
+        const draftData = await resDraft.json();
+
+        setHasDraft(draftData.has_draft || false);
+        setDraftSubmission(draftData.submission || null);
+
+        // 3. Lấy lịch sử làm bài (chỉ lấy những bài đã nộp)
+        const resSubs = await fetch(
+          `${API_BASE_URL}/user/assignments/${id}/submissions`,
+          {
+            headers: { Authorization: `Bearer ${token}` },
+          }
+        );
+        const subsData = await resSubs.json();
+
+        // Filter chỉ lấy submissions đã nộp
+        const completedSubs = (subsData.submissions || []).filter(
+          (sub) => sub.submitted_at !== null && sub.submitted_at !== undefined
+        );
+        setSubmissions(completedSubs);
       } catch (err) {
         console.error(err);
+        message.error("Không thể tải dữ liệu bài tập");
         setAssignment(null);
         setSubmissions([]);
       } finally {
@@ -93,6 +121,20 @@ const AssignmentDetail = ({ token }) => {
 
     loadData();
   }, [id, token, navigate]);
+
+  const handleStart = () => {
+    if (isExpired) {
+      message.warning("Bài tập đã quá hạn. Bạn không thể tiếp tục.");
+      return;
+    }
+
+    if (attemptsLeft <= 0 && !hasDraft) {
+      message.warning("Bạn đã hết lượt làm bài.");
+      return;
+    }
+
+    navigate(`/assignment/${id}/start`);
+  };
 
   const columns = [
     {
@@ -181,15 +223,22 @@ const AssignmentDetail = ({ token }) => {
         </Space>
       ),
     },
+    {
+      title: "Xem chi tiết",
+      align: "center",
+      render: (row) => (
+        <Button
+          type="link"
+          disabled={!allowReview}
+          onClick={() =>
+            navigate(`/assignment/${row.assignment_id}/submission/${row.id}`)
+          }
+        >
+          Xem chi tiết
+        </Button>
+      ),
+    },
   ];
-
-  const handleStart = () => {
-    if (isExpired) {
-      message.warning("Bài tập đã quá hạn. Bạn không thể tiếp tục.");
-      return;
-    }
-    navigate(`/assignment/${id}/start`);
-  };
 
   if (loading) {
     return (
@@ -260,6 +309,11 @@ const AssignmentDetail = ({ token }) => {
       </div>
     );
   }
+
+  // Xác định trạng thái nút
+  const canStart = !isExpired && (attemptsLeft > 0 || hasDraft);
+  const buttonText = hasDraft ? "Tiếp tục làm bài" : "Làm bài ngay";
+  const buttonIcon = hasDraft ? <EditOutlined /> : <PlayCircleOutlined />;
 
   return (
     <div
@@ -350,6 +404,15 @@ const AssignmentDetail = ({ token }) => {
                     >
                       {assignment.description}
                     </Paragraph>
+
+                    {/* METADATA */}
+                    <Space style={{ marginTop: 16 }} size={24}>
+                      <Tag color={allowReview ? "green" : "red"}>
+                        {allowReview
+                          ? "Cho phép xem đáp án"
+                          : "Không xem đáp án"}
+                      </Tag>
+                    </Space>
                   </div>
                 </div>
 
@@ -408,75 +471,88 @@ const AssignmentDetail = ({ token }) => {
                 <Button
                   type="primary"
                   size="large"
-                  icon={<PlayCircleOutlined />}
+                  icon={buttonIcon}
                   onClick={handleStart}
-                  disabled={isExpired || attemptsLeft <= 0}
+                  disabled={!canStart}
                   style={{
-                    background:
-                      isExpired || attemptsLeft <= 0
-                        ? "linear-gradient(135deg, #d9d9d9 0%, #bfbfbf 100%)"
-                        : "linear-gradient(135deg, #ff6b35 0%, #f7931e 100%)",
+                    background: !canStart
+                      ? "linear-gradient(135deg, #d9d9d9 0%, #bfbfbf 100%)"
+                      : hasDraft
+                      ? "linear-gradient(135deg, #faad14 0%, #fa8c16 100%)"
+                      : "linear-gradient(135deg, #ff6b35 0%, #f7931e 100%)",
                     border: "none",
                     borderRadius: 12,
                     fontWeight: 600,
                     height: 56,
                     width: "100%",
                     fontSize: 16,
-                    boxShadow:
-                      isExpired || attemptsLeft <= 0
-                        ? "none"
-                        : "0 4px 16px rgba(255, 107, 53, 0.4)",
+                    boxShadow: !canStart
+                      ? "none"
+                      : hasDraft
+                      ? "0 4px 16px rgba(250, 173, 20, 0.4)"
+                      : "0 4px 16px rgba(255, 107, 53, 0.4)",
                   }}
                 >
                   {isExpired
                     ? "Đã quá hạn"
-                    : attemptsLeft <= 0
+                    : attemptsLeft <= 0 && !hasDraft
                     ? "Hết lượt"
-                    : "Làm bài ngay"}
+                    : buttonText}
                 </Button>
+                {hasDraft && draftSubmission && (
+                  <Text
+                    style={{
+                      display: "block",
+                      marginTop: 8,
+                      color: "rgba(255,255,255,0.9)",
+                      fontSize: 12,
+                    }}
+                  >
+                    Bạn có bài làm dở từ{" "}
+                    {new Date(draftSubmission.started_at).toLocaleString(
+                      "vi-VN"
+                    )}
+                  </Text>
+                )}
               </Col>
             </Row>
           </div>
         </Card>
 
-        {/* ALERT SECTION */}
+        {/* ALERTS */}
+        {hasDraft && (
+          <Alert
+            message="Bạn có bài làm chưa hoàn thành"
+            description="Bạn đã bắt đầu làm bài tập này nhưng chưa nộp. Nhấn 'Tiếp tục làm bài' để hoàn thành."
+            type="info"
+            showIcon
+            icon={<EditOutlined />}
+            style={{ marginBottom: 24, borderRadius: 16, border: "none" }}
+          />
+        )}
+
         {isExpired && (
           <Alert
             message="Đã quá hạn"
             description="Bài tập này hết hạn. Bạn không thể tiếp tục làm bài."
             type="error"
             showIcon
-            style={{
-              marginBottom: 24,
-              borderRadius: 16,
-              border: "none",
-            }}
+            style={{ marginBottom: 24, borderRadius: 16, border: "none" }}
           />
         )}
 
-        {!isExpired && attemptsLeft <= 0 && (
+        {!isExpired && attemptsLeft <= 0 && !hasDraft && (
           <Alert
             message="Đã hết lượt làm bài"
             description={`Bạn đã sử dụng hết ${assignment.max_attempts} lượt làm bài cho bài tập này.`}
             type="warning"
             showIcon
-            style={{
-              marginBottom: 24,
-              borderRadius: 16,
-              border: "none",
-            }}
+            style={{ marginBottom: 24, borderRadius: 16, border: "none" }}
           />
         )}
 
-        {/* SUBMISSIONS HISTORY */}
-        <Card
-          style={{
-            borderRadius: 20,
-            border: "none",
-            overflow: "hidden",
-          }}
-          styles={{ body: { padding: 0 } }}
-        >
+        {/* LỊCH SỬ LÀM BÀI */}
+        <Card style={{ borderRadius: 20, border: "none", overflow: "hidden" }}>
           <div style={{ padding: 5 }}>
             <Title
               level={3}
@@ -489,9 +565,9 @@ const AssignmentDetail = ({ token }) => {
               }}
             >
               <HistoryOutlined style={{ color: "#667eea" }} />
-              Lịch sử làm bài
+              Lịch sử làm bài (Đã nộp)
             </Title>
-            <Divider style={{ margin: "0 0" }} />
+            <Divider style={{ margin: 0 }} />
           </div>
 
           {submissions.length === 0 ? (
@@ -500,10 +576,10 @@ const AssignmentDetail = ({ token }) => {
                 style={{ fontSize: 48, color: "#d9d9d9", marginBottom: 16 }}
               />
               <Title level={4} style={{ color: "#666", marginBottom: 8 }}>
-                Chưa có lần làm nào
+                Chưa có lần làm nào hoàn thành
               </Title>
               <Text type="secondary">
-                Bạn chưa thực hiện lần làm bài nào cho bài tập này
+                Bạn chưa hoàn thành và nộp bài tập này
               </Text>
             </div>
           ) : (
@@ -515,19 +591,10 @@ const AssignmentDetail = ({ token }) => {
                 pagination={false}
                 bordered
                 size="middle"
-                style={{
-                  borderRadius: 12,
-                  overflow: "hidden",
-                }}
+                style={{ borderRadius: 12, overflow: "hidden" }}
                 rowClassName={(record, index) =>
                   index % 2 === 0 ? "table-row-light" : "table-row-dark"
                 }
-                onRow={() => ({
-                  style: {
-                    cursor: "pointer",
-                    transition: "all 0.3s ease",
-                  },
-                })}
               />
             </div>
           )}

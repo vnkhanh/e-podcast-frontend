@@ -23,6 +23,7 @@ export async function fetchAssignments(params = {}) {
     throw err.response?.data || err;
   }
 }
+
 export async function fetchAssignmentDetail(assignmentId) {
   try {
     const res = await axios.get(
@@ -36,6 +37,7 @@ export async function fetchAssignmentDetail(assignmentId) {
     throw err.response?.data || err;
   }
 }
+
 // ================= SUBJECTS FOR TEACHER =================
 export async function fetchSubjects() {
   try {
@@ -146,19 +148,72 @@ export async function createAssignmentFromGemini(payload) {
     throw err.response?.data || err;
   }
 }
-// Lấy danh sách bài nộp của assignment (giảng viên)
-export async function fetchAssignmentSubmissions(assignmentId, params = {}) {
-  const token = localStorage.getItem("token");
 
-  return axios.get(
-    `${API_BASE_URL}/admin/assignments/${assignmentId}/submissions`,
-    {
-      params,
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    }
-  );
+// ================= QUESTIONS MANAGEMENT =================
+export async function fetchAssignmentQuestions(assignmentId) {
+  try {
+    const res = await axios.get(
+      `${API_BASE_URL}/admin/assignments/${assignmentId}/questions`,
+      { headers: getAuthHeader() }
+    );
+    return res.data;
+  } catch (err) {
+    throw err.response?.data || err;
+  }
+}
+
+export async function createAssignmentQuestion(assignmentId, payload) {
+  try {
+    const res = await axios.post(
+      `${API_BASE_URL}/admin/assignments/${assignmentId}/questions`,
+      payload,
+      { headers: getAuthHeader() }
+    );
+    return res.data;
+  } catch (err) {
+    throw err.response?.data || err;
+  }
+}
+
+export async function updateAssignmentQuestion(questionId, payload) {
+  try {
+    const res = await axios.put(
+      `${API_BASE_URL}/admin/assignments/questions/${questionId}`,
+      payload,
+      { headers: getAuthHeader() }
+    );
+    return res.data;
+  } catch (err) {
+    throw err.response?.data || err;
+  }
+}
+
+export async function deleteAssignmentQuestion(questionId) {
+  try {
+    const res = await axios.delete(
+      `${API_BASE_URL}/admin/assignments/questions/${questionId}`,
+      { headers: getAuthHeader() }
+    );
+    return res.data;
+  } catch (err) {
+    throw err.response?.data || err;
+  }
+}
+
+// ================= SUBMISSIONS =================
+export async function fetchAssignmentSubmissions(assignmentId, params = {}) {
+  try {
+    const res = await axios.get(
+      `${API_BASE_URL}/admin/assignments/${assignmentId}/submissions`,
+      {
+        params,
+        headers: getAuthHeader(),
+      }
+    );
+    return res.data;
+  } catch (err) {
+    throw err.response?.data || err;
+  }
 }
 
 // ========================= USER ==============================
@@ -175,42 +230,129 @@ export const getAssignmentsByPodcast = async (podcastId) => {
 };
 
 export async function getAssignmentDetail(id, token) {
-  return axios.get(`${API_BASE_URL}/user/assignments/${id}`, {
-    headers: {
-      Authorization: `Bearer ${token}`,
-    },
-  });
-}
-
-export async function getUserSubmissions(id, token) {
-  return axios.get(`${API_BASE_URL}/user/assignments/${id}/submissions`, {
-    headers: {
-      Authorization: `Bearer ${token}`,
-    },
-  });
-}
-
-export async function submitAssignment(id, answers, token) {
-  return axios.post(
-    `${API_BASE_URL}/user/assignments/${id}/submit`,
-    { answers },
-    {
+  try {
+    const res = await axios.get(`${API_BASE_URL}/user/assignments/${id}`, {
       headers: {
         Authorization: `Bearer ${token}`,
       },
-    }
-  );
+    });
+    return res.data;
+  } catch (err) {
+    throw err.response?.data || err;
+  }
+}
+
+export async function getUserSubmissions(id, token) {
+  try {
+    const res = await axios.get(
+      `${API_BASE_URL}/user/assignments/${id}/submissions`,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+    return res.data;
+  } catch (err) {
+    throw err.response?.data || err;
+  }
+}
+
+export async function submitAssignment(id, payload, token) {
+  try {
+    const res = await axios.post(
+      `${API_BASE_URL}/user/assignments/${id}/submit`,
+      payload, // payload phải là { answers: [...], time_spent: ... }
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+    return res.data;
+  } catch (err) {
+    throw err.response?.data || err;
+  }
+}
+
+export async function getSubmissionDetail(assignmentId, submissionId) {
+  try {
+    const res = await axios.get(
+      `${API_BASE_URL}/user/assignments/${assignmentId}/submissions/${submissionId}`,
+      {
+        headers: getAuthHeader(),
+      }
+    );
+    return res.data;
+  } catch (err) {
+    throw err.response?.data || err;
+  }
 }
 // Verify assignment password
 export const verifyAssignmentPassword = async (assignmentId, password) => {
-  const response = await axios.post(
-    `${API_BASE_URL}/user/assignments/${assignmentId}/verify-password`,
-    {
-      password,
-    },
-    {
-      headers: getAuthHeader(),
-    }
-  );
-  return response.data;
+  try {
+    const res = await axios.post(
+      `${API_BASE_URL}/user/assignments/${assignmentId}/verify-password`,
+      { password },
+      {
+        headers: getAuthHeader(),
+      }
+    );
+    return res.data;
+  } catch (err) {
+    throw err.response?.data || err;
+  }
 };
+
+// Bắt đầu làm bài (tạo submission draft)
+export async function startAssignment(assignmentId, token) {
+  try {
+    const res = await axios.post(
+      `${API_BASE_URL}/user/assignments/${assignmentId}/start`,
+      {},
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+    return res.data;
+  } catch (err) {
+    throw err.response?.data || err;
+  }
+}
+
+// Lưu tiến trình làm bài (autosave)
+export async function saveAssignmentProgress(submissionId, answers, token) {
+  try {
+    const res = await axios.post(
+      `${API_BASE_URL}/user/assignments/submissions/${submissionId}/save`,
+      { answers },
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+    return res.data;
+  } catch (err) {
+    throw err.response?.data || err;
+  }
+}
+
+// Kiểm tra có submission draft không
+export async function checkDraftSubmission(assignmentId, token) {
+  try {
+    const res = await axios.get(
+      `${API_BASE_URL}/user/assignments/${assignmentId}/check-draft`,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+    return res.data;
+  } catch (err) {
+    throw err.response?.data || err;
+  }
+}

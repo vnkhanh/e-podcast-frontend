@@ -21,6 +21,11 @@ import SubjectDetailPage from "../pages/student/Subject/SubjectDetailPage";
 import SearchPage from "../pages/student/SearchPage";
 import CategoryList from "../pages/student/Category/CategoryList";
 import PodcastLibrary from "../pages/student/PodcastLibrary";
+import AssignmentSubmissionDetail from "../pages/student/Assignment/AssignmentSubmissionDetail";
+import PodcastAssignments from "../pages/student/Assignment/PodcastAssignments";
+import AssignmentDetail from "../pages/student/Assignment/AssignmentDetail";
+import DoAssignmentPage from "../pages/student/Assignment/DoAssignmentPage";
+import SubjectListPage from "../pages/student/Subject/SubjectListPage";
 
 // Admin & Teacher dùng chung layout
 import AdminLayout from "../layouts/AdminLayout";
@@ -35,14 +40,11 @@ import EditPodcast from "../pages/admin/Podcast/EditPodcast";
 import UserPage from "../pages/admin/User/UserPage";
 import ProtectedRoute from "./ProtectedRoute";
 import AdminProfile from "../pages/admin/AdminProfile";
-import SubjectListPage from "../pages/student/Subject/SubjectListPage";
 import TeacherAssignments from "../pages/admin/Assignment/TeacherAssignments";
-import AssignmentDetail from "../pages/student/Assignment/AssignmentDetail";
-import DoAssignmentPage from "../pages/student/Assignment/DoAssignmentPage";
 import AssignmentSubmissionsPage from "../pages/admin/Assignment/AssignmentSubmissionsPage";
-import PodcastAssignments from "../pages/student/Assignment/PodcastAssignments";
 import AssignmentSubmissionDetailPage from "../pages/admin/Assignment/AssignmentSubmissionDetailPage";
 import EditAssignmentPage from "../pages/admin/Assignment/EditAssignmentPage";
+
 const AppRoute = () => {
   const token = localStorage.getItem("token");
   const user = token ? JSON.parse(localStorage.getItem("user")) : null;
@@ -110,8 +112,8 @@ const AppRoute = () => {
           element={<PodcastAssignments />}
         />
         <Route
-          path="/submissions/:id"
-          element={<AssignmentSubmissionDetailPage />}
+          path="/assignment/:id/submission/:submissionId"
+          element={<AssignmentSubmissionDetail />}
         />
       </Route>
 
@@ -140,6 +142,10 @@ const AppRoute = () => {
           element={<AssignmentSubmissionsPage />}
         />
         <Route path="assignments/:id/edit" element={<EditAssignmentPage />} />
+        <Route
+          path="submissions/:id"
+          element={<AssignmentSubmissionDetailPage />}
+        />
       </Route>
 
       <Route

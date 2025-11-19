@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import {
   Tabs,
   Form,
@@ -24,23 +24,20 @@ import {
   ReloadOutlined,
 } from "@ant-design/icons";
 import dayjs from "dayjs";
-import axios from "axios";
 import { useParams, useNavigate } from "react-router-dom";
+// Import APIs
+import {
+  fetchAssignmentDetail,
+  updateAssignment,
+  fetchAssignmentQuestions,
+  createAssignmentQuestion,
+  updateAssignmentQuestion,
+  deleteAssignmentQuestion,
+} from "../../../services/api_assignment";
 
 const { TextArea } = Input;
 const { Option } = Select;
 const { Text } = Typography;
-
-// BASE URL VÀ AUTH
-const API_BASE_URL =
-  import.meta.env.VITE_API_BASE_URL || "http://localhost:8080/api";
-
-function getAuthHeader() {
-  const token = localStorage.getItem("token");
-  return {
-    Authorization: `Bearer ${token}`,
-  };
-}
 
 const EditAssignmentPage = () => {
   const { id: assignmentId } = useParams();
@@ -61,15 +58,12 @@ const EditAssignmentPage = () => {
   // ===========================
   // LOAD ASSIGNMENT
   // ===========================
-  const loadAssignment = async () => {
+  const loadAssignment = useCallback(async () => {
+    if (!assignmentId) return;
     try {
       setPageLoading(true);
-      const res = await axios.get(
-        `${API_BASE_URL}/admin/assignments/${assignmentId}`,
-        { headers: getAuthHeader() }
-      );
-
-      const a = res.data.assignment;
+      const res = await fetchAssignmentDetail(assignmentId);
+      const a = res.assignment;
       setAssignment(a);
 
       form.setFieldsValue({
@@ -92,23 +86,21 @@ const EditAssignmentPage = () => {
     } finally {
       setPageLoading(false);
     }
-  };
+  }, [assignmentId, form]);
 
   // ===========================
   // LOAD QUESTIONS
   // ===========================
-  const loadQuestions = async () => {
+  const loadQuestions = useCallback(async () => {
+    if (!assignmentId) return;
     try {
-      const res = await axios.get(
-        `${API_BASE_URL}/admin/assignments/${assignmentId}/questions`,
-        { headers: getAuthHeader() }
-      );
-      setQuestions(res.data.questions || []);
+      const res = await fetchAssignmentQuestions(assignmentId);
+      setQuestions(res.questions || []);
     } catch (err) {
       console.error("Load questions error:", err);
       message.error("Không thể tải danh sách câu hỏi");
     }
-  };
+  }, [assignmentId]);
 
   useEffect(() => {
     if (!assignmentId) {
@@ -118,7 +110,7 @@ const EditAssignmentPage = () => {
     }
     loadAssignment();
     loadQuestions();
-  }, [assignmentId]);
+  }, [assignmentId, loadAssignment, loadQuestions, navigate]);
 
   // ===========================
   // UPDATE METADATA
@@ -128,14 +120,10 @@ const EditAssignmentPage = () => {
       const values = await form.validateFields();
       setLoading(true);
 
-      await axios.put(
-        `${API_BASE_URL}/admin/assignments/${assignmentId}`,
-        {
-          ...values,
-          due_date: values.due_date ? values.due_date.toISOString() : null,
-        },
-        { headers: getAuthHeader() }
-      );
+      await updateAssignment(assignmentId, {
+        ...values,
+        due_date: values.due_date ? values.due_date.toISOString() : null,
+      });
 
       message.success("Đã cập nhật bài tập");
       loadAssignment();
@@ -188,7 +176,7 @@ const EditAssignmentPage = () => {
     try {
       const values = await qForm.validateFields();
 
-      //  Kiểm tra phải có ít nhất 1 đáp án đúng
+      // Kiểm tra phải có ít nhất 1 đáp án đúng
       const hasCorrect = values.options?.some((o) => o.is_correct);
       if (!hasCorrect) {
         message.error("Phải có ít nhất 1 đáp án đúng!");
@@ -210,18 +198,9 @@ const EditAssignmentPage = () => {
       };
 
       if (editingQ) {
-        // SỬA: Đúng endpoint
-        await axios.put(
-          `${API_BASE_URL}/admin/assignments/questions/${editingQ.id}`,
-          payload,
-          { headers: getAuthHeader() }
-        );
+        await updateAssignmentQuestion(editingQ.id, payload);
       } else {
-        await axios.post(
-          `${API_BASE_URL}/admin/assignments/${assignmentId}/questions`,
-          payload,
-          { headers: getAuthHeader() }
-        );
+        await createAssignmentQuestion(assignmentId, payload);
       }
 
       message.success("Đã lưu câu hỏi");
@@ -244,11 +223,7 @@ const EditAssignmentPage = () => {
       okType: "danger",
       onOk: async () => {
         try {
-          // SỬA: Đúng endpoint
-          await axios.delete(
-            `${API_BASE_URL}/admin/assignments/questions/${q.id}`,
-            { headers: getAuthHeader() }
-          );
+          await deleteAssignmentQuestion(q.id);
           message.success("Đã xóa câu hỏi");
           loadQuestions();
         } catch (err) {
