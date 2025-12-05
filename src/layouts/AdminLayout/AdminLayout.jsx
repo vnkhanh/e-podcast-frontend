@@ -1,4 +1,4 @@
-import React, { useContext } from "react";
+import React, { useContext, useState } from "react";
 import { Layout, Menu, Dropdown, Avatar } from "antd";
 import { Link, Outlet, useNavigate, useLocation } from "react-router-dom";
 import {
@@ -25,6 +25,7 @@ const AdminLayout = () => {
   const { isDarkMode, toggleTheme } = useContext(ThemeContext);
   const navigate = useNavigate();
   const location = useLocation();
+  const [collapsed, setCollapsed] = useState(false);
 
   const user = localStorage.getItem("user")
     ? JSON.parse(localStorage.getItem("user"))
@@ -126,7 +127,12 @@ const AdminLayout = () => {
         color: isDarkMode ? "#fff" : "#000",
       }}
     >
-      <Sider theme={isDarkMode ? "dark" : "light"} collapsible>
+      <Sider
+        theme={isDarkMode ? "dark" : "light"}
+        collapsible
+        collapsed={collapsed}
+        onCollapse={(value) => setCollapsed(value)}
+      >
         <div
           style={{
             height: 40,
@@ -138,7 +144,11 @@ const AdminLayout = () => {
             fontWeight: "bold",
           }}
         >
-          {user?.role === "admin" ? "Admin" : "Teacher"}
+          {user?.role === "admin"
+            ? collapsed
+              ? "PM"
+              : "Platform Manager"
+            : "Teacher"}
         </div>
         <Menu
           theme={isDarkMode ? "dark" : "light"}
@@ -162,7 +172,7 @@ const AdminLayout = () => {
             display: "flex",
             justifyContent: "space-between",
             alignItems: "center",
-            background: isDarkMode ? "#1f1f1f" : "#fff",
+            background: isDarkMode ? "#001529ff" : "#fff",
             color: isDarkMode ? "#fff" : "#000",
           }}
         >

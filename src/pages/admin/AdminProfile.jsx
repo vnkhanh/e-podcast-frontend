@@ -1,6 +1,11 @@
 import React, { useEffect, useState } from "react";
 import { Card, Avatar, Typography, Spin, message, Row, Col, Tag } from "antd";
-import { UserOutlined, MailOutlined, CrownOutlined } from "@ant-design/icons";
+import {
+  UserOutlined,
+  MailOutlined,
+  CrownOutlined,
+  CalendarOutlined,
+} from "@ant-design/icons";
 import axios from "axios";
 
 const { Title, Text } = Typography;
@@ -92,10 +97,12 @@ const AdminProfile = () => {
             </p>
             <p>
               <CrownOutlined /> <b>Vai trò:</b>{" "}
-              <Tag color="gold">{admin.role?.toUpperCase()}</Tag>
+              <Tag color="gold">
+                {admin.role === "admin" ? "Quản lý nền tảng" : "Giảng viên"}
+              </Tag>
             </p>
             <p>
-              <b>Ngày tạo tài khoản:</b>{" "}
+              <CalendarOutlined /> <b>Ngày tạo tài khoản:</b>{" "}
               {new Date(admin.created_at).toLocaleString("vi-VN")}
             </p>
           </Col>

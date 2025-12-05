@@ -15,7 +15,6 @@ import {
   Form,
   Input,
   Button,
-  message,
 } from "antd";
 import {
   UserOutlined,
@@ -28,7 +27,7 @@ import {
   LockOutlined,
 } from "@ant-design/icons";
 import UserListeningHistory from "./UserListeningHistory";
-import { getUserProfile, changePassword } from "../../services/api_auth";
+import { getUserProfile } from "../../services/api_auth";
 import UserFavorites from "../../components/user/UserFavorites";
 
 const { Title, Text } = Typography;
@@ -37,7 +36,6 @@ export default function UserProfile() {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [changing, setChanging] = useState(false);
   const token = localStorage.getItem("token");
 
   useEffect(() => {
@@ -55,17 +53,17 @@ export default function UserProfile() {
     fetchData();
   }, [token]);
 
-  const handleChangePassword = async (values) => {
-    try {
-      setChanging(true);
-      await changePassword(values.old_password, values.new_password, token);
-      message.success("Đổi mật khẩu thành công!");
-    } catch (err) {
-      message.error(err.response?.data?.error || "Không thể đổi mật khẩu");
-    } finally {
-      setChanging(false);
-    }
-  };
+  // const handleChangePassword = async (values) => {
+  //   try {
+  //     setChanging(true);
+  //     await changePassword(values.old_password, values.new_password, token);
+  //     message.success("Đổi mật khẩu thành công!");
+  //   } catch (err) {
+  //     message.error(err.response?.data?.error || "Không thể đổi mật khẩu");
+  //   } finally {
+  //     setChanging(false);
+  //   }
+  // };
 
   if (loading)
     return (
@@ -257,99 +255,99 @@ export default function UserProfile() {
               ),
               children: <UserListeningHistory />,
             },
-            {
-              key: "3",
-              label: (
-                <Space>
-                  <LockOutlined style={{ color: "#52c41a" }} />
-                  <Text strong>Đổi mật khẩu</Text>
-                </Space>
-              ),
-              children: (
-                <div style={{ maxWidth: 500, margin: "20px auto" }}>
-                  <Form
-                    layout="vertical"
-                    onFinish={handleChangePassword}
-                    style={{
-                      borderRadius: 12,
-                      padding: 24,
-                    }}
-                  >
-                    <Form.Item
-                      label="Mật khẩu hiện tại"
-                      name="old_password"
-                      rules={[
-                        {
-                          required: true,
-                          message: "Vui lòng nhập mật khẩu hiện tại",
-                        },
-                      ]}
-                    >
-                      <Input.Password placeholder="Nhập mật khẩu hiện tại" />
-                    </Form.Item>
+            // {
+            //   key: "3",
+            //   label: (
+            //     <Space>
+            //       <LockOutlined style={{ color: "#52c41a" }} />
+            //       <Text strong>Đổi mật khẩu</Text>
+            //     </Space>
+            //   ),
+            //   children: (
+            //     <div style={{ maxWidth: 500, margin: "20px auto" }}>
+            //       <Form
+            //         layout="vertical"
+            //         onFinish={handleChangePassword}
+            //         style={{
+            //           borderRadius: 12,
+            //           padding: 24,
+            //         }}
+            //       >
+            //         <Form.Item
+            //           label="Mật khẩu hiện tại"
+            //           name="old_password"
+            //           rules={[
+            //             {
+            //               required: true,
+            //               message: "Vui lòng nhập mật khẩu hiện tại",
+            //             },
+            //           ]}
+            //         >
+            //           <Input.Password placeholder="Nhập mật khẩu hiện tại" />
+            //         </Form.Item>
 
-                    <Form.Item
-                      label="Mật khẩu mới"
-                      name="new_password"
-                      rules={[
-                        {
-                          required: true,
-                          message: "Vui lòng nhập mật khẩu mới",
-                        },
-                        { min: 6, message: "Mật khẩu phải có ít nhất 6 ký tự" },
-                      ]}
-                    >
-                      <Input.Password placeholder="Nhập mật khẩu mới" />
-                    </Form.Item>
+            //         <Form.Item
+            //           label="Mật khẩu mới"
+            //           name="new_password"
+            //           rules={[
+            //             {
+            //               required: true,
+            //               message: "Vui lòng nhập mật khẩu mới",
+            //             },
+            //             { min: 6, message: "Mật khẩu phải có ít nhất 6 ký tự" },
+            //           ]}
+            //         >
+            //           <Input.Password placeholder="Nhập mật khẩu mới" />
+            //         </Form.Item>
 
-                    <Form.Item
-                      label="Xác nhận mật khẩu mới"
-                      name="confirm_password"
-                      dependencies={["new_password"]}
-                      rules={[
-                        {
-                          required: true,
-                          message: "Vui lòng xác nhận mật khẩu",
-                        },
-                        ({ getFieldValue }) => ({
-                          validator(_, value) {
-                            if (
-                              !value ||
-                              getFieldValue("new_password") === value
-                            ) {
-                              return Promise.resolve();
-                            }
-                            return Promise.reject(
-                              new Error("Mật khẩu xác nhận không khớp!")
-                            );
-                          },
-                        }),
-                      ]}
-                    >
-                      <Input.Password placeholder="Nhập lại mật khẩu mới" />
-                    </Form.Item>
+            //         <Form.Item
+            //           label="Xác nhận mật khẩu mới"
+            //           name="confirm_password"
+            //           dependencies={["new_password"]}
+            //           rules={[
+            //             {
+            //               required: true,
+            //               message: "Vui lòng xác nhận mật khẩu",
+            //             },
+            //             ({ getFieldValue }) => ({
+            //               validator(_, value) {
+            //                 if (
+            //                   !value ||
+            //                   getFieldValue("new_password") === value
+            //                 ) {
+            //                   return Promise.resolve();
+            //                 }
+            //                 return Promise.reject(
+            //                   new Error("Mật khẩu xác nhận không khớp!")
+            //                 );
+            //               },
+            //             }),
+            //           ]}
+            //         >
+            //           <Input.Password placeholder="Nhập lại mật khẩu mới" />
+            //         </Form.Item>
 
-                    <Form.Item>
-                      <Button
-                        type="primary"
-                        htmlType="submit"
-                        block
-                        loading={changing}
-                        style={{
-                          background:
-                            "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
-                          border: "none",
-                          borderRadius: 8,
-                          fontWeight: 600,
-                        }}
-                      >
-                        Đổi mật khẩu
-                      </Button>
-                    </Form.Item>
-                  </Form>
-                </div>
-              ),
-            },
+            //         <Form.Item>
+            //           <Button
+            //             type="primary"
+            //             htmlType="submit"
+            //             block
+            //             loading={changing}
+            //             style={{
+            //               background:
+            //                 "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+            //               border: "none",
+            //               borderRadius: 8,
+            //               fontWeight: 600,
+            //             }}
+            //           >
+            //             Đổi mật khẩu
+            //           </Button>
+            //         </Form.Item>
+            //       </Form>
+            //     </div>
+            //   ),
+            // },
           ]}
         />
       </Card>

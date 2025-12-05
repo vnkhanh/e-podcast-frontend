@@ -89,12 +89,7 @@ const Login = () => {
           });
         } else {
           message.error({
-            content: (
-              <Space>
-                <span style={{ color: "#ff4d4f" }}>❌</span>
-                {errMsg}
-              </Space>
-            ),
+            content: <Space>{errMsg}</Space>,
             duration: 3,
           });
         }

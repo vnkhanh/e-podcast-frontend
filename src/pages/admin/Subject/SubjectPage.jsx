@@ -126,8 +126,14 @@ const SubjectPage = () => {
       await deleteSubject(id);
       message.success("Đã xoá môn học");
       loadSubjects();
-    } catch {
-      message.error("Không thể xoá môn học");
+    } catch (error) {
+      // lấy message backend trả về
+      const backendMsg =
+        error?.response?.data?.error ||
+        error?.response?.data?.message ||
+        "Không thể xoá môn học";
+
+      message.error(backendMsg);
     }
   };
 

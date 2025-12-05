@@ -410,6 +410,11 @@ const EditAssignmentPage = () => {
                       icon={<ReloadOutlined />}
                       onClick={generatePassword}
                       title="Tạo mật khẩu ngẫu nhiên"
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        padding: "0 0px",
+                      }}
                     />
                   }
                 />

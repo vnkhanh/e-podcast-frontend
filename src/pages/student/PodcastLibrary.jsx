@@ -772,10 +772,8 @@ const PodcastLibrary = () => {
               onChange={(p) => setPage(p)}
               showSizeChanger={false}
               style={{
-                background: "white",
                 padding: "16px 24px",
                 borderRadius: 16,
-                boxShadow: "0 4px 16px rgba(0,0,0,0.08)",
               }}
               itemRender={(current, type, originalElement) => {
                 if (type === "page") {

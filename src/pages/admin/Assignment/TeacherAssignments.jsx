@@ -172,12 +172,12 @@ const TeacherAssignments = () => {
   }, [loadAssignments, loadSubjectsData]);
 
   // ================= CREATE =================
-  const openCreateModal = () => {
-    setIsCreateModalOpen(true);
-    formCreate.resetFields();
-    setChapters([]);
-    setPodcasts([]);
-  };
+  // const openCreateModal = () => {
+  //   setIsCreateModalOpen(true);
+  //   formCreate.resetFields();
+  //   setChapters([]);
+  //   setPodcasts([]);
+  // };
 
   const openGeminiModal = () => {
     setIsGeminiModalOpen(true);
@@ -247,7 +247,7 @@ const TeacherAssignments = () => {
       // Simulate progress
       const interval = setInterval(() => {
         setGeminiProgress((prev) => {
-          if (prev >= 100) {
+          if (prev >= 99) {
             clearInterval(interval);
             return 100;
           }
@@ -339,7 +339,7 @@ const TeacherAssignments = () => {
       width: 180,
       render: (_, record) => (
         <Space size="small">
-          {/* 🔥 EDIT → NAVIGATE */}
+          {/* EDIT → NAVIGATE */}
           <Tooltip title="Chỉnh sửa">
             <Button
               icon={<EditOutlined />}
@@ -404,13 +404,13 @@ const TeacherAssignments = () => {
               Làm mới
             </Button>
 
-            <Button
+            {/* <Button
               type="primary"
               icon={<FileTextOutlined />}
               onClick={openCreateModal}
             >
               Tạo từ File
-            </Button>
+            </Button> */}
 
             <Button
               type="primary"
@@ -714,7 +714,7 @@ const TeacherAssignments = () => {
               name="password"
               rules={[{ required: true }]}
             >
-              <Input placeholder="Mật khẩu tự sinh khi bật" readOnly />
+              <Input placeholder="Mật khẩu tự sinh khi bật" />
             </Form.Item>
           )}
 

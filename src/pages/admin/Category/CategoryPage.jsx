@@ -110,8 +110,13 @@ const CategoryPage = () => {
       await deleteCategory(id);
       message.success("Đã xoá danh mục");
       fetchCategories();
-    } catch {
-      message.error("Không thể xoá danh mục");
+    } catch (error) {
+      const errMsg =
+        error?.response?.data?.error ||
+        error?.response?.data?.message ||
+        "Không thể xoá danh mục";
+
+      message.error(errMsg);
     }
   };
 

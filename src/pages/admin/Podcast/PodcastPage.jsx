@@ -8,6 +8,7 @@ import {
   Space,
   message,
   Tag,
+  Modal,
   Tooltip,
   Select,
   Spin,
@@ -93,15 +94,24 @@ const PodcastPage = () => {
     fetchData(1, pagination.pageSize, value, status);
   };
 
-  const handleDelete = async (id) => {
-    try {
-      await deletePodcast(id);
-      message.success("Xóa podcast thành công");
-      fetchData(pagination.current);
-    } catch (error) {
-      console.error(error);
-      message.error("Xóa podcast thất bại");
-    }
+  const handleDelete = (id, title) => {
+    Modal.confirm({
+      title: "Xác nhận xóa podcast",
+      content: `Bạn có chắc chắn muốn xóa podcast "${title}" không?`,
+      okText: "Xóa",
+      okType: "danger",
+      cancelText: "Hủy",
+      onOk: async () => {
+        try {
+          await deletePodcast(id);
+          message.success("Xóa podcast thành công");
+          fetchData(pagination.current);
+        } catch (error) {
+          console.error(error);
+          message.error("Xóa podcast thất bại");
+        }
+      },
+    });
   };
 
   const handlePageChange = (page, pageSize) => {
@@ -290,7 +300,7 @@ const PodcastPage = () => {
                       type="text"
                       danger
                       icon={<DeleteOutlined style={{ fontSize: 18 }} />}
-                      onClick={() => handleDelete(podcast.id)}
+                      onClick={() => handleDelete(podcast.id, podcast.title)}
                     />
                   </Tooltip>,
                 ]}
