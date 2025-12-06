@@ -10,6 +10,7 @@ import {
   Card,
   Typography,
   Divider,
+  Badge,
 } from "antd";
 import {
   getComments,
@@ -24,6 +25,8 @@ import {
   CloseOutlined,
   EyeOutlined,
   EyeInvisibleOutlined,
+  WifiOutlined,
+  DisconnectOutlined,
 } from "@ant-design/icons";
 
 const { TextArea } = Input;
@@ -36,7 +39,13 @@ const CommentSection = ({ podcastId }) => {
   const [replyTo, setReplyTo] = useState(null);
   const [loading, setLoading] = useState(false);
   const [expanded, setExpanded] = useState({});
+  const [wsConnected, setWsConnected] = useState(false);
+  
   const socketRef = useRef(null);
+  const reconnectTimeoutRef = useRef(null);
+  const reconnectAttemptsRef = useRef(0);
+  const maxReconnectAttempts = 10;
+  const reconnectDelay = 3000;
 
   const token = localStorage.getItem("token");
   const storedUser = JSON.parse(localStorage.getItem("user") || "{}");
@@ -88,20 +97,45 @@ const CommentSection = ({ podcastId }) => {
     []
   );
 
-  useEffect(() => {
+  // Hàm kết nối WebSocket với auto-reconnect
+  const connectWebSocket = useCallback(() => {
     if (!podcastId || !token) return;
-    if (socketRef.current) return;
+    
+    // Đóng connection cũ nếu có
+    if (socketRef.current) {
+      socketRef.current.close();
+      socketRef.current = null;
+    }
 
-    const socket = new WebSocket(
-      `${import.meta.env.VITE_WS_URL}/podcast/${podcastId}?token=${token}`
-    );
-
+    const wsUrl = `${import.meta.env.VITE_WS_URL}/podcast/${podcastId}?token=${token}`;
+    console.log("Connecting to WebSocket:", wsUrl);
+    
+    const socket = new WebSocket(wsUrl);
     socketRef.current = socket;
+
+    socket.onopen = () => {
+      console.log("WebSocket connected");
+      setWsConnected(true);
+      reconnectAttemptsRef.current = 0;
+      
+      // Gửi ping mỗi 30s để giữ connection
+      const pingInterval = setInterval(() => {
+        if (socket.readyState === WebSocket.OPEN) {
+          socket.send(JSON.stringify({ type: "ping" }));
+        } else {
+          clearInterval(pingInterval);
+        }
+      }, 30000);
+    };
 
     socket.onmessage = (event) => {
       try {
         const data = JSON.parse(event.data);
-        if (data.type === "connected") return;
+        
+        if (data.type === "connected" || data.type === "pong") {
+          return;
+        }
+        
         if (data.type === "new_comment" && data.comment) {
           const newComment = data.comment;
           setComments((prev) => {
@@ -116,6 +150,7 @@ const CommentSection = ({ podcastId }) => {
             return [...safePrev, newComment];
           });
         }
+        
         if (data.type === "delete_comment" && data.comment_id) {
           setComments((prev) => {
             const safePrev = Array.isArray(prev) ? prev : [];
@@ -128,16 +163,42 @@ const CommentSection = ({ podcastId }) => {
       }
     };
 
-    socket.onerror = (err) => console.error("Lỗi WebSocket:", err);
-    socket.onclose = () => console.log("Socket closed");
+    socket.onerror = (err) => {
+      console.error("WebSocket error:", err);
+      setWsConnected(false);
+    };
+
+    socket.onclose = (event) => {
+      console.log("WebSocket closed:", event.code, event.reason);
+      setWsConnected(false);
+      
+      // Auto-reconnect nếu chưa vượt quá số lần thử
+      if (reconnectAttemptsRef.current < maxReconnectAttempts) {
+        reconnectAttemptsRef.current++;
+        console.log(`Reconnecting... (attempt ${reconnectAttemptsRef.current})`);
+        
+        reconnectTimeoutRef.current = setTimeout(() => {
+          connectWebSocket();
+        }, reconnectDelay);
+      } else {
+        message.warning("Mất kết nối realtime. Vui lòng tải lại trang.");
+      }
+    };
+  }, [podcastId, token, addReplyRecursively, removeCommentRecursively]);
+
+  useEffect(() => {
+    connectWebSocket();
 
     return () => {
+      if (reconnectTimeoutRef.current) {
+        clearTimeout(reconnectTimeoutRef.current);
+      }
       if (socketRef.current) {
         socketRef.current.close();
         socketRef.current = null;
       }
     };
-  }, [podcastId, token, addReplyRecursively, removeCommentRecursively]);
+  }, [connectWebSocket]);
 
   const handleSubmit = async () => {
     if (!token) return message.warning("Vui lòng đăng nhập để bình luận.");
@@ -348,7 +409,7 @@ const CommentSection = ({ podcastId }) => {
       }}
       bodyStyle={{ padding: 24 }}
     >
-      <div style={{ marginBottom: 24 }}>
+      <div style={{ marginBottom: 24, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
         <Text
           strong
           style={{
@@ -361,6 +422,20 @@ const CommentSection = ({ podcastId }) => {
           <MessageOutlined style={{ color: "#667eea" }} /> Bình luận (
           {comments.length})
         </Text>
+        
+        {/* Connection status indicator */}
+        <Badge 
+          status={wsConnected ? "success" : "error"} 
+          text={
+            <span style={{ fontSize: 12, color: wsConnected ? "#52c41a" : "#ff4d4f" }}>
+              {wsConnected ? (
+                <><WifiOutlined /> Realtime</>
+              ) : (
+                <><DisconnectOutlined /> Mất kết nối</>
+              )}
+            </span>
+          }
+        />
       </div>
 
       {/* COMMENT INPUT SECTION */}
