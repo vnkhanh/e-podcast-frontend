@@ -6,9 +6,9 @@ import {
   TwitterOutlined,
   LinkedinOutlined,
   CopyOutlined,
+  WhatsAppOutlined,
   QrcodeOutlined,
 } from "@ant-design/icons";
-import WhatsappOutlined from "@ant-design/icons/WhatsappOutlined";
 import { QRCodeCanvas } from "qrcode.react";
 import axios from "axios";
 
@@ -86,7 +86,7 @@ const SharePodcastButton = ({ podcastId, podcastTitle }) => {
         LinkedIn
       </Menu.Item>
       <Menu.Item
-        icon={<WhatsappOutlined />}
+        icon={<WhatsAppOutlined />}
         onClick={() => handleShare("whatsapp")}
       >
         WhatsApp
