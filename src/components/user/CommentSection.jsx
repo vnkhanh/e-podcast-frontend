@@ -93,8 +93,9 @@ const CommentSection = ({ podcastId }) => {
     if (socketRef.current) return;
 
     const socket = new WebSocket(
-      `ws://localhost:8080/ws/podcast/${podcastId}?token=${token}`
+      `${import.meta.env.VITE_WS_URL}/podcast/${podcastId}?token=${token}`
     );
+
     socketRef.current = socket;
 
     socket.onmessage = (event) => {
